@@ -12,6 +12,7 @@ Z kořene repozitáře, přes obal (testy samy obsahují příkazy s curl):
     python3 -I tests/brzda/test_curl.py skills/rodokmen/tools/slusne.py   # curl: adresa bez https://, víc adres, rozsahy, vlastní -w
     python3 -I tests/brzda/test_prohlizec.py skills/rodokmen/tools   # cache.py uloz/najdi: snímky z prohlížeče (eBadatelna, FamilySearch)
     python3 -I tests/brzda/test_hook_windows.py skills/rodokmen    # hook hlídače na Windows: plná cesta k Pythonu
+    python3 -I tests/brzda/test_hlidac_cteni.py skills/rodokmen    # hlídač čtení snímků pomocníků (3. čtení, 30 snímků)
 
 Na Windows `python -I -X utf8` a obojí pustit z Git Bashe i z PowerShellu. `ROZSIRENI=0` spustí u brzdy jen základní testy
 (bez heredocu, prodlužování stopky, podprocesů a opakovaného souběhu vláken).

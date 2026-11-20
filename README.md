@@ -191,7 +191,9 @@ tady v repozitáři.
   Jediná výjimka je volitelný **hlídač sítě**. Claude se na něj zeptá při zakládání projektu a bez vašeho souhlasu
   se nezapne. Je to malý skript v projektu (`tools/hlidac_site.py`, hook v `.claude/settings.json` projektu). Před
   každým příkazem zkontroluje, jestli nejde na web archivu mimo brzdu, a takový příkaz zamítne. Sám nic nestahuje
-  ani nikam neposílá. Vypnete ho příkazem `novy_projekt.py <projekt> --bez-hlidace`.
+  ani nikam neposílá. Spolu s ním se zapne hlídač čtení (`tools/hlidac_cteni.py`): pomocníkovi (subagentovi)
+  zamítne třetí čtení téhož snímku a víc než 30 snímků, aby zacyklený pomocník nespálil limit tokenů. Oba vypnete
+  příkazem `novy_projekt.py <projekt> --bez-hlidace`.
 - **Brzda proti zablokování archivem.** Archivy blokují IP adresu po sérii rychlých dotazů. Nástroje proto mají
   společný limit pro každý web (`tools/slusne.py`) a po varování archivu se na 30 minut zastaví. Projekt má
   v `.claude/settings.json` zakázané přímé `curl` a `wget`, stahuje se jen přes brzdu.

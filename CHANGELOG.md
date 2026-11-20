@@ -8,6 +8,11 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 
 ## Nevydáno
 
+**Nové**
+- Hlídač čtení snímků (`tools/hlidac_cteni.py`): pomocníkovi zamítne třetí čtení téhož snímku a víc než 30 snímků,
+  aby zacyklený pomocník nespálil 5hodinový limit i hlavní konverzaci. Zapíná se spolu s hlídačem sítě (`--hlidac`),
+  projekt se zapnutým hlídačem sítě ho dostane při aktualizaci; hlavní konverzaci nehlídá (upstream #90, #34).
+
 **Opravy**
 - Odkaz „otevřít v archivu“ u zápisů z ARONu otevře správný snímek, ne první stránku knihy (`aron_img.py link` dává
   id souboru TILE). Starší odkazy v `data/` najde `aron_img.py odkazy` a opraví `aron_img.py odkazy --opravit`

@@ -4,7 +4,8 @@
 Použití: python3 <skill>/tools/novy_projekt.py <cílová složka> [--ukazka] [--hlidac | --bez-hlidace]
   --ukazka        nakopíruje i vymyšlená ukázková data (rodina Novákových), aby šel web hned vyzkoušet
   --hlidac        zapne hlídač sítě (hook v .claude/settings.json, tools/hlidac_site.py): zamítne příkazy,
-                  které jdou na web archivu mimo brzdu tools/slusne.py; --bez-hlidace ho vypne
+                  které jdou na web archivu mimo brzdu tools/slusne.py, a hlídač čtení (tools/hlidac_cteni.py):
+                  pomocníkovi zamítne třetí čtení téhož snímku a víc než 30 snímků; --bez-hlidace vypne oba
        python3 <skill>/tools/novy_projekt.py <složka projektu> --vyreseno <soubor> [--vyreseno <soubor> …]
   --vyreseno      po ručním převzetí změn šablony (soubor „ke kontrole“, např. web/src/pages/index.astro) uloží
                   novou verzi šablony jako základ; soubor v projektu nezmění a další aktualizace ho už nehlásí
@@ -314,11 +315,14 @@ def vyresit(dst, cesta):
 SIT_ZAKAZ = ["Bash(curl:*)", "Bash(wget:*)"]   # stahování z archivů jen přes tools/slusne.py (curl přes něj jde)
 # Hlídač spustit, jen když soubor existuje: chybějící skript by Python ukončil kódem 2 a ten by zablokoval každý příkaz.
 # mimo Windows ne cestu s číslem verze (po aktualizaci Pythonu by zmizela); na Windows lomítka (projdou Git Bash i cmd)
-KOD = ("import os,runpy;p=os.path.join(os.environ.get('CLAUDE_PROJECT_DIR','.'),'tools','hlidac_site.py');"
-       "os.path.isfile(p) and runpy.run_path(p,run_name='__main__')")
+KOD_SABLONA = ("import os,runpy;p=os.path.join(os.environ.get('CLAUDE_PROJECT_DIR','.'),'tools','{}');"
+               "os.path.isfile(p) and runpy.run_path(p,run_name='__main__')")
+KOD = KOD_SABLONA.format("hlidac_site.py")
+KOD_CTENI = KOD_SABLONA.format("hlidac_cteni.py")
 PY = sys.executable.replace("\\", "/") if os.name == "nt" else "python3"
 HLIDAC = f'"{PY}" -I -c "{KOD}"'   # tvar se shellem (macOS, Linux)
 MATCHER = "Bash|PowerShell|Monitor"   # Monitor spouští příkaz v bashi stejně jako Bash
+MATCHER_CTENI = "Read"   # hlídač čtení snímků pomocníků (upstream #90)
 
 
 def _python_windows():
@@ -328,12 +332,17 @@ def _python_windows():
     return sys.executable
 
 
-def hook_hlidace():
+def hook_hlidace(kod=None):
     """Hook hlídače. Na Windows bez shellu (command + args): hooky tam běží v Git Bashi, nebo v PowerShellu, když
     Git Bash chybí – a tam by příkaz s uvozovkami byl chyba syntaxe a Claude Code by pak zamítal každý příkaz."""
+    kod = kod or KOD
     if os.name == "nt":
-        return {"type": "command", "command": _python_windows(), "args": ["-I", "-X", "utf8", "-c", KOD], "timeout": 10}
-    return {"type": "command", "command": HLIDAC, "timeout": 10}
+        return {"type": "command", "command": _python_windows(), "args": ["-I", "-X", "utf8", "-c", kod], "timeout": 10}
+    return {"type": "command", "command": f'"{PY}" -I -c "{kod}"', "timeout": 10}
+
+
+def hook_cteni():
+    return hook_hlidace(KOD_CTENI)
 
 
 def nastaveni(dst, hlidac):
@@ -353,22 +362,26 @@ def nastaveni(dst, hlidac):
     deny = data.setdefault("permissions", {}).setdefault("deny", [])
     deny += [r for r in SIT_ZAKAZ if r not in deny]
     pre = data.setdefault("hooks", {}).setdefault("PreToolUse", [])
-    nase = [h for h in pre if "hlidac_site.py" in json.dumps(h)]
-    for h in nase:   # aktualizace projektu: hook obnovit (cesta k Pythonu i tvar se mohly změnit)
-        h["matcher"] = MATCHER
-        h["hooks"] = [hook_hlidace()]
-    if hlidac is True and not nase:
-        pre.append({"matcher": MATCHER, "hooks": [hook_hlidace()]})
-    elif hlidac is False:
-        pre[:] = [h for h in pre if h not in nase]
+    site = [h for h in pre if "hlidac_site.py" in json.dumps(h)]
+    for skript, matcher, hook in (("hlidac_site.py", MATCHER, hook_hlidace), ("hlidac_cteni.py", MATCHER_CTENI, hook_cteni)):
+        nase = [h for h in pre if skript in json.dumps(h)]
+        for h in nase:   # aktualizace projektu: hook obnovit (cesta k Pythonu i tvar se mohly změnit)
+            h["matcher"] = matcher
+            h["hooks"] = [hook()]
+        # hlídač čtení přibyl později: projekt se zapnutým hlídačem sítě ho dostane při aktualizaci
+        if not nase and (hlidac is True or (hlidac is None and site and skript == "hlidac_cteni.py")):
+            pre.append({"matcher": matcher, "hooks": [hook()]})
+        elif hlidac is False:
+            pre[:] = [h for h in pre if h not in nase]
     if not pre:
         del data["hooks"]["PreToolUse"]
     if not data["hooks"]:
         del data["hooks"]
     if json.dumps(data, sort_keys=True) != puvodni or os.path.islink(path):
         zapis(path, (json.dumps(data, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))   # odkaz nahradí, nepíše přes něj
-    zapnuty = any("hlidac_site.py" in json.dumps(h) for h in data.get("hooks", {}).get("PreToolUse", []))
-    print("Hlídač sítě:", "zapnutý" if zapnuty else "vypnutý (zapnout: --hlidac)")
+    hooky = json.dumps(data.get("hooks", {}).get("PreToolUse", []))
+    print("Hlídač sítě:", "zapnutý" if "hlidac_site.py" in hooky else "vypnutý (zapnout: --hlidac)")
+    print("Hlídač čtení snímků:", "zapnutý" if "hlidac_cteni.py" in hooky else "vypnutý (zapnout: --hlidac)")
 
 
 def _verze(text):
