@@ -6,7 +6,7 @@ dá v repozitáři **Watch → Custom → Releases**.
 
 Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to podle souboru `VERZE`).
 
-## Nevydáno
+## 0.12.0 – 20. 11. 2026
 
 **Nové**
 - Přístup k dalším archivům (rozhodnutí 20. 11. 2026): každá nová cesta jde přes brzdu s opatrným rozestupem (10 s,
