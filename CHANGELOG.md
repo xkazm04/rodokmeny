@@ -18,6 +18,10 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   403 na hodinu (upstream #189, #200).
 - Šablona projektu nedává do gitu složku `.playwright-mcp/` (snímky a logy Playwrightu) (upstream #200).
 
+**Návody**
+- Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré
+  diecéze, takže když obec v jednom archivu není, zkus sousední (upstream #114).
+
 ## 0.10.2 – 16. 11. 2026
 
 Opravná verze: bezpečnější založení a aktualizace projektu, správný požadavek na Node a pravidla, aby chybné „není

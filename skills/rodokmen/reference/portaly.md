@@ -11,8 +11,12 @@ Matriky jsou online u osmi státních archivů – podle toho, **kde předci ži
 | SOA Litoměřice | severní Čechy | Digitální badatelna – digi.soalitomerice.cz | **částečně – `soal_zoomify.py`** (knihu najdi v prohlížeči) |
 | AHMP | hl. m. Praha | katalog.ahmp.cz (Pragapublica) | **ano – `ahmp_search.sh`, `ahmp_scan.py`** |
 | MZA Brno | jižní Morava, Vysočina z části | Acta Publica – www.mza.cz/actapublica | **jen v prohlížeči** – snímek obrazovky přiblíženého zápisu (postup níže) |
-| ZA Opava | severní Morava a Slezsko, Olomoucko a Litovelsko | Digitální badatelna – digi.archives.cz/da/ | **jen v prohlížeči, nejlépe Playwright** – celý snímek z dlaždic, které načte prohlížeč (postup níže; CAPTCHU řeší uživatel) |
+| ZA Opava | severní Morava a Slezsko, Olomoucko a Litovelsko (matriky Prostějovska jsou v MZA Brno) | Digitální badatelna – digi.archives.cz/da/ | **jen v prohlížeči, nejlépe Playwright** – celý snímek z dlaždic, které načte prohlížeč (postup níže; CAPTCHU řeší uživatel) |
 | Národní archiv | židovské matriky (HBMa), soupisy; pražské policejní přihlášky 1850–1914 | HBMa: VadeMeCum NA – vademecum.nacr.cz (Digitální badatelna → Matriky židovských náboženských obcí; stará adresa badatelna.eu už nepatří archivu); digi.nacr.cz/prihlasky2 | přihlášky **ano – `policie_prihlasky.py`** |
+
+**Hranice archivů u matrik** kopírují staré diecéze a kraje, ne dnešní okresy: matriky far na Prostějovsku jsou
+v MZA Brno, i když okresní archiv (SOkA Prostějov) patří pod ZA Opava. Když obec v jednom archivu nenajdeš, zkus
+sousední, než napíšeš „online není“.
 
 Adresy u nevyzkoušených portálů ověř při prvním použití (portály se mění). Pro pohraničí a mimo ČR viz `metodika.md`
 (Matricula pro Rakousko/Německo, Geneteka pro Polsko, FamilySearch pro Slovensko) a níže.
@@ -202,7 +206,9 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   (žádné `Promise.all`), pauza aspoň 3 s, vždy jen jedna smyčka; po blokaci 35 minut nic (další pokusy ji prodlužují).
   Pomocníkům to napiš do zadání.
 ## ZA Opava (severní Morava, Slezsko, Olomoucko, Litovelsko) – jen v prohlížeči, nejlépe Playwright
-- Pozor na hranici: obce na Litovelsku a Olomoucku patří pod **ZA Opava**, ne pod MZA Brno.
+- Pozor na hranici: obce na Litovelsku a Olomoucku patří pod **ZA Opava**, ne pod MZA Brno. **Matriky far na
+  Prostějovsku ale jsou v MZA Brno** (Acta Publica); v ZA Opava je jen SOkA Prostějov a fondy farních úřadů bez
+  digitálních kopií – nespotřebuj na ně denní limit Opavy.
 - **Bez prohlížeče to nejde.** Badatelna `https://digi.archives.cz/da/` (stará adresa matriky.archives.cz jen přesměruje)
   má ochranu proti robotům (Radware) a od listopadu 2026 nepouští nástroje ani k obrázkům (robots.txt „Disallow: /“,
   images.archives.cz vrací skriptům 403/404) – `soal_zoomify.py`, curl ani WebFetch, brzda je zastaví. Archiv na úvodní
