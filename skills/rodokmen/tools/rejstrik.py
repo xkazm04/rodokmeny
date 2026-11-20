@@ -427,6 +427,15 @@ def popis_ref(c, druh, ref):
     return f"{r['soubor']} › {kratce(r['nadpis'], 70)}" if r else f"{druh} {ref}"
 
 
+# adresa nebo cesta odkazu („https://…“, „(/osoba/jan-novak/)“) – zvýraznění uvnitř ní nic neříká a rozbije ji
+ODKAZ = re.compile(r"https?://[^\s)\]>\"']+|(?:(?<=[(\s\"'])|^)/[\w»«.-]+/[^\s)\]>\"']*")
+
+
+def bez_znacek_v_odkazech(t):
+    """„[»Jan«](/osoba/jan-»novak«/)“ → „[»Jan«](/osoba/jan-novak/)“: značky »« zvýraznění jen mimo adresy."""
+    return ODKAZ.sub(lambda m: m.group(0).replace("»", "").replace("«", ""), t or "")
+
+
 def hledej(c, dotaz, zdroj=None, n=20):
     sql = ("SELECT druh, ref, snippet(fts, 3, '»', '«', ' … ', 24) s FROM fts WHERE fts MATCH ?"
            + (" AND druh IN (%s)" % ",".join("?" * len(zdroj)) if zdroj else "") + " ORDER BY druh='pomocnik', rank LIMIT ?")
@@ -436,7 +445,7 @@ def hledej(c, dotaz, zdroj=None, n=20):
         rows = c.execute(sql, ['"' + dotaz.replace('"', '') + '"'] + (zdroj or []) + [n]).fetchall()
     for r in rows:
         znacka = "[NEOVĚŘENO – pomocník] " if r["druh"] == "pomocnik" else ""
-        print(f"- {znacka}{popis_ref(c, r['druh'], r['ref'])}: {kratce(r['s'], 260)}")
+        print(f"- {znacka}{popis_ref(c, r['druh'], r['ref'])}: {kratce(bez_znacek_v_odkazech(r['s']), 260)}")
     if not rows:
         print("Nic nenalezeno.")
 

@@ -161,6 +161,14 @@ def _(d):
     assert "ukoly" in out, out
 
 
+@test("hledej nezvýrazní shodu uvnitř adresy odkazu (/osoba/jan-novak/)")
+def _(d):
+    zapis(os.path.join(d, "kontext", "odkazy.md"),
+          "## Odkazy\nKovář [Jan Odkazník](/osoba/jan-odkaznik/) a https://example.org/odkaznik/1 z Holic.\n")
+    out = spust(d, "hledej", "Odkaznik")
+    assert "»Odkazník«" in out and "/osoba/jan-odkaznik/" in out and "example.org/odkaznik/1" in out, out
+
+
 @test("chybi a rod proběhnou")
 def _(d):
     spust(d, "chybi")

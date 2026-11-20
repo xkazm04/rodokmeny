@@ -92,6 +92,7 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Příkaz `svazek` v `aron_img.py`, `portafontium.py` a `ebadatelna.py` zapíše jen svou položku přes `zapis.py` –
   dřív přepsal celý `data/svazky.json` (jiné odsazení, ručně psané položky přeformátované) a ručně doplněná pole
   svazku zahodil. `portafontium.py svazek <kniha> vypis` jen vypíše (upstream #189, #200).
+- `rejstrik.py hledej` nezvýrazňuje shodu uvnitř adres odkazů (dřív `/osoba/jan-»novak«/`) – adresa jde zkopírovat.
 - Mapa na webu ukáže osobu jen v obcích, kde sama žila: ne u fary, okresu, přívlastku („Chlum u Hořic“), rodné obce
   matky („roz. Nováková z Bašnic“) ani u muže v obci nevěsty. `kontrola.py` vypíše všechny doložené předky bez své
   obce, ne jen tři (upstream #139).
