@@ -13,6 +13,8 @@ Fronta zápisů: u každého předka nejmladší známá událost s místem (úm
 E-maily a adresy ze stromu se nevypisují.
 Kódování: UTF-8; starší soubory s hlavičkou „1 CHAR ANSI“ (Brother's Keeper) se čtou jako Windows-1250 a česká data
 („SRPEN 1945“, „PODZIM 1951“, „1926 NEBO 1927“, „11.11.1934“) se převedou na tvar „8. 1945“, „podzim 1951“…
+Česká data z MyHeritage a Family Tree Builderu („Odhadovaný: 23. úno, 1907“, „Okolo roku 1790“, „Po roce 1900“,
+„Před rokem 1896“, „Neověřený rok úmrtí: 1957“) se převedou na „asi 23. 2. 1907“, „asi 1790“, „po 1900“, „před 1896“, „1957 (?)“.
 """
 import datetime, re, sys
 if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):   # nápověda místo pádu
@@ -86,9 +88,48 @@ def first(node, tag, default=""):
     return s[0].get("val", "").strip() if s else default
 
 
+# česká data z MyHeritage a Family Tree Builderu s českým rozhraním („Odhadovaný: 23. úno, 1907“, „Okolo roku 1790“,
+# „Po roce 1900“, „Před rokem 1896“, „Neověřený rok úmrtí: 1957“)
+FTB_MONTHS = {"led": 1, "úno": 2, "bře": 3, "dub": 4, "kvě": 5, "čer": 6, "čvn": 6, "čvc": 7, "čec": 7, "srp": 8,
+              "zář": 9, "říj": 10, "lis": 11, "pro": 12}
+FTB_MONTH = r"((?:led|úno|bře|dub|kvě|čvn|čvc|čec|čer|srp|zář|říj|lis|pro)[a-zá-ž]*)\.?,?"
+FTB_PREFIX = ((r"odhadovan[ýá]\s*:?", "asi "), (r"(?:okolo|kolem)(?:\s+roku)?", "asi "), (r"po\s+roce", "po "),
+              (r"před\s+rokem", "před "), (r"mezi(?:\s+rokem|\s+roky)?", "mezi "))
+
+
+def ftb_mesic(slovo):
+    """'úno' → 2; i celé jméno měsíce ('ČERVENEC', 'července' → 7, 'červen', 'června' → 6)."""
+    w = slovo.lower()
+    return 7 if w.startswith(("červenec", "července")) or w in ("čvc", "čec") else FTB_MONTHS[w[:3]]
+
+
+def ftb_date(d):
+    """Česká slovní data z MyHeritage/FTB → tvar rodokmenu ('Odhadovaný: 23. úno, 1907' → 'asi 23. 2. 1907',
+    'Neověřený rok úmrtí: 1957' → '1957 (?)'); None, když to takové datum není."""
+    pre, post, s = "", "", d.strip()
+    m = re.match(r"neověřen\w*[^:\d]*:?\s*", s, re.I)
+    if m:
+        post, s = " (?)", s[m.end():]
+    for vzor, slovo in FTB_PREFIX:
+        m = re.match(vzor + r"\s*", s, re.I)
+        if m:
+            pre, s = slovo, s[m.end():]
+            break
+    s2 = re.sub(r"\b(\d{1,2})\.\s*" + FTB_MONTH + r"\s*(\d{4})\b",
+                lambda m: f"{int(m[1])}. {ftb_mesic(m[2])}. {m[3]}", s, flags=re.I)
+    s2 = re.sub(r"(?<![\w.])" + FTB_MONTH + r"\s*(\d{4})\b", lambda m: f"{ftb_mesic(m[1])}. {m[2]}", s2, flags=re.I)
+    s2 = re.sub(r"\s+(?:a|and)\s+", " a ", s2, flags=re.I) if pre == "mezi " else s2
+    if not (pre or post or s2 != s) or not re.fullmatch(r"[\d.\s a]+", s2):
+        return None
+    return pre + re.sub(r"\s+", " ", s2).strip() + post
+
+
 def cz_date(d):
     """'14 FEB 1890' -> '14. 2. 1890', 'ABT 1850' -> 'asi 1850'."""
     d = d.strip()
+    ftb = ftb_date(d)
+    if ftb:
+        return ftb
     pre = ""
     for k, v in (("ABT", "asi "), ("EST", "asi "), ("CAL", "asi "), ("BEF", "před "), ("AFT", "po "), ("BET", "mezi ")):
         if d.startswith(k):
@@ -222,7 +263,7 @@ def main():
     if as_py:
         print("}")
         return
-    print("\nFRONTA ZÁPISŮ (nejmladší známá událost s místem; lhůty pro archiv: narození 100, sňatky 75, úmrtí 30 let):")
+    print("\nFRONTA ZÁPISŮ (nejmladší známá událost s místem; lhůty pro archiv: narození 100, sňatky a úmrtí 75 let):")
     now = datetime.date.today().year
     for k, n, what, d, p in queue:
         y = year(d)
