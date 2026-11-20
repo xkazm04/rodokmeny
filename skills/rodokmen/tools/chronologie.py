@@ -11,6 +11,7 @@ jak přesně je zapsané: „14. 2. 1890“ jeden den, „3/1867“ celý měsí
 který platí pro všechna možná data. Ověřený neobvyklý údaj se odškrtne polem `overeno` u osoby (reference/data.md).
 """
 import calendar, os, sys
+from datetime import timedelta
 from fractions import Fraction
 from dataclasses import dataclass
 
@@ -24,23 +25,43 @@ def zastupna(p):
     return n.startswith(("otec neuveden", "matka neuvedena")) or n in ("", "?")
 
 
+KREST_DNI, POHREB_DNI = 60, 30   # křest bývá do pár dní po narození, pohřeb po úmrtí – horní mez, ne datum
+
+
+def nejpozdeji(d, dni, co, y):
+    """Narození podle křtu (úmrtí podle pohřbu): nejpozději v den křtu, nejdřív `dni` dní před ním; s rokem z y,
+    když se s ním překrývá (y „1900“ + křest 3. 1. 1900 → 4. 12. 1899 až 3. 1. 1900 ∩ rok 1900)."""
+    od, do = (d.od - timedelta(days=dni) if d.od > MIN + timedelta(days=dni) else MIN), d.do
+    if y and y.od <= do and od <= y.do:
+        od, do = max(od, y.od), min(do, y.do)
+    return Datum(od, do, d.approx, f"{d.text} ({co})", d.rok)
+
+
+def snatky(p):
+    """Všechny sňatky osoby (fakta ×) jako [(text faktu, Datum)]."""
+    return [(f, x[1]) for f in p.get("f", []) for x in [fakt(f)] if x and x[1] and x[0] == "×"]
+
+
 def udalosti(P, k):
     """Narození, sňatek s druhým rodičem z rodokmenu a úmrtí osoby k: {"narozeni", "snatek", "umrti"} → Datum | None.
 
-    Fakta mají přednost před y; za narození se bere i „pokřtěn 4. 12. 1786“, za úmrtí „pohřben …“."""
+    Fakta * a † mají přednost před y; „pokřtěn 4. 12. 1786“ a „pohřben …“ jsou jen horní mez narození / úmrtí."""
     p = P[k]
     fakty = [(f, x) for f in p.get("f", []) for x in [fakt(f)] if x and x[1]]
 
-    def prvni(znak):
-        return next((d for _f, (z, d) in fakty if z == znak), None)
+    def prvni(znak, vyslovne):   # vyslovne: fakt začíná * / †; jinak „pokřtěn …“ / „pohřben …“
+        return next((d for f, (z, d) in fakty if z == znak and (f.lstrip()[:1] == znak) == vyslovne), None)
 
     yb, yd = _z_y(p.get("y"))
-    snatky = [(f, d) for f, (z, d) in fakty if z == "×"]
+    krest, pohreb = prvni("*", False), prvni("†", False)
+    narozeni = prvni("*", True) or (nejpozdeji(krest, KREST_DNI, "křest", yb) if krest else yb)
+    umrti = prvni("†", True) or (nejpozdeji(pohreb, POHREB_DNI, "pohřeb", yd) if pohreb else yd)
+    vse = snatky(p)
     druhy = P.get(k ^ 1) if k > 1 else None
     prijmeni = (druhy or {}).get("n", "").split()[-1:] or [""]
     prijmeni = prijmeni[0].strip("()?")[:5]
-    snatek = [x for x in snatky if prijmeni and prijmeni in x[0]] or snatky
-    return {"narozeni": prvni("*") or yb, "snatek": snatek[0][1] if snatek else None, "umrti": prvni("†") or yd}
+    snatek = [x for x in vse if prijmeni and prijmeni in x[0]] or vse
+    return {"narozeni": narozeni, "snatek": snatek[0][1] if snatek else None, "umrti": umrti}
 
 
 PRAVIDLA = ("umrti-pred-narozenim", "snatek-mlady", "snatek-po-umrti", "otec-zemrel", "matka-zemrela",
@@ -130,10 +151,13 @@ def kontrola(P, SAME=None):
             pridej(k, z[0], f"{n}: úmrtí ({d.text}) je dřív než narození ({b.text})", (b, d), (k,))
         elif z:
             pridej(k, z[0], f"{n}: mezi narozením ({b.text}) a úmrtím ({d.text}) je nejméně {_let(z[1])}", (b, d), (k,))
-        if b and m and _vek(b.od, m.do) < SNATEK_VEK:
+        vse = [x for _f, x in snatky(P[k])]   # každý sňatek, ne jen ten s druhým rodičem (u["snatek"])
+        m = next((x for x in vse if b and _vek(b.od, x.do) < SNATEK_VEK), None)
+        if m:
             pridej(k, "snatek-mlady", f"{n}: sňatek ({m.text}) je dřív než narození ({b.text})" if m.do < b.od else
                    f"{n}: při sňatku ({m.text}) by {jemu} bylo nejvýš {_let(_vek(b.od, m.do))}", (b, m), (k,))
-        if m and d and m.od > d.do:
+        m = next((x for x in vse if d and x.od > d.do), None)
+        if m:
             pridej(k, "snatek-po-umrti", f"{n}: sňatek ({m.text}) je až po úmrtí ({d.text})", (m, d), (k,))
         if not b:
             continue

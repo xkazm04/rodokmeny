@@ -51,6 +51,12 @@ def _rok(d):
     return d.rok
 
 
+def _datum(text):
+    """Datum z GEDCOMu; česká data z MyHeritage/FTB („Po roce 1900“, „srp 1945“) převede jako ged_import.py."""
+    cz = gi.ftb_date(text) if text else None
+    return datum_zapisu(cz, rozsah=True) if cz else ged_datum(text)
+
+
 def nacti_strom(path):
     """{'osoby': {id: …}, 'rodiny': {id: {h, w, deti}}, 'famc': {id: [rodiny z FAMC, jak je čte ged_import.py]},
     'puvod': {id: [rodiny z FAMC i z CHIL]}} z GEDCOMu."""
@@ -60,9 +66,11 @@ def nacti_strom(path):
         if r["_type"] == "INDI":
             raw = gi.first(r, "NAME")
             m = re.match(r"^([^/]*)/([^/]*)/", raw)
-            ev = {n["tag"]: ged_datum(gi.first(n, "DATE")) for n in r["_sub"]
-                  if n["tag"] in ("BIRT", "CHR", "DEAT", "BURI")}
-            dn, dz = ev.get("BIRT") or ev.get("CHR"), ev.get("DEAT") or ev.get("BURI")
+            ev = {n["tag"]: _datum(gi.first(n, "DATE")) for n in r["_sub"]
+                  if n["tag"] in ("BIRT", "CHR", "BAPM", "DEAT", "BURI")}
+            krest, pohreb = ev.get("CHR") or ev.get("BAPM"), ev.get("BURI")   # jen horní mez narození / úmrtí
+            dn = ev.get("BIRT") or (ch.nejpozdeji(krest, ch.KREST_DNI, "křest", None) if krest else None)
+            dz = ev.get("DEAT") or (ch.nejpozdeji(pohreb, ch.POHREB_DNI, "pohřeb", None) if pohreb else None)
             osoby[i] = dict(jmeno=gi.name(r), givn=(m.group(1) if m else raw).strip(), surn=(m.group(2) if m else "").strip(),
                             sex=gi.first(r, "SEX"), nar=_rok(dn), zem=_rok(dz), dnar=dn, dzem=dz)
             for n in gi.sub(r, "FAMC"):

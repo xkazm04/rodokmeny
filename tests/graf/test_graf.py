@@ -191,6 +191,30 @@ def test_okrajove():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def test_krest_a_ceske_datum():
+    """CHR je horní mez narození (ne narození), česká data z MyHeritage („Po roce 1900“) jsou meze, ne rok."""
+    text = ("0 HEAD\n"
+            + osoba("@M@", "Anna /Malá/", "F", "1 BIRT", "2 DATE 1870", "1 DEAT", "2 DATE 1 JAN 1900")
+            + osoba("@D@", "Petr /Malý/", "M", "1 CHR", "2 DATE 3 JAN 1900", "1 FAMC @F1@")
+            + osoba("@N@", "Marie /Bílá/", "F", "1 BIRT", "2 DATE 1860", "1 DEAT", "2 DATE Po roce 1900")
+            + osoba("@E@", "Eva /Bílá/", "F", "1 BIRT", "2 DATE 1910", "1 FAMC @F2@")
+            + osoba("@O@", "Rozálie /Dlouhá/", "F", "1 BIRT", "2 DATE 1860", "1 DEAT", "2 DATE srp 1905")
+            + osoba("@G@", "Jana /Dlouhá/", "F", "1 BIRT", "2 DATE DEC 1905", "1 FAMC @F3@")
+            + "0 @F1@ FAM\n1 WIFE @M@\n1 CHIL @D@\n0 @F2@ FAM\n1 WIFE @N@\n1 CHIL @E@\n"
+            + "0 @F3@ FAM\n1 WIFE @O@\n1 CHIL @G@\n0 TRLR\n")
+    tmp, ged = strom(text)
+    try:
+        t = graf.nacti_strom(ged)
+        chrono = {(d, p, c) for d, _h, p, c in graf.chronologie(t)}
+        pripad("křest 3. 1. po smrti matky 1. 1. není narození po smrti matky",
+               not any(c == "@D@" for _d, _p, c in chrono), str(chrono))
+        pripad("„Po roce 1900“ u úmrtí matky není rok 1900", not any(c == "@E@" for _d, _p, c in chrono), str(chrono))
+        pripad("„srp 1905“ je srpen: dítě z prosince je po smrti matky",
+               ("narozen(a) po smrti matky", "@O@", "@G@") in chrono, str(chrono))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def test_cyklus():
     tmp, ged = strom(GED.replace("0 @F1@ FAM", "0 @F9@ FAM\n1 HUSB @I1@\n1 CHIL @I8@\n0 @F1@ FAM"))
     try:
@@ -284,7 +308,7 @@ def test_rodice_zapisu():
 
 
 if __name__ == "__main__":
-    for t in (test_strom, test_okrajove, test_cyklus, test_predci, test_kontrola, test_rodice_zapisu):
+    for t in (test_strom, test_okrajove, test_krest_a_ceske_datum, test_cyklus, test_predci, test_kontrola, test_rodice_zapisu):
         try:
             t()
         except Exception as e:  # noqa: BLE001 – spadlý případ se vypíše a test neprojde
