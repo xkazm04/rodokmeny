@@ -101,6 +101,35 @@ try:
     pre = json.load(open(sp, encoding="utf-8"))["hooks"]["PreToolUse"]
     check("aktualizace projektu se zapnutým hlídačem sítě doplní hlídač čtení a cizí hook nechá",
           any("hlidac_cteni.py" in json.dumps(x) for x in pre) and cizi in pre and len(pre) == 3, pre)
+
+    # vlastní hook vedle našeho ve stejné skupině: aktualizace ani vypnutí ho nesmí smazat
+    soused = {"type": "command", "command": "echo audit"}
+    json.dump({"hooks": {"PreToolUse": [{"matcher": "Read", "hooks": [soused, novy_projekt.hook_cteni()]}]}},
+              open(sp, "w", encoding="utf-8"))
+    novy_projekt.nastaveni(p, True)
+    pre = json.load(open(sp, encoding="utf-8"))["hooks"]["PreToolUse"]
+    check("obnova hlídače nechá vlastní hook ve stejné skupině", soused in
+          next(g["hooks"] for g in pre if "hlidac_cteni.py" in json.dumps(g)), pre)
+    check("obnova hlídače ho nepřidá podruhé", json.dumps(pre).count("hlidac_cteni.py") == 1, pre)
+    novy_projekt.nastaveni(p, False)
+    pre = json.load(open(sp, encoding="utf-8")).get("hooks", {}).get("PreToolUse", [])
+    check("vypnutí hlídače nechá vlastní hook ve stejné skupině", pre == [{"matcher": "Read", "hooks": [soused]}], pre)
+
+    # projekt 0.10.2 se zapnutým hlídačem sítě a vlastním tools/hlidac_cteni.py: konflikt souboru → hook nepřidat
+    q = os.path.join(tmp, "stary_projekt")
+    os.makedirs(os.path.join(q, "tools"))
+    os.makedirs(os.path.join(q, ".claude"))
+    with open(os.path.join(q, "tools", "hlidac_cteni.py"), "w", encoding="utf-8") as f:
+        f.write("print('vlastni skript projektu')\n")
+    json.dump({"hooks": {"PreToolUse": [{"matcher": novy_projekt.MATCHER, "hooks": [novy_projekt.hook_hlidace()]}]}},
+              open(os.path.join(q, ".claude", "settings.json"), "w", encoding="utf-8"))
+    os.makedirs(os.path.join(q, ".skill_sablona", "tools"))   # projekt s uloženou šablonou (0.10.x)
+    r = subprocess.run([sys.executable, "-I", "-X", "utf8", os.path.join(SKILL, "tools", "novy_projekt.py"), q],
+                       capture_output=True, text=True, encoding="utf-8", timeout=300)
+    pre = json.load(open(os.path.join(q, ".claude", "settings.json"), encoding="utf-8"))["hooks"]["PreToolUse"]
+    check("konflikt v tools/hlidac_cteni.py: hlídač čtení se sám nezapne",
+          r.returncode == 0 and "tools/hlidac_cteni.py" in r.stdout and "hlidac_cteni.py" not in json.dumps(pre),
+          (r.returncode, r.stdout[-600:], r.stderr[-300:], pre))
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 

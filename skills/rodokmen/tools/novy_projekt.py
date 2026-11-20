@@ -345,8 +345,9 @@ def hook_cteni():
     return hook_hlidace(KOD_CTENI)
 
 
-def nastaveni(dst, hlidac):
-    """Doplní do .claude/settings.json zákaz curl/wget; hlidac=True/False zapne/vypne hook, None nechá, jak je."""
+def nastaveni(dst, hlidac, bez_cteni=False):
+    """Doplní do .claude/settings.json zákaz curl/wget; hlidac=True/False zapne/vypne hook, None nechá, jak je.
+    bez_cteni=True: hlídač čtení sám nedoplňovat (tools/hlidac_cteni.py čeká v konfliktu na vyřešení)."""
     path = os.path.join(dst, ".claude", "settings.json")
     if mimo(dst, path) or kolize(dst, path):   # .claude jako odkaz mimo projekt – nic nezapisovat
         print("POZOR: .claude/settings.json nejde bezpečně zapsat – nastavení brzdy jsem nedoplnil.")
@@ -365,14 +366,21 @@ def nastaveni(dst, hlidac):
     site = [h for h in pre if "hlidac_site.py" in json.dumps(h)]
     for skript, matcher, hook in (("hlidac_site.py", MATCHER, hook_hlidace), ("hlidac_cteni.py", MATCHER_CTENI, hook_cteni)):
         nase = [h for h in pre if skript in json.dumps(h)]
-        for h in nase:   # aktualizace projektu: hook obnovit (cesta k Pythonu i tvar se mohly změnit)
-            h["matcher"] = matcher
-            h["hooks"] = [hook()]
-        # hlídač čtení přibyl později: projekt se zapnutým hlídačem sítě ho dostane při aktualizaci
-        if not nase and (hlidac is True or (hlidac is None and site and skript == "hlidac_cteni.py")):
+        for h in nase:   # obnovit/vypnout jen náš hook; cizí hooky ve stejné skupině zůstanou
+            hs = h.get("hooks") if isinstance(h.get("hooks"), list) else []
+            cizi = [x for x in hs if skript not in json.dumps(x)]
+            if hlidac is False:
+                h["hooks"] = cizi
+            else:   # aktualizace projektu: hook obnovit (cesta k Pythonu i tvar se mohly změnit)
+                i = next((i for i, x in enumerate(hs) if skript in json.dumps(x)), len(cizi))
+                h["hooks"] = cizi[:i] + [hook()] + cizi[i:]
+                if not cizi:
+                    h["matcher"] = matcher
+        pre[:] = [h for h in pre if h not in nase or h.get("hooks")]
+        # hlídač čtení přibyl později: projekt se zapnutým hlídačem sítě ho dostane při aktualizaci (ne když
+        # tools/hlidac_cteni.py zůstal v konfliktu – hook by spouštěl nevyřešený vlastní skript projektu)
+        if not nase and (hlidac is True or (hlidac is None and site and skript == "hlidac_cteni.py" and not bez_cteni)):
             pre.append({"matcher": matcher, "hooks": [hook()]})
-        elif hlidac is False:
-            pre[:] = [h for h in pre if h not in nase]
     if not pre:
         del data["hooks"]["PreToolUse"]
     if not data["hooks"]:
@@ -382,6 +390,22 @@ def nastaveni(dst, hlidac):
     hooky = json.dumps(data.get("hooks", {}).get("PreToolUse", []))
     print("Hlídač sítě:", "zapnutý" if "hlidac_site.py" in hooky else "vypnutý (zapnout: --hlidac)")
     print("Hlídač čtení snímků:", "zapnutý" if "hlidac_cteni.py" in hooky else "vypnutý (zapnout: --hlidac)")
+
+
+GITIGNORE_DOPLNIT = [".playwright-mcp/"]   # pravidla přidaná v novějších verzích; starší projekt je dostane při aktualizaci
+
+
+def doplnit_gitignore(dst):
+    """Doplní do existujícího .gitignore chybějící nová pravidla; vlastní pravidla nechá."""
+    p = os.path.join(dst, ".gitignore")
+    if not os.path.isfile(p) or os.path.islink(p) or mimo(dst, p):
+        return
+    data = cti(p)
+    radky = {r.strip() for r in data.decode("utf-8", "replace").splitlines()}
+    chybi = [r for r in GITIGNORE_DOPLNIT if r not in radky]
+    if chybi:
+        nl = b"\r\n" if b"\r\n" in data else b"\n"
+        zapis(p, data + (nl if data and not data.endswith(b"\n") else b"") + nl.join(r.encode() for r in chybi) + nl)
 
 
 def _verze(text):
@@ -447,7 +471,9 @@ def main():
         out = os.path.join(dst, name)
         if not os.path.lexists(out) and not mimo(dst, out) and not kolize(dst, out):   # ne přes odkaz mimo projekt
             copy(os.path.join(SKILL, "template", name), out)
-    nastaveni(dst, True if "--hlidac" in sys.argv else False if "--bez-hlidace" in sys.argv else None)
+    doplnit_gitignore(dst)
+    nastaveni(dst, True if "--hlidac" in sys.argv else False if "--bez-hlidace" in sys.argv else None,
+              bez_cteni=any(f.startswith("tools/hlidac_cteni.py") for f in vysl["konflikt"]))
     if not kolize(dst, os.path.join(dst, ".skill_verze")):   # SKILL.md podle něj nabídne aktualizaci; odkaz nahradí
         zapis(os.path.join(dst, ".skill_verze"), cti(os.path.join(SKILL, "VERZE")))
     print("Projekt připraven:", dst)
