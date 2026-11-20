@@ -13,19 +13,20 @@ Použití (z kořene projektu):
         rok narození ±2, ne sourozenci ani předek a potomek
       - se jménem výchozí osoby: předek, který je v rodokmenu víckrát (vzdálení příbuzní se vzali), a návrh SAME
   python3 -I tools/graf.py predci
-      data/osoby.py: stejná osoba na dvou číslech bez SAME (stejné jméno a rok narození). Hlásí i kontrola.py.
+      data/osoby.py: stejná osoba na dvou číslech bez SAME (stejné jméno a rok narození) a otec nebo matka téže osoby
+      pojmenovaní ve dvou zápisech (pole přepisu [Otec], [Matka]) nebo v zápisu a v osoby.py jinak. Hlásí i kontrola.py.
       Věk rodičů a další časovou návaznost v osoby.py hlídá tools/chronologie.py (taky součást kontrola.py).
 
 Všechno jsou upozornění k ověření v matrice, ne opravy. Nic nestahuje, jen standardní knihovna.
 """
-import os, re, sys, unicodedata
+import json, os, re, sys, unicodedata
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ged_import as gi  # noqa: E402
 import chronologie as ch  # noqa: E402 – pravidla časové návaznosti (jediné místo s věkem rodičů)
-from datumy import MAX, MIN, ged as ged_datum  # noqa: E402 – čtení dat (společné pro všechny kontroly)
-from jmena import krestni_klic, prijmeni_klic  # noqa: E402 – volné porovnání jmen (i rodiny.py)
+from datumy import MAX, MIN, cast as datum_zapisu, ged as ged_datum, prekryv  # noqa: E402 – čtení dat (společné pro všechny kontroly)
+from jmena import _KR, krestni_klic, prijmeni_klic  # noqa: E402 – volné porovnání jmen (i rodiny.py)
 
 for _s in (sys.stdout, sys.stderr):   # UTF-8 výstup i na Windows bez -X utf8
     if hasattr(_s, "reconfigure"):
@@ -252,6 +253,68 @@ def predci(P, SAME):
     return out
 
 
+# Rodič téže osoby v různých zápisech (upstream #161, #205): pomocník přečetl matku nevěsty jako Antonii, křest
+# dítěte ji jmenuje Kateřinou. Pole přepisu „[Otec] …“, „[Matka nevěsty] …“, „[Vater des Bräutigams] …“.
+_POLE_RODICE = re.compile(r"^\s*\[\s*(otec|matka|vater|mutter|pater|mater)\b([^\]]*)\]\s*(.*)$", re.I | re.M)
+_ZENICH = re.compile(r"ženich|bräutigam|sponsi|sponsus", re.I)
+_NEVESTA = re.compile(r"nevěst|braut|sponsae|sponsa\b", re.I)
+_KONEC_JMENA = re.compile(r"[,;(]|\s(?:dcera|dc\.|syn|z|ze|ve?|von|aus|de|filia|filius|des|der|roz\.|rozená|geb\.)\s", re.I)
+
+
+def _krestni(text):
+    """Známá křestní jména na začátku údaje („Barbora, dcera Josefa…“ → {barbora}); jméno otce matky ani příjmení ne."""
+    cast = _KONEC_JMENA.split(" " + (text or "") + " ", maxsplit=1)[0]
+    slova = re.sub(r"[^a-z ]", " ", fold(cast)).split()
+    return {_KR[s] for s in slova if s in _KR}
+
+
+def rodice_zapisu(P, zaz, prep, SAME=None):
+    """Upozornění pro kontrola.py: otec nebo matka téže osoby se ve dvou zápisech (nebo v zápisu a v osoby.py)
+    jmenuje jinak. Čte jen pole přepisu [Otec]/[Matka] (i [Otec ženicha], [Mutter der Braut]…): u křtu (N) patří
+    dítěti, u úmrtí (Z) zemřelému – podle data zápisu a narození / úmrtí osoby; u sňatku (O) ženichovi nebo nevěstě."""
+    SAME = SAME or {}
+    zaz_k = {z.get("klic"): z for z in zaz if isinstance(z, dict)}
+    out = []
+    for k, p in sorted((k, p) for k, p in P.items() if isinstance(k, int) and k not in SAME):
+        u = ch.udalosti(P, k)
+        muz = (P[1].get("sex", "M") == "M") if k == 1 else k % 2 == 0
+        zdroje = {"otec": [], "matka": []}   # role → [(odkud, jméno, klíče křestních jmen)]
+        for r in p.get("r") or []:
+            z, t = zaz_k.get(r) or {}, prep.get(r) or {}
+            d = datum_zapisu(str(z.get("datum") or ""))
+            druh = str(z.get("druh", "")).upper()[:1]
+            for m in _POLE_RODICE.finditer(str(t.get("orig", "")) if isinstance(t, dict) else ""):
+                role = "otec" if m.group(1).lower() in ("otec", "vater", "pater") else "matka"
+                kval = m.group(2)
+                if druh == "O":
+                    if not (_ZENICH.search(kval) and muz or _NEVESTA.search(kval) and not muz):
+                        continue
+                elif druh in ("N", "Z") and not kval.strip():
+                    ud = u["narozeni"] if druh == "N" else u["umrti"]
+                    if not (d and ud and prekryv(d, ud, dni=366)):
+                        continue
+                else:
+                    continue
+                jm = _krestni(m.group(3))
+                if jm:
+                    zdroje[role].append((r, m.group(3).split(",")[0].strip()[:40], jm))
+        for role, pozice in (("otec", 2 * k), ("matka", 2 * k + 1)):
+            if not zdroje[role]:
+                continue
+            rodic = P.get(SAME.get(pozice, pozice))
+            if rodic and not _neznamy(rodic):
+                jm = _krestni(" ".join(str(rodic.get("n", "")).split()[:-1]) or rodic.get("n", ""))
+                if jm:
+                    zdroje[role].append((f"osoby.py {pozice}", rodic.get("n", ""), jm))
+            for i, a in enumerate(zdroje[role]):
+                b = next((b for b in zdroje[role][i + 1:] if not a[2] & b[2]), None)
+                if b:
+                    out.append(f"osoba {k} ({p.get('n')}): {role} se jmenuje jinak v {a[0]} („{a[1]}“) a v {b[0]} "
+                               f"(„{b[1]}“) – ověř obě čtení na výřezu (nebo jde o jinou osobu)")
+                    break
+    return out
+
+
 # ---- výpis ------------------------------------------------------------------------------------------------------
 
 def _popis(t, i):
@@ -272,7 +335,11 @@ def main(argv):
         ns = {}
         exec(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "osoby.py"),
                   encoding="utf-8-sig").read(), ns)
-        u = predci(ns.get("P", {}), ns.get("SAME", {}))
+        data = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+        jl = lambda f, d: (json.load(open(os.path.join(data, f), encoding="utf-8-sig"))   # noqa: E731
+                           if os.path.exists(os.path.join(data, f)) else d)
+        u = predci(ns.get("P", {}), ns.get("SAME", {})) + rodice_zapisu(ns.get("P", {}), jl("zaznamy.json", []),
+                                                                         jl("prepisy.json", {}), ns.get("SAME", {}))
         print("\n".join(f"upozornění: {x}" for x in u) or "Vše v pořádku.")
         return 0
     t = nacti_strom(argv[1])

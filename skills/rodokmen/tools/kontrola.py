@@ -190,6 +190,8 @@ def main():
     try:   # stejná osoba na dvou číslech bez SAME (tools/graf.py); věk rodičů hlídá jen chronologie výš
         import graf
         warn += graf.predci(P, SAME)
+        if hasattr(graf, "rodice_zapisu"):   # rodič téže osoby jmenovaný ve dvou zápisech jinak
+            warn += graf.rodice_zapisu(P, zaz, prep, SAME)
     except ImportError:
         pass
 

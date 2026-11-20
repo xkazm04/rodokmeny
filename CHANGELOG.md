@@ -27,6 +27,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   `zapis.py prejmenuj <starý> <nový>` změní klíč zápisu ve všech datech, textech i výřezech (upstream #54, #89, #127).
 - Stránka předka ukazuje „Další děti“ – sourozence dítěte v linii ze `SIDE` (text „Bratr…“/„Sestra…“); nadpis
   „Sourozenci a další příbuzní“ (upstream #69, #89).
+- `kontrola.py` upozorní, když se otec nebo matka téže osoby jmenuje ve dvou citovaných zápisech (nebo v zápisu
+  a v `osoby.py`) jinak – čte pole přepisu `[Otec]`, `[Matka]`, `[Otec ženicha]`, `[Mutter der Braut]`…, latinské
+  a německé tvary jmen bere jako stejné (Joannes = Jan). Pojistka proti chybnému čtení pomocníka (upstream #161, #205).
 - Zápis nálezu jedním příkazem `tools/nalez.py nahled|zapis vstup.json`: snímek (ARON) nebo místní obrázek, výřez,
   rámeček, zápis, přepis, odkazy u osob a řádek deníku – nic se nevynechá a vše se ověří dřív, než se cokoli zapíše
   (upstream #187).

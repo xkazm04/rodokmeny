@@ -114,7 +114,8 @@ Základní smyčka pro každou osobu:
    ohlídá sloupce, svislé čáry a prázdné řádky), **nikdy `printf >>` ani `echo >>`** – rozbije tabulku a web ji neukáže.
 7. Spusť `python3 -I tools/kontrola.py` a oprav chyby.
    Hlásí i časovou návaznost (`chronologie.py`: věk rodičů, dítě po smrti rodiče, sňatek po úmrtí…) a stejnou osobu
-   na dvou číslech bez `SAME` (`graf.py predci`). Všechny kontroly čtou data stejně (`datumy.py`: „asi 1760–64“,
+   na dvou číslech bez `SAME` a rodiče téže osoby jmenované ve dvou zápisech jinak (`graf.py predci`; čte pole
+   přepisu `[Otec]`, `[Matka]`, `[Matka nevěsty]`…). Všechny kontroly čtou data stejně (`datumy.py`: „asi 1760–64“,
    „před 1740“, „pokřtěn 4. 12. 1786“). Ověřený neobvyklý údaj odškrtni polem `overeno` (`reference/data.md`).
    Obsahové chyby hlídá `kontrola_dat.py`: roky v `y` × fakta, roky z cizího stromu u `doc`, kandidátní zápis citovaný
    jako doklad, zastaralé věty („křest se nečetl“), ženich „ledig“ v přepisu × „vdovec“ ve faktech.

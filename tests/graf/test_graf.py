@@ -258,8 +258,33 @@ def test_kontrola():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def test_rodice_zapisu():
+    """Rodič téže osoby jmenovaný ve dvou zápisech jinak (upstream #161, #205)."""
+    P = {1: dict(n="Petr Novák", y="1890–1950", f=["* 3. 3. 1890 Holice"], r=["krest_petr", "snatek_petr"]),
+         2: dict(n="Jan Novák", y="", f=[], r=[]), 3: dict(n="Kateřina Malá", y="", f=[], r=[]),
+         6: dict(n="Josef Malý", y="", f=[], r=[]), 7: dict(n="Barbora Dvořáková", y="", f=[], r=[])}
+    zaz = [dict(klic="krest_petr", druh="N", datum="3. 3. 1890"), dict(klic="snatek_petr", druh="O", datum="1915"),
+           dict(klic="krest_kat", druh="N", datum="1862")]
+    prep = {"krest_petr": {"orig": "[Datum] 3. 3. 1890\n[Otec] Joannes Novák, sedlák\n[Matka] Antonie, dcera Josefa Malého"},
+            "snatek_petr": {"orig": "[Ženich] Petr Novák\n[Otec ženicha] Jan Novák\n[Matka ženicha] Kateřina roz. Malá\n"
+                                    "[Matka nevěsty] Marie"}}
+    w = graf.rodice_zapisu(P, zaz, prep)
+    pripad("rodice_zapisu: matka Antonie × Kateřina ohlášena",
+           any("osoba 1 (Petr Novák): matka" in x and "krest_petr" in x and "Antonie" in x for x in w), "\n".join(w))
+    pripad("rodice_zapisu: otec Joannes = Jan bez upozornění", not any(": otec" in x for x in w), "\n".join(w))
+    pripad("rodice_zapisu: matka nevěsty se k ženichovi nepočítá", not any("Marie" in x for x in w), "\n".join(w))
+    P[3] = dict(n="Antonie Malá", y="", f=[], r=[])
+    prep["snatek_petr"]["orig"] = "[Otec ženicha] Jan Novák\n[Matka ženicha] Antonia"
+    pripad("rodice_zapisu: shoda (Antonia = Antonie) bez upozornění", not graf.rodice_zapisu(P, zaz, prep),
+           "\n".join(graf.rodice_zapisu(P, zaz, prep)))
+    P[1]["y"], P[1]["f"] = "1880–1950", ["* 1880"]
+    prep["krest_petr"]["orig"] = "[Matka] Ludmila"
+    pripad("rodice_zapisu: křest z jiného roku není křest osoby", not graf.rodice_zapisu(P, zaz, prep),
+           "\n".join(graf.rodice_zapisu(P, zaz, prep)))
+
+
 if __name__ == "__main__":
-    for t in (test_strom, test_okrajove, test_cyklus, test_predci, test_kontrola):
+    for t in (test_strom, test_okrajove, test_cyklus, test_predci, test_kontrola, test_rodice_zapisu):
         try:
             t()
         except Exception as e:  # noqa: BLE001 – spadlý případ se vypíše a test neprojde
