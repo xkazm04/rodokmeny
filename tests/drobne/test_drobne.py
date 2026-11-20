@@ -36,7 +36,8 @@ shutil.copy(os.path.join(TOOLS, "fan_chart.py"), os.path.join(vejir, "tools"))
 for modul, slozka in (("export_web", TOOLS), ("fan_chart", os.path.join(vejir, "tools"))):
     years = nacti(modul, slozka).years
     for y, cekam in (("1889 – před 1936", "1889–před 1936"), ("1849 – 1901 (?)", "1849–1901?"),
-                     ("1820 – po 1852", "1820–po 1852"), ("asi 1795 – asi 1850", "≈1795–≈1850"), ("1820 – 1890", "1820–1890")):
+                     ("1820 – po 1852", "1820–po 1852"), ("asi 1795 – asi 1850", "≈1795–≈1850"), ("1820 – 1890", "1820–1890"),
+                     ("1849 (?)", "1849?"), ("1849", "1849")):
         ok(f"{modul}.years({y!r})", years(y) == cekam, f"vyšlo {years(y)!r}, čekal jsem {cekam!r}")
 
 # 2) brzda: dotaz čeká na slot, mezitím jiné vlákno web zastaví → dotaz neodejde
