@@ -275,6 +275,11 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   připojí příkazem `/chrome`), tam ale jen snímky obrazovky přiblíženého zápisu. Bez prohlížeče ať knihu najde a snímky
   uloží uživatel.
   **Vestavěný prohlížeč aplikace Claude** (desktop, Code) archiv odmítne hned („Anomaly detected“) – nepoužívej ho.
+  Totéž bezhlavý (headless) prohlížeč: Playwright spouštěj **v okně skutečného Chrome s trvalým profilem** (doplněk
+  Playwright to tak dělá sám; nepřidávej `--headless` ani `--isolated`, případně `--browser chrome`). Pak ochrana místo
+  „Anomaly detected“ ukáže CAPTCHU, uživatel ji vyřeší a cookie zůstane v profilu. Přijde-li „Error 15 – This request
+  was blocked by our security service“, skonči (`python3 -I tools/slusne.py zastav archives.cz "Error 15"`) – blokace
+  bývá na desítky minut.
   Úvodní ověření projde samo, ale jen v kartě v popředí. Okno nastav aspoň na 1400×900, v užším se nezobrazí
   filtry ani snímek. **CAPTCHA přijde typicky už u prvního hledání**, pak zhruba po hodině a v nové relaci
   prohlížeče vždy znovu: **vyřeší ji uživatel** v okně prohlížeče, ty nikdy.
@@ -407,12 +412,26 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
     return location.href;
   }
   ```
-- Nezobrazuj celou stránku v plném rozlišení (velké okno) – stovky dlaždic naráz a MZA vrací 503. Tempo 5–10 s mezi
-  stránkami (SKILL.md, Šetrně k archivům), jen stránky, které opravdu čteš. Když ověření nepustí nebo MZA hlásí chybu, skonči a řekni to uživateli.
-- **Blokace snímků (403):** MZA po zhruba 45–60 snímcích za den (počítá se každé přiblížení – stahuje nové dlaždice)
-  přestane vydávat obraz: stránka i ověření projdou, ale snímek zůstane bílý a dlaždice vrací 403. **Není to pomalé
-  načítání – okamžitě přestaň**, nezkoušej znovu a řekni to uživateli. Blokace trvala i druhý den; další den zkus nejvýš
-  jeden snímek.
+- Nezobrazuj celou stránku v plném rozlišení – stovky dlaždic naráz a MZA vrací 503. Tempo 5–10 s mezi stránkami
+  i přiblíženími (SKILL.md, Šetrně k archivům), jen stránky, které opravdu čteš. Když ověření nepustí nebo MZA hlásí
+  chybu, skonči a řekni to uživateli.
+- **Větší prohlížeč (dvoustrana ze 2 záběrů místo 4):** stránka vrací prohlížeči při `resize` malou výšku. Pomůže
+  nastavit rozměr kontejneru `viewer.container.parentElement.style.setProperty('height', '<výška okna – lišty>px',
+  'important')` (totéž šířka), skrýt patičku (`footer` → `display:none`) a zavolat jen `viewer.forceResize()` – žádnou
+  událost `resize` a žádné `position:fixed` (rozbije vykreslování). Okno nech kolem 1400–1900 px na šířku, ne větší:
+  větší pohled = víc dlaždic naráz. `fitBounds` drží poměr stran kontejneru – obdélník volit v poměru
+  `viewer.container.clientWidth / clientHeight` a výsledek ověřit `viewer.viewport.getBounds()`. Čti po pruzích
+  (celá šířka dvoustrany × ~0,28 výšky stačí na jména) – méně přiblížení než po jednotlivých zápisech; drobné písmo
+  nasnímej po záběrech a slep `python3 -I tools/sloz_zaber.py pracovni/zapis.jpg --sloupcu 2 z1.png z2.png z3.png z4.png`.
+- **Kdy přestat – podle příznaku, ne podle počtu:** pevný denní počet snímků MZA neuvádí (uživatelé hlásí blok po ~45
+  i bez bloku po 140 přiblíženích za večer). Pokračuj šetrně (tempo výše, jen zápisy, které čteš; o objemu rozhoduje
+  uživatel) a **okamžitě skonči při skutečném příznaku**: bílý snímek, dlaždice nebo `.dzi` s HTTP **403**, **429** nebo
+  **503**. Stránka i ověření přitom projdou – **není to pomalé načítání**, nezkoušej znovu, zapiš
+  `python3 -I tools/slusne.py zastav mza.cz "HTTP 403 v prohlížeči"` a řekni to uživateli. Blokace trvala i druhý den;
+  další den zkus nejvýš jeden snímek. Když se snímek nenačte (`viewer.world.getItemAt(0)` je `undefined`), nejdřív
+  zkontroluj stav požadavku `.dzi` v síťových požadavcích; `tile-load-failed: Image load aborted` v konzoli jsou jen
+  zrušené dlaždice při změně stránky, ne odmítnutí. `viewer.tileSources` nevypisuj (adresy s tokenem) – stačí
+  `viewer.currentPage()` a rozměry snímku.
 - Dlaždice vracející **410** není blokace – vypršel token v adrese; stačí znovu otevřít stejnou adresu snímku (`?image=…jp2`).
 - Trvalý odkaz = adresa v prohlížeči `…/matrika/detail/<id>?image=<soubor>.jp2` (soubor končí číslem snímku × 10:
   snímek 16 → `…-00160.jp2`). Svazek do `svazky.json` přes `zapis.py` (Ostatní portály, krok 4).

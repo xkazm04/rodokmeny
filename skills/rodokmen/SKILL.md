@@ -308,6 +308,7 @@ a `zdroje/` (výřezy pro web / plné rozlišení), `dokumenty/` (originály od 
 | `snimky_import.py` | převezme snímky uložené rozšířením Snímkovač do mezipaměti (`reference/snimkovac.md`) |
 | `ged_import.py`, `ftb_export.py` | rodinný strom (GEDCOM, záloha MyHeritage) – `data.md` |
 | `vyrez.py`, `ramecek.py`, `overit.py` | výřez zápisu (zlomky stránky), rámeček (zlomky výřezu, `--pozn` poznámka), ověření čtení na dvou polovinách |
+| `sloz_zaber.py` | slepí přiblížené snímky obrazovky jednoho zápisu do ostrého výřezu (archivy jen v prohlížeči) |
 | `zapis.py` | zápis do `data/*.json` a odkazů `r` v `osoby.py` beze změny formátu; `--smazat <klíč>` zápis omylem, `prejmenuj <starý> <nový>` klíč všude |
 | `mista.py` | místa pro mapu (OpenStreetMap) |
 | `napady.py` | náměty na zajímavosti z dat |
