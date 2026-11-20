@@ -106,6 +106,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Samostatné svazky rejstříků hledat dřív, než se začne číst kniha bez rejstříku (i v zadání pomocníka); `matriky.md`
   popisuje jejich stavbu: uvnitř písmene chronologicky, číslo = strana, posun snímek – strana v každé knize jiný,
   „duplicitní“ = opis (upstream #214).
+- Kroniky obcí a škol jako velký pramen: opisy gruntovních knih s držiteli domů, svatební smlouvy, jména chalup,
+  padlí v 1. světové válce; kde je hledat (SOA Třeboň, ARON, Porta fontium, weby obcí), jak číst PDF bez textu
+  a jak zapsat zápis z jiného pramene (`druh: "J"`, příklad v `data.md`) (upstream #127, #192, #217).
 
 ## 0.10.2 – 16. 11. 2026
 

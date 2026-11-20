@@ -57,6 +57,10 @@ P = {
 ```
 - `klic`: malá písmena bez diakritiky, `obec_druh_kdo_rok` (druh: krest, snatek, umrti, index, scitani…). Je to i název obrázku.
 - `druh`: N, O, Z, I (index/rejstřík), S (sčítání), J (jiný pramen).
+- Jiný pramen (kronika, mapa, skica, katastr, noviny): `druh: "J"`, svazek s vlastním klíčem (`kronika_holice`,
+  zapiš ho přes `zapis.py svazky`), `snimek` = strana PDF nebo pořadí snímku obrazovky, `odkaz` = adresa dokumentu
+  (u PDF `…pdf#page=N`). Obrázek pro `vyrez.py` může být stránka z PDF nebo snímek obrazovky; víc záběrů slep
+  `magick a.png b.png +append x.jpg`.
 - `datum` jako v češtině („14. 2. 1890“, „3/1867“, „1797“) – web podle něj řadí.
 
 ## `svazky.json`

@@ -11,7 +11,8 @@
 Další prameny: sčítání lidu (1857–1921; domácnosti s daty narození; operáty 1930 jsou jen v Národním archivu,
 běžně nepřístupné a online nejsou), soupis poddaných 1651 (celé rodiny s věkem),
 berní rula 1654 (jen hospodáři), gruntovní/pozemkové knihy (kdo vlastnil který dům – propojí generace přes dům),
-vojenské záznamy, domovské listy, parte. Viz `portaly.md` a `metodika.md` (prameny mimo ČR).
+vojenské záznamy, domovské listy, parte, kroniky obcí a škol (opisy gruntovních knih s držiteli domů, `portaly.md` →
+Kroniky). Viz `portaly.md` a `metodika.md` (prameny mimo ČR).
 
 ## Lhůty (zákon 301/2000 Sb.)
 Do archivu (a tedy online) jde svazek, až od jeho **posledního** zápisu uplyne: narození **100 let**, sňatky **75**, úmrtí **75**

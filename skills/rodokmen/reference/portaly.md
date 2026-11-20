@@ -522,6 +522,23 @@ A když osoba „chybí“ v očekávaných matrikách (stěhovala se se službo
 - Výstřižky jsou skvělé na web: ulož do `dokumenty/noviny/`, přes `vyrez.py` a do `dokumenty.json`.
 - Pořadí: nejdřív matriky; noviny, když chybí stopa kvůli stěhování, nebo když jde o úředníka/vojáka a chceme příběh.
 
+## Kroniky obcí a škol
+**Velký pramen, často rozhodující** – u každé obce předků zkontroluj, jestli má kroniku, hlavně pamětní knihy z let
+1920–1935 psané učiteli. Kapitola „z minulosti obce“ bývá opisem gruntovních knih 16.–18. století s pořadím držitelů
+každého čísla popisného, sňatky „podle svatebních smluv“, přiženěnými otčímy, výměnky a jmény chalup; dál opisy soupisů
+se jmény hospodářů (poddaní, odúmrti, půda, dobytek s čísly domů, seznam rychtářů) a padlí v 1. světové válce. Rozluští
+nejistá příjmení z matrik a ukáže, že se příjmení stalo jménem domu. Projdi celou, nejen kapitoly o rodu.
+- **Kde:** SOA Třeboň (stránka místa → Kroniky; datace „(1728) 1924–1937“ = kronikář vypsal starší dějiny od 1728;
+  záložka „Rejstříky“ u kroniky má jen věcná a místní hesla), ARON (`aron_search.py "Obec" "název fondu"`), Porta
+  fontium (`/contents/chronicle/soap-kt/<obec-slug>`; školní kroniky mají nekrology a služební data učitelů), weby obcí
+  (systém vismo, „Digitalizace kronik“, PDF ke stažení přes `slusne.py curl -L`).
+- V kronikách s dějinami domů stojí nadpis „Číslo N.“ **před** textem o domě N.
+- **PDF bez textu** (OCR rukopisu nefunguje): stránky vytáhni `pdfimages -j kronika.pdf pracovni/kr` (nebo
+  `pdftoppm -r 90`) a čti po dvou stranách (`montage`, `magick … +append`). Vložené lístky posouvají stránky – sleduj
+  psané číslo strany, ne pořadí v PDF.
+- Zápis z kroniky: `druh: "J"`, vlastní svazek (např. `kronika_<obec>`), `snimek` = strana PDF (`reference/data.md`).
+  Výpis je opis – držitele a data ověř v gruntovní knize nebo matrice, kde to jde.
+
 ## Ostatní portály – obecný postup
 Nástroje pro ně hotové nejsou. Postupuj takto a výsledek zapiš do `STAV.md`, ať to příště víš:
 1. Otevři portál v prohlížeči (Claude in Chrome / Playwright, pokud jsou k dispozici; jinak požádej uživatele).
