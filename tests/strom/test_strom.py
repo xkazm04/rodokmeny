@@ -34,12 +34,12 @@ SITE = dict(root="petr", aliases={}, lines={}, records=[], docs=[], people={
 })
 
 
-def strom(side):
+def strom(side, bom=False):
     """Builds web/src/data/site.json + data/osoby.py, runs strom.py, returns the nodes of strom.json."""
     tmp = tempfile.mkdtemp(prefix="strom_")
     try:
         write(os.path.join(tmp, "web", "src", "data", "site.json"), json.dumps(SITE, ensure_ascii=False))
-        write(os.path.join(tmp, "data", "osoby.py"), f"P = {{}}\nSIDE = {side!r}\n")
+        write(os.path.join(tmp, "data", "osoby.py"), ("\ufeff" if bom else "") + f"P = {{}}\nSIDE = {side!r}\n")
         os.makedirs(os.path.join(tmp, "web", "scripts"))
         shutil.copy(STROM, os.path.join(tmp, "web", "scripts", "strom.py"))
         r = subprocess.run(PY + [os.path.join(tmp, "web", "scripts", "strom.py")], capture_output=True, text=True,
@@ -110,6 +110,54 @@ if "_error" not in n:
     case("děti seřazené podle roku", n["josef"]["children"] == ["s-pavel", "petr", "s-jana"], n["josef"]["children"])
 n0 = strom([])
 case("prázdné SIDE: jen předci", "_error" not in n0 and sorted(n0) == ["eva", "josef", "petr"], n0)
+n0 = strom([dict(k=1, id="jana", n="Jana Nováková (* 1983)", t="Sestra Petra.")], bom=True)
+case("osoby.py s BOM (Windows)", "_error" not in n0 and "s-jana" in n0, n0)
+
+n = strom([
+    dict(k=1, id="jana", n="Jana Nováková (* 1983)", t="Sestra Petra."),
+    dict(k=1, id="tomas", v="manz", koho="jana", n="Tomáš Malý (* 1981)", t="První manžel Jany."),
+    dict(k=1, id="igor", v="manz", koho="jana", n="Igor Hrubý (* 1979)", t="Druhý manžel Jany."),
+    dict(k=1, id="ema", v="dite", koho="jana", n="Ema Malá (* 2010)", t="Dcera Jany."),
+    dict(k=1, id="ota", koho="ema", n="Ota Malý (* 2012)", t="Bratr Emy."),
+    dict(k=1, id="ivo", koho="vera", n="Ivo Novák (* 1992)", t="Bratr Věry (uvedený před ní)."),
+    dict(k=1, id="vera", koho="jana", rodice="otec", n="Věra Nováková (* 1990)", t="Nevlastní sestra Jany."),
+])
+if "_error" not in n:
+    case("v='dite' u osoby s víc manžely: jen ona (druhý rodič nejistý)", n["s-ema"]["parents"] == ["s-jana"],
+         n["s-ema"]["parents"])
+    case("sourozenec bočního příbuzného (koho) dostane jeho rodiče", n["s-ota"]["parents"] == ["s-jana"],
+         n["s-ota"]["parents"])
+    case("nevlastní sourozenec bočního příbuzného: jen otec", n["s-vera"]["parents"] == ["josef"], n["s-vera"]["parents"])
+    case("sourozenec bočního příbuzného nezávisle na pořadí v SIDE", n["s-ivo"]["parents"] == ["josef"],
+         n["s-ivo"]["parents"])
+else:
+    case("strom.py doběhne (víc manželů, sourozenci přes koho)", False, n["_error"])
+n = strom([dict(k=1, id="jana", n="Jana Nováková (* 1983)", t="Sestra Petra.", r=["smazany_zapis"])])
+case("klíč zápisu bez stránky se do stromu nedostane", "_error" not in n and n["s-jana"]["records"] == [], n)
+
+# --- export_web.py writes strom.json too (deploy without Node, e.g. Docker); koho on the person page -------------
+tmp = tempfile.mkdtemp(prefix="strom_export_")
+try:
+    proj = os.path.join(tmp, "p")
+    r = subprocess.run(PY + [os.path.join(SKILL, "tools", "novy_projekt.py"), proj, "--ukazka"], capture_output=True,
+                       text=True, encoding="utf-8")
+    osoby = os.path.join(proj, "data", "osoby.py")
+    text = open(osoby, encoding="utf-8").read().replace("SIDE = [\n", "SIDE = [\n dict(k=8, id='frantisek_zeman', "
+                                                          "koho='karel_zeman', n='František Zeman (1890–1950)', "
+                                                          "t='Bratr Karla.'),\n", 1)
+    write(osoby, "\ufeff" + text)   # BOM as saved by Windows Notepad
+    r = subprocess.run(PY + [os.path.join(proj, "tools", "export_web.py")], capture_output=True, text=True,
+                       encoding="utf-8", cwd=proj)
+    vystup = os.path.join(proj, "web", "src", "generated", "strom.json")
+    case("export_web.py zapíše i strom.json (osoby.py s BOM)", r.returncode == 0 and os.path.exists(vystup)
+         and "s-frantisek_zeman" in json.load(open(vystup, encoding="utf-8"))["nodes"], r.stdout + r.stderr)
+    site = json.load(open(os.path.join(proj, "web", "src", "data", "site.json"), encoding="utf-8"))
+    fz = [s for p in site["people"].values() for s in p["side"] if s["name"].startswith("František Zeman")]
+    marie = [s for p in site["people"].values() for s in p["side"] if s["name"].startswith("Marie Nováková")]
+    case("sourozenec přes koho není „dalším dítětem“ předka k", bool(fz) and fz[0]["rel"] != "sour" and bool(marie)
+         and marie[0]["rel"] == "sour", (fz, marie))
+finally:
+    shutil.rmtree(tmp, ignore_errors=True)
 
 # --- kontrola.py ------------------------------------------------------------------------------------------------
 out = kontrola([dict(k=1, id="a", n="A", t=""), dict(k=1, id="a", n="B", t="")])

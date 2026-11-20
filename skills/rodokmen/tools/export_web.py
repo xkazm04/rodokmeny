@@ -8,7 +8,7 @@ web/nginx.conf a web/netlify/edge-functions/brana.js.
 
 Spouští se z web/ příkazem `npm run data` (nebo přímo `python3 -I tools/export_web.py`, na Windows `python -I -X utf8 …`).
 """
-import hashlib, html, json, os, re, shutil, subprocess, sys, unicodedata
+import hashlib, html, importlib.util, json, os, re, shutil, subprocess, sys, unicodedata
 if sys.argv[1:2] in (["-h"], ["--help"]):   # nápověda místo pádu
     sys.exit(__doc__.strip())
 for _s in (sys.stdout, sys.stderr):   # UTF-8 výstup i na Windows bez -X utf8 (cp1250 neumí třeba „→“)
@@ -356,8 +356,10 @@ def main():
             child=slugs.get(k // 2) if k > 1 else None, spouse=slugs.get(k ^ 1) if k > 1 else None,
             family=None, ownFamily=None, path=path,
             side=[dict(name=s["n"], text=s.get("t", ""), records=[r for r in s.get("r", []) if r in recs],
-                       # vztah ze stránky Strom (v, rodice): „Další děti“ na stránce rodiče berou jen vlastní sourozence
-                       rel=s.get("v") or ("sour" if s.get("id") else ""), half=bool(s.get("rodice")))
+                       # vztah ze stránky Strom (v, rodice): „Další děti“ na stránce rodiče berou jen vlastní sourozence;
+                       # s koho se vztah týká jiného bočního příbuzného, ne předka k („sour:marie“)
+                       rel=(s.get("v") or ("sour" if s.get("id") else "")) + (f":{s['koho']}" if s.get("koho") else ""),
+                       half=bool(s.get("rodice")))
                   for s in SIDE if s["k"] == k],
             docs=[dict(img=d["img"], caption=d.get("popis", "")) for d in docs_cfg if k in d.get("osoby", [])],
             children=[slugs[c] for c in [k // 2] + [a // 2 for a in aliases_of.get(k, [])] if k > 1 and c in slugs],
@@ -470,6 +472,15 @@ def main():
                       for d in docs_cfg if os.path.exists(os.path.join(VYREZY, d["img"] + ".jpg"))])
 
     write(os.path.join(WEB, "src", "data", "site.json"), json.dumps(site, ensure_ascii=False, indent=1))
+    strom = os.path.join(WEB, "scripts", "strom.py")   # data stránky Strom – i bez Node (Docker: rozložení až při buildu)
+    if os.path.exists(strom):
+        spec = importlib.util.spec_from_file_location("strom", strom)
+        modul = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modul)
+        if hasattr(modul, "build"):
+            modul.build(json.loads(json.dumps(site, ensure_ascii=False)), SIDE)
+        else:   # starší vlastní strom.py: čte site.json a osoby.py sám
+            modul.main()
     gen_dir = os.path.join(WEB, "src", "generated")
     for src, dst in (("archivni_dotazy.md", "dotazy.md"), ("research_log.md", "denik.md"), ("zajimavosti.md", "zajimavosti.md")):
         path = os.path.join(DATA, src)

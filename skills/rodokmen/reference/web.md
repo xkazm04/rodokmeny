@@ -155,8 +155,8 @@ a po úpravě zkontroluj web na mobilu i počítači.
 
 ## Strom (`/strom/`) – celá rodina jako graf
 Kartičky předků i bočních příbuzných s posouváním a přibližováním, klepnutím na kartičku se vlevo otevře panel
-(fakta, životopis, nejbližší rodina, zápisy, fotky). Data: `web/scripts/strom.py` (z `site.json` a `SIDE` →
-`src/generated/strom.json`), rozložení `web/scripts/strom-layout.mjs` (Graphviz při `npm run data`), stránka
+(fakta, životopis, nejbližší rodina, zápisy, fotky). Data: `web/scripts/strom.py` (spouští ho `export_web.py`; ze `site.json` a `SIDE` →
+`src/generated/strom.json`), rozložení `web/scripts/strom-layout.mjs` (Graphviz při `npm run data` i `npm run build`), stránka
 `src/pages/strom.astro`. Tři pohledy (prohlížeč si pamatuje poslední):
 - **Předci** – přímá linie, předpočítaná;
 - **Kolem osoby** – vybraná osoba uprostřed, předci nahoru, sourozenci vlevo, partneři vpravo, potomci dolů; počet

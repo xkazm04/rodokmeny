@@ -9,7 +9,7 @@
   "scripts": {
     "data": "node scripts/data.mjs",
     "dev": "astro dev",
-    "build": "astro build && pagefind --site dist",
+    "build": "node scripts/strom-layout.mjs && astro build && pagefind --site dist",
     "preview": "astro preview",
     "nahled": "npm run data && npm run build && astro preview --ignore-lock",
     "nasadit": "npm run data -- --nasazeni && npm run build && npx -y netlify-cli@latest deploy --prod --dir=dist && node scripts/overit.mjs",
