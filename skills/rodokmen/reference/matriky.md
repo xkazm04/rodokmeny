@@ -217,6 +217,12 @@ vsi a sňatek byl v oddílu městyse; ves měla oddíl až na snímcích 380–4
 - Dítě zapsané pod jiným křestním jménem, než jakým ho volala rodina (Františka → v rodině Anna).
 - Předek v dospělosti „Jan“ byl pokřtěn jako Václav: starší Václav zemřel a mladší dítě dostalo jeho jméno, v dospělosti
   ho volali jinak. V rejstříku proto hledej **všechny děti rodičů** (podle příjmení a domu), ne jen hledané jméno.
+- **Jméno po zemřelém sourozenci (nekronymum):** najdeš-li křest se správným jménem a rodiči, projdi i další roky a knihu
+  zemřelých – předkem je ten, kdo přežil. Věk ve sňatku či úmrtí k rozhodnutí nestačí (bývá chybný o 4–10 let).
+- **Oddělené řady chlapců a dívek:** kniha může mít křty chlapců a dívek v různých částech (dívky sn. 126–166, chlapci
+  sn. 22–84). Přečtení jedné řady vypadá jako úplné hledání (skutečná chyba: „nenalezeno“ a dokonce „rok v knize
+  chybí“). Před takovým závěrem ověř pohlaví dětí v právě čteném oddíle – jsou-li všechny stejného, hledej druhou řadu
+  a mapu svazku hned zapiš.
 - Rejstřík ukazuje „špatné“ křestní jméno ve správné rodině nebo domě? Otevři zápis – písař mohl jméno v matrice
   opravit (přeškrtnuté Jan → František) a do rejstříku se opsalo to původní.
 - Sňatek pár měsíců před porodem nebo po něm – není chyba, jen „svatba na poslední chvíli“; zajímavost pro web.

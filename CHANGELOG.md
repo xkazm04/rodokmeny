@@ -90,6 +90,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - FamilySearch má i moravské pozemkové knihy (C 17), urbariální fase (D 5), josefský (D 6) a stabilní katastr (D 10)
   a sčítání 1857–1921; návod popisuje pasti katalogu (kniha jen pod jednou obcí nebo sídlem panství, hledání podle kódu
   svazku, snímek 1 s metadaty, zamčené svazky, knihy listin panství) (upstream #133).
+- Pasti při čtení: jméno po zemřelém sourozenci (nekronymum) – před ztotožněním křtu s předkem projít další roky
+  a knihu zemřelých; knihy s oddělenými řadami křtů chlapců a dívek – před „nenalezeno“ nebo „rok chybí“ ověřit
+  pohlaví dětí v čteném oddíle (upstream #130, #187, #137).
 
 ## 0.10.2 – 16. 11. 2026
 
