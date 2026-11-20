@@ -50,6 +50,10 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   dítě předka 16 mimo linii má `k=8` (upstream #68).
 - Zápisy se čtou jen z plného rozlišení (ARON úroveň 0, bez `nahled`, v prohlížeči přiblížit); zmenšenina jen na
   hledání stránky (upstream #119, #120).
+- Kratší start konverzace: z deníku jen posledních 5 řádků (`tail -n 5 … | cut -c1-600`), `STAV.md` jen za
+  poslední 2–3 dny (nejvýš ~6 bodů), starší body se přesouvají do nového `data/historie_kol.md`, které se při startu
+  nečte; velké soubory se prohledávají (`grep`), nečtou celé. Vytěžené výstupy pomocníků patří do `kontext/` (v gitu)
+  (upstream #202, #204).
 
 ## 0.10.2 – 16. 11. 2026
 
