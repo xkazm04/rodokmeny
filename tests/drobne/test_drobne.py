@@ -64,6 +64,16 @@ except sl.Zastaveno:
 t.join(10)
 ok("brzda: zastavení během čekání na slot", vysledek == ["zastaven"], f"druhý dotaz: {vysledek}")
 
+# 2b) brzda: web se stejným limitem pro dotaz i obrázek (krajský Kramerius) má jeden společný rozestup
+cekani = []
+spanek, sl.time.sleep = sl.time.sleep, cekani.append   # nečekat doopravdy, jen zaznamenat
+try:
+    sl.pockej("https://kramerius.cbvk.cz/search/api/v5.0/search?q=x")
+    sl.pockej("https://kramerius.cbvk.cz/search/iiif/uuid:1/full/max/0/default.jpg")
+finally:
+    sl.time.sleep = spanek
+ok("brzda: Kramerius JVK – obrázek hned po dotazu čeká 10 s", cekani and cekani[-1] > 9, f"čekání {cekani}")
+
 # 3) kontrola: citlivé slovo v hypotéze a v deníku, ISSUES bez stavu
 d = tempfile.mkdtemp(prefix="drobne_kontrola_")
 try:

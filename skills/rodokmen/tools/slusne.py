@@ -246,7 +246,8 @@ def pockej(url_nebo_host, obrazek=None):
         return
     if obrazek is None:
         obrazek = je_obrazek(url_nebo_host)
-    klic = "dalsi_obrazek" if obrazek else "dalsi_dotaz"
+    # stejný limit pro dotaz i obrázek (Kramerius JVK, Porta fontium…) = jeden společný rozestup pro všechny požadavky
+    klic = "dalsi_obrazek" if obrazek and lim[0] != lim[1] else "dalsi_dotaz"
     path = _cesta(skupina)
     with _Zamek(path + ".lock"):
         st = _nacti(path)
