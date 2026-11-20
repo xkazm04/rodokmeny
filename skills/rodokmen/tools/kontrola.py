@@ -97,6 +97,10 @@ def main():
                                        and all(isinstance(y, str) for y in x))):
             err.append(f"ISSUES[{i}]: má být text, nebo dvojice (\"Otázka\", \"Stav…\"), ne {type(x).__name__} "
                        f"{str(x)[:60]} – export webu by na tom spadl")
+        elif not isinstance(x, str) and x[1] and not re.match(r"(Otevřené|Částečně vyřešeno|Vyřešeno|Hypotéza):", x[1]):
+            # „Co hledáme“ bere štítek stavu z textu před dvojtečkou a vyřešené skryje podle „Vyřešeno“
+            warn.append(f"ISSUES: „{x[0][:60]}“ – text nezačíná stavem (Otevřené: / Částečně vyřešeno: / Vyřešeno: / "
+                        "Hypotéza:), na webu bude bez štítku")
     for i, h in enumerate(ns.get("HYPOTEZY", [])):
         if not isinstance(h, dict):
             err.append(f"HYPOTEZY[{i}]: má být dict(rod=…, nadpis=…, text=…, polozky=[…], zaznamy=[…]), ne "
@@ -281,10 +285,20 @@ def main():
         if os.path.exists(os.path.join(DATA, f)):
             obsah = open(os.path.join(DATA, f), encoding="utf-8-sig").read()
             texty += [(f, odst) for odst in re.split(r"\n\s*\n|\n(?=#)", obsah)]   # odstavce i oddíly „## …“
+    # na web jdou i hypotézy (stránky rodů) a deník
+    texty += [(f"hypotéza {h.get('nadpis', '')}", f"{h.get('nadpis', '')} {h.get('text', '')} "
+               + " ".join(f"{x[0]} {x[1]}" for x in h.get("polozky", []) if isinstance(x, (tuple, list)) and len(x) == 2))
+              for h in ns.get("HYPOTEZY", []) if isinstance(h, dict)]
+    log = os.path.join(DATA, "research_log.md")
+    if os.path.exists(log):
+        texty += [(f"deník ř. {l.split('|')[1].strip()}", l.split("|", 3)[3]) for l in open(log, encoding="utf-8-sig")
+                  if re.match(r"^\| \d+ \|", l)]   # bez sloupců č. a datum (datum hledání není rok události)
     for kde, text in texty:
-        if not recent(text):
+        denik = kde.startswith("deník")   # řádek deníku míchá roky z různých století – rozhoduje jen okolí nálezu
+        if not denik and not recent(text):
             continue
-        m = next((m for m in citlive.finditer(text) if not schvalene(text, m) and not popreno(text, m)), None)
+        m = next((m for m in citlive.finditer(text) if not schvalene(text, m) and not popreno(text, m)
+                  and (not denik or recent(text[max(0, m.start() - 80):m.end() + 80]))), None)
         if m:
             warn.append(f"CITLIVÉ ({kde}): „…{text[max(0, m.start() - 40):m.end() + 40].strip()}…“ – jde na web; "
                         f"zeptej se uživatele, jestli to tam smí být (reference/soukromi.md); když ano, "

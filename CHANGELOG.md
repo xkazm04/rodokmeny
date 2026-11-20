@@ -19,6 +19,14 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Šablona projektu nedává do gitu složku `.playwright-mcp/` (snímky a logy Playwrightu) (upstream #200).
 - Hlídač sítě pozná i `python3.11`, `python3.12` a podobně – síťové skripty spuštěné takhle (Linux se starým
   výchozím `python3`) dřív pustil mimo brzdu (upstream #174).
+- Roky „1889 – před 1936“ se na webu a ve vějíři ukážou jako „1889–před 1936“, ne „1889–?“; nejisté úmrtí „(?)“ má
+  otazník (upstream #140).
+- Brzda po čekání na volný slot znovu zkontroluje, jestli mezitím jiný proces web nezastavil – dotaz pak už neodejde
+  (upstream #140).
+- `kontrola.py` hledá citlivé údaje i v hypotézách (`HYPOTEZY`) a v deníku, které jdou na web, a upozorní na otázku
+  v `ISSUES`, jejíž text nezačíná stavem („Otevřené:“, „Částečně vyřešeno:“, „Vyřešeno:“, „Hypotéza:“) (upstream #140).
+- Stránka „Co hledáme“ ukáže štítek jen u známého stavu (dřív dala do štítku cokoli před první dvojtečkou) a přidává
+  seznam hypotéz s odkazy na rody (upstream #140).
 
 **Návody**
 - Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré
