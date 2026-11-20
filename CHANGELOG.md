@@ -93,6 +93,12 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Pasti při čtení: jméno po zemřelém sourozenci (nekronymum) – před ztotožněním křtu s předkem projít další roky
   a knihu zemřelých; knihy s oddělenými řadami křtů chlapců a dívek – před „nenalezeno“ nebo „rok chybí“ ověřit
   pohlaví dětí v čteném oddíle (upstream #130, #187, #137).
+- Přečíslování domů: po konskripčním patentu 1804 (kolem 1805) a znovu 1857–1880 se část vsí přečíslovala; dvojí čísla
+  „alt/neu“, zpětné opravy celé knihy. Čísla domů se porovnávají jen v rámci jednoho číslování a rozpor přes
+  přečíslování není důvod zamítnout ztotožnění (`metodika.md`, i do zadání pomocníků) (upstream #177, #215).
+- Ztotožnění: křty vnoučat (~1784–1850) jmenují prarodiče, „ztotožněno vyloučením“ přes rejstřík celé fary (a kontrola
+  knihy zemřelých, která jediného kandidáta může vyvrátit), křest sourozence od jiného kněze, stejnojmenné páry podle
+  rodného příjmení babičky, legitimované dítě pod příjmením matky (upstream #208, #215, #217).
 
 ## 0.10.2 – 16. 11. 2026
 

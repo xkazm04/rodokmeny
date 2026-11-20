@@ -37,6 +37,7 @@ Pravidla:
   a pokračuj dalším.
 - Nikdy nepiš o snímku, který jsi neviděl, a nic nedoplňuj podle sousedních snímků nebo podle toho, co čekáš.
   Nejisté čtení označ „(?)“, nečitelné „[…]“.
+- <Čísla domů: ves se <rok> přečíslovala – před ním čti čp. jako staré, po něm jako nové; neporovnávej je přímo.>
 - Po každém snímku hned připiš řádek do pracovni/pom_<větev>/vysledek.md:
   snímek | stav (přečteno / nečitelné / NEPŘEČTENÝ) | rok, první a poslední jméno | nálezy (souřadnice zápisu
   x0,y0,x1,y1 jako zlomky 0–1, přepis) | související výskyty (vzácné příjmení rodu, stejný dům).

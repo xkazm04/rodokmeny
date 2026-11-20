@@ -8,6 +8,13 @@ z nich brát snímky: `portaly.md`, formát dat: `data.md`.
 - **Číslo popisné.** Jan Novák v čp. 12 v úmrtí 1820 (70 let) a Jan Novák v čp. 12 v oddacím zápisu 1788 = nejspíš
   tatáž usedlost. **Přečíslování** (po požáru, novou výstavbou, ve městech a předměstích) rozdělí ves; jeden dům mívá
   v čase dvě čísla. Pochybnost ověř na indikační skice stabilního katastru 1824–43 (`portaly.md` → Starší prameny).
+- **Vlny přečíslování:** po konskripčním patentu z 25. 10. 1804 se mezi 10/1804 a 1805 přečíslovala i část vesnic
+  (ne všechny – ověř každou ves zvlášť), další vlna kolem 1857–1880, v městečkách i jindy (1813). Poznáš to podle
+  dvojích čísel („47/82“, „24 – nově 41“, alt/neu, „starý X / nový Y“) a podle toho, že tentýž sedlák má jiné číslo
+  a v jeho starém čísle žije jiná rodina. Farář někdy **zpětně opravil celou knihu** (stará čísla přeškrtnul, nad ně
+  napsal nová) – zápisy před 1805 v ní pak mají nová čísla, předchozí kniha stará. Proto: čísla porovnávej jen v rámci
+  jednoho číslování (u každé knihy ověř, ve kterém je); rozpor „dům X × Y“ přes přečíslování není důvod zamítnout
+  ztotožnění; události po přečíslování nehledej podle starého čísla. Napiš to i do zadání pomocníkům.
 - **Jméno po chalupě (vulgo).** „Wenzel Schmid vulgo Bauer“ – jméno gruntu přežije výměnu držitele a přejde i na
   zetě, který se přiženil. **Není to příjmení:** když se „příjmení“ při převzetí statku změní, vysvětlí to gruntovní kniha.
 - **Kmotři a svědci (okruh rodiny a sousedů).** Stejné tři kmotrovské páry u osmi křtů 1790–1810 = jedna rodina;
@@ -48,6 +55,18 @@ z nich brát snímky: `portaly.md`, formát dat: `data.md`.
 - **Nevlastní rodiny:** výměnkář může být nevlastní rodič; vztah uvádí gruntovní kniha.
 - **Nalezenci:** bez rodičů – spoj přes číslo nalezince (vídeňský nalezinec, Findelhaus) a obec kojné.
 - **Vojáci:** dva znaky jsou **pluk a domovská obec** (z kmenového listu), ne jen místo narození.
+- **Křty vnoučat (~1784–1850) jmenují prarodiče:** otce otce s povoláním a domem, matku otce s rodným příjmením
+  a původem. Když úmrtí předka online není, najdeš jeho rodiče přes křty jeho vnoučat; projdi nejdřív přepisy zápisů,
+  které už v datech máš.
+- **Ztotožnění vyloučením:** jediný nositel jména a ročníku v abecedním rejstříku celé fary za desetiletí – dobrý doklad
+  pro 17. století, kdy oddací zápisy rodiče ženicha neuvádějí. Do `note` napiš „ztotožněno vyloučením“ s rejstříkem
+  a roky. **Jediného kandidáta může vyvrátit kniha zemřelých** (stejnojmenný z téhož domu zemřel svobodný ve 25 letech):
+  projdi úmrtí v obci až do posledního známého data předka. „V rejstříku jediný“ ≠ „v knize jediný“ (rejstřík zaměnil
+  jméno dítěte, Franz × Girzi) – zápis vždy přečti v knize.
+- **Nejisté jméno prarodičů opraví křest sourozence**, zvlášť zapsaný jiným knězem (latinkou místo kurentu).
+- **Dva stejnojmenné páry v jedné vsi** (Josef × Terezie téhož příjmení): rozhodne rodné příjmení babičky v pozdějším
+  zápisu vnuka nebo oddací zápis sourozence (uvádí rodné příjmení matky).
+- **Legitimované dítě** bývá v rejstříku křtů pod příjmením matky – když křest pod otcovým nenajdeš, zkus matčino.
 - Před zápisem „tatáž osoba“ vyjmenuj **ostatní kandidáty** stejného jména ve farnosti a u každého, proč nesedí
   (do `note` nebo do deníku). A napiš, jaký nový doklad by závěr vyvrátil.
 
@@ -57,7 +76,7 @@ z nich brát snímky: `portaly.md`, formát dat: `data.md`.
 - **Otec nemanželského dítěte domyšlený** bez legitimační poznámky – hledej poznámku, pozdější sňatek matky, kmotry.
 - **Špatná fara kvůli reorganizaci far po 1784** (nové lokálie a fary) – ves v očekávané knize chybí; ověř rok
   založení fary a starší zápisy hledej v mateřské faře.
-- **Přečíslovaný dům** – stejná rodina, jiné čp.
+- **Přečíslovaný dům** – stejná rodina, jiné čp. (vlny ~1805 a 1857–1880, výše).
 - **Věk při úmrtí bez tolerance** – „křest nenalezen“; rozšiř okno, starým lidem věk spíš přibývá. Věk v letech,
   měsících a dnech bývá přesnější.
 - **Místo sňatku = původ nevěsty** se nepředpokládá napevno – ohlášky (poznámka o ohláškách v jiné faře) a
@@ -195,6 +214,7 @@ nemanželský původ, příčina smrti) u nedávno zemřelých nezveřejňuj –
 | 1654 | berní rula (Čechy) | jen hospodáři s půdou; kotva posloupnosti na gruntu |
 | 1740–1820 | vojenské odvodní listiny (Musterlisten) | věk, původ, rodina vojáka – potřebuješ pluk |
 | 1770/71 | konskripce a číslování domů (Čechy, Morava) | čp. se stává klíčem k propojení; pozor na pozdější přečíslování |
+| 1804/05 | konskripční patent (25. 10. 1804), přečíslování části vsí | čísla před a po 1805 neporovnávej bez ověření; další vlna 1857–1880 |
 | 1781 | toleranční patent | vznikají evangelické sbory, nekatolíky ale dál zapisuje i katolický farář |
 | 1784 | josefínský patent: oddělené knihy N/O/Z s předepsanými sloupci | jednotné sloupce; dál viz `matriky.md` (Druhy knih) |
 | 1785–89 | josefský katastr | majitelé pozemků po obcích, na Moravě i soupisy domů podle čp. – Čechy: Národní archiv (badatelna); Morava: online v ARON MZA a na FamilySearch (D 6) |
