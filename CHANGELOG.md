@@ -72,6 +72,11 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Pozemkové knihy Moravy (fond C 17) a katastry (lánové rejstříky 1656–79, rektifikace, tereziánský a josefský
   katastr, urbariální fase, stabilní katastr) jsou zdarma a bez přihlášení v ARON MZA; `metodika.md` mylně psala, že
   josefský katastr je jen v badatelně. Návod uvádí i tichý denní limit ARONu MZA (upstream #188, #192).
+- Než Claude napíše „online není“ nebo „vyčerpáno“, projde kontrolní seznam druhů pramenů (katastry, sčítání,
+  urbáře, kroniky, vojenské prameny…) a uvede, kde a jak hledal, ověřené dvěma cestami – i před objednáním placených
+  kopií. „Nezahlédnut při listování“ ani prázdný výsledek databáze nejsou doklad (upstream #192).
+- Uherské sčítání 1869 není jen z archivů Bytča, Banská Bystrica a Nitra: katalog FamilySearch má záznam pro každou
+  župu („Népszámlálás, <župa> 1869“). Doplněny sčítací hárky 1930 na Slovakianě (upstream #192, #161).
 
 ## 0.10.2 – 16. 11. 2026
 

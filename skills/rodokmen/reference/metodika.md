@@ -78,6 +78,16 @@ z nich brát snímky: `portaly.md`, formát dat: `data.md`.
 - **Dvojí započtení:** druhopis a originál nejsou dva nezávislé prameny – jeden je opis druhého.
 
 ## Mrtvé body – co zkusit, v tomto pořadí
+- **Než napíšeš „online není“ nebo „vyčerpáno“**, projdi druhy pramenů, ne jen matriky a gruntovní knihy: rejstříky
+  a druhopisy, sousední fary, gruntovní knihy i knihy listin panství, katastry (lánový rejstřík, rektifikace,
+  tereziánský, josefský, stabilní), urbáře, sčítání lidu (i uherská), soupisy poddaných, vojenské prameny, kroniky
+  a vlastivědy, adresáře a noviny, jmenné rejstříky edic, rodina. (Skutečná chyba: tři mylná „online není“ v jednom
+  projektu – lánové rejstříky, uherské sčítání 1869 a katastry byly online.)
+  - „Online není“ piš jen s tím, **kde přesně a jak** jsi hledal (portál + dotaz), ověřené **dvěma cestami**
+    (rozcestník archivu, katalog podle místa, vyhledávač); jinak „nenalezeno v …“. Totéž před objednáním placených
+    kopií (model už chystal objednávku fondu, který je zdarma online).
+  - „Nezahlédnut při listování“ ≠ „v knize není“. Prázdný výsledek databáze nic nedokazuje – zkus německy, maďarsky,
+    bez diakritiky, obec místo jména.
 - **Před 1784 (staré matriky chybí nebo nestačí):** 1. starší společné knihy N/O/Z přečíst celé (nejen rejstřík)
   → 2. gruntovní knihy panství → 3. sirotčí knihy, svatební smlouvy → 4. tereziánský katastr (1713–57) → 5. soupis
   poddaných 1651, berní rula 1654 (Morava: lánové rejstříky 1656–79). Spojuje **grunt/dům a posloupnost držitelů**.
@@ -117,9 +127,15 @@ Ostatní archivy jsou většinou jen na písemnou žádost – zapiš do `archiv
   (Zbierka cirkevných matrík). Snímky a neúplný index (hlavně křty) na FamilySearch, zpravidla do ~1895. Zápisy
   po roce 1895 v církevních knihách (některé sahají do 1935) jsou v archivu přístupné po 90 letech.
 - **Civilní (štátne) matriky** od 1. 10. 1895 (uherský zákon), na matričním úřadě; do archivu až po 100 letech.
-- **Sčítání 1869** na FamilySearch („Slovakia, Census, 1869“): celé domácnosti s roky a místy narození, náboženstvím
-  a povoláním; jen snímky bez jmenného rejstříku a jen z archivů Bytča, Banská Bystrica a Nitra. Dobrá náhrada za
-  neindexované matriky.
+- **Sčítání 1869** na FamilySearch: celé domácnosti s roky a místy narození, náboženstvím a povoláním; jen snímky bez
+  jmenného rejstříku. Dobrá náhrada za neindexované matriky. **Hledej přes katalog, ne podle stránky kolekce:** stránka
+  „Slovakia, Census, 1869“ jmenuje jen archivy Bytča, Banská Bystrica a Nitra, ale katalog má záznam pro každou župu
+  („Népszámlálás, Zemplén (megye) 1869“; obce abecedně maďarsky, u filmů DGS; online jen obce dnešního Slovenska).
+  Tabulka filmů ukáže jen 100 řádků („Page 1 of 2“) – další obce jsou na další stránce. Popisky složek bývají mylné
+  (maďarský název jiné obce) – obec ověř na obálce archu. Arch = 2 snímky: obálka s číslem domu, uvnitř osoby.
+- **Sčítací hárky 1930** jsou na Slovakianě (slovakiana.sk/scitacie-harky) – celé domácnosti s daty narození a sňatku,
+  rodištěm a rokem příchodu; 1939 a 1940 jen začerněné. První objekt obce je „Prehľad sčítacieho obvodu“ se seznamem
+  domů a majitelů – podle něj najdeš dům bez procházení hárků. Jen v prohlížeči, tempo jako u archivů.
 - **Matriční úřad:** dokud je kniha na úřadě (100 let od posledního zápisu), výpis dostane jen osoba, které se zápis
   týká, nebo člen rodiny (manžel, rodiče, děti, vnuci, pravnuci, prapravnuci, sourozenci a jejich děti) – bez ohledu
   na stáří zápisu (zákon 154/1994 Z. z., § 18). Doslovný výpis jen pro úřady; soukromá osoba může v přítomnosti
