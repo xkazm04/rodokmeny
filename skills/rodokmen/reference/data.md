@@ -156,7 +156,8 @@ v `web/src/data/site.json` (`people`). Při přejmenování osoby se slug změn�
   a jestli už je v archivu). `--osoby` dá kostru pro `osoby.py`. Poznámky ve stromu bývají plné rodinných historek –
   přečti je a vytěž do `udaje_od_rodiny.md`. U každého předka vypíše i **zdroje** (citace SOUR): **Smart Match** = údaj
   z cizího stromu („… Web Site“, název stromu) – osoba doložená jen takhle dostane v kostře `mh`, ne `fam`;
-  **Record Match** = záznam (sčítání, matrika, BillionGraves) – ověř ho přečtením zápisu jako první.
+  **Record Match** = záznam (sčítání, matrika, BillionGraves) – ověř ho přečtením zápisu jako první;
+  **jiný zdroj** (rozhovor, kniha…) – zjisti, co to je; **nenalezený zdroj** = odkaz na zdroj, který v souboru chybí.
   Předtím `python3 -I tools/graf.py strom dokumenty/strom.ged "Jméno Příjmení"`: cizí stromy mívají dvojníky (táž osoba
   dvakrát, třeba u obou manželek otce) a nemožné vazby (matce by bylo 6 let). Nástroj u dítěte ve dvou rodinách ukáže,
   kterou bere `ged_import.py` a která je podle dat možná, a u předka, který je v rodokmenu víckrát, navrhne `SAME`.
