@@ -99,6 +99,8 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Ztotožnění: křty vnoučat (~1784–1850) jmenují prarodiče, „ztotožněno vyloučením“ přes rejstřík celé fary (a kontrola
   knihy zemřelých, která jediného kandidáta může vyvrátit), křest sourozence od jiného kněze, stejnojmenné páry podle
   rodného příjmení babičky, legitimované dítě pod příjmením matky (upstream #208, #215, #217).
+- Pravidlo o dokladu u záporného výsledku platí i pro vlastní čtení Clauda, ne jen pro pomocníky: předem vypsat
+  varianty příjmení a sloupec jmen a rodičů číst řádek po řádku (upstream #213).
 
 ## 0.10.2 – 16. 11. 2026
 

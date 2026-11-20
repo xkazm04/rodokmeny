@@ -187,7 +187,8 @@ uživateli, ať ví, proč kredity tolik neubývají.
   (celá strana zmenšená na obrazovku nestačí); navazující úseky ať se o snímek překrývají. Do zadání mu napiš strukturu
   pramene (co je v kterém sloupci, jestli je rejstřík jen zemřelých, nebo společný). V deníku rozliš úsek prošlý
   **s dokladem** a jen **orientačně** – „už prošlé, znovu nehledat“ platí jen pro první. Čtení knihy bez rejstříku
-  (hledání naslepo) dej silnějšímu modelu, ne levnějšímu.
+  (hledání naslepo) dej silnějšímu modelu, ne levnějšímu. **Totéž platí pro tvoje vlastní čtení:** předem vypiš
+  varianty příjmení (D/T, ř/r, poněmčené tvary, jiné první písmeno) a sloupec jmen a rodičů čti řádek po řádku.
 - **Jejich čtení vždy ověř sám na snímku** (`python3 -I tools/overit.py <snímek> x0,y0,x1,y1 pracovni/over`, zlomky
   0–1, rozdělí zápis na dvě čitelné poloviny), než ho zapíšeš jako `doc`. Uživateli to vysvětli správně: je to stejný
   model, jde o princip čtyř očí – pomocník nemá kontext (dvě rodiny stejného jména ve vsi).
