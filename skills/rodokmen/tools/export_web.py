@@ -76,6 +76,11 @@ def frontmatter(text):
         if not kv:
             continue
         v = kv.group(2)
+        if v[:1] in ("\"", "'"):   # hodnota v uvozovkách – „#“ uvnitř nechat, komentář za ní pryč
+            q = re.match(r'"(?:[^"\\]|\\.)*"' if v[0] == '"' else r"'(?:[^']|'')*'", v)
+            v = q.group(0) if q else v
+        else:   # komentář YAML „  # …“ za hodnotou (jako v reference/pribehy.md) – web ho čte stejně
+            v = re.sub(r"(?:^|\s+)#.*$", "", v)
         if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
             try:
                 v = json.loads(v) if v[0] == '"' else v[1:-1].replace("''", "'")
