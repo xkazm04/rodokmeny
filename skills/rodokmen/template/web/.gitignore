@@ -8,6 +8,7 @@ src/generated/
 public/img/
 public/zdroje/
 .ramecky_zdroju.json
+.exportovane_obrazky.json
 public/prihlaseni.html
 nginx.conf
 netlify/edge-functions/
