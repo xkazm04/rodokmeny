@@ -31,6 +31,8 @@ SVOBODNY = re.compile(r"\bledig\b|\bsvobodn[áýa]\b|\bcoelebs\b|\bvirgo\b|\bjuv
 VDOVEC = re.compile(r"\bWitwer\b|\bWitwe\b|\bvdov(?:ec|a)\b|\bviduus\b|\bvidua\b", re.I)
 VDOVEC_M = re.compile(r"\bvdovec\b|\bWitwer\b|\bviduus\b", re.I)   # fakt o sobě: muž
 VDOVA_Z = re.compile(r"\bvdova\b|\bWitwe\b|\bvidua\b", re.I)       # fakt o sobě: žena
+SVOBODNY_M = re.compile(r"\bsvobodný\b|\bcoelebs\b|\bjuvenis\b", re.I)   # fakt o sobě: muž („ledig“ je obojí)
+SVOBODNA_Z = re.compile(r"\bsvobodná\b|\bvirgo\b", re.I)                # fakt o sobě: žena
 
 
 def roky_y(y):
@@ -80,13 +82,21 @@ def kontroly(P, SIDE, zaz, prep):
             warn.append(f"osoba {k} ({n}): y má úmrtí {yz.text}, fakta {fz[0][0].text} – sjednoť (web bere y)")
         y = p.get("y") or ""
         vlastni_fn = [x for x in fn if not CIZI.search(x[1])]   # rok jen z cizího stromu do y nepatří
+        vlastni_fz = [x for x in fz if not CIZI.search(x[1])]
         if vlastni_fn and p.get("st") != "fam":
             if not y.strip():
                 warn.append(f"osoba {k} ({n}): fakta mají narození {vlastni_fn[0][0].text}, ale y je prázdné – doplň y (web ukazuje y)")
-        # 3: rok v y jen z cizího stromu u doložené osoby
+        if y.strip() and p.get("st") != "fam":   # narození a úmrtí v y zvlášť („1850“ bez úmrtí, „† 1910“ bez narození)
+            for co, vlastni, v_y in (("narození", vlastni_fn, yn), ("úmrtí", vlastni_fz, yz)):
+                if vlastni and not v_y:
+                    warn.append(f"osoba {k} ({n}): fakta mají {co} {vlastni[0][0].text}, ale y ho nemá – doplň y "
+                                "(web ukazuje y)")
+        # 3: rok v y jen z cizího stromu u doložené osoby (ne když tentýž údaj dokládá i fakt ze zápisu)
         if p.get("st") == "doc":
             for d, f in fn + fz:
-                if d.rok and CIZI.search(f) and re.search(rf"{d.rok}(?!\s*\(\?\))", y):   # „1930 (?)“ = nejistota přiznaná
+                vlastni = vlastni_fn if (d, f) in fn else vlastni_fz
+                if d.rok and CIZI.search(f) and re.search(rf"{d.rok}(?!\s*\(\?\))", y) \
+                        and not any(datumy.prekryv(d, x) for x, _ in vlastni):   # „1930 (?)“ = nejistota přiznaná
                     warn.append(f"osoba {k} ({n}): rok {d.rok} v y je jen z cizího stromu („{f[:60]}“) – "
                                 "u doložené osoby ho web ukáže jako doložený; dej do y jen roky ze zápisů")
                     break
@@ -113,16 +123,20 @@ def kontroly(P, SIDE, zaz, prep):
             fakt = [f for f in p.get("f") or [] if isinstance(f, str) and "×" in f and rok.group(1) in f]
             if not fakt:
                 continue
-            muz = k % 2 == 0 if k > 1 else p.get("sex") == "M"
-            # „vdovec“ u muže / „vdova“ u ženy – jinak jde o partnera („× … Sedláková (vdova)“)
+            muz = k % 2 == 0 if k > 1 else p.get("sex", "M") == "M"   # osoba 1 bez „sex“ je muž (data.md)
+            # „vdovec“ / „svobodný“ u muže, „vdova“ / „svobodná“ u ženy – jinak jde o partnera („× … Sedláková (vdova)“)
             osoba_vdov = any((VDOVEC_M if muz else VDOVA_Z).search(f) for f in fakt)
+            osoba_svob = any((SVOBODNY_M if muz else SVOBODNA_Z).search(f) for f in fakt)
             radky = radky_snoubencu((prep.get(r) or {}).get("orig", ""))
             for kdo, text in radky:
                 je_on = kdo in ("bräutigam", "sponsus", "ženich")
-                if muz is None or je_on != muz or kdo == "copulati":
+                if je_on != muz or kdo == "copulati":
                     continue
                 if osoba_vdov and SVOBODNY.search(text) and not VDOVEC.search(text):
                     warn.append(f"osoba {k} ({n}): u sňatku {r} má fakta „vdovec/vdova“, přepis „{SVOBODNY.search(text).group(0)}“ – "
+                                "přečti na výřezu sloupec ledig/Witwer (porovnej s řádkem nad a pod)")
+                elif osoba_svob and VDOVEC.search(text) and not SVOBODNY.search(text):
+                    warn.append(f"osoba {k} ({n}): u sňatku {r} má fakta „svobodný/á“, přepis „{VDOVEC.search(text).group(0)}“ – "
                                 "přečti na výřezu sloupec ledig/Witwer (porovnej s řádkem nad a pod)")
     # 7: doložený zápis s nejistým čtením „(?)“ v přepisu bez nezávislého druhého čtení (pole cteni2)
     doc_r = {r for p in P.values() if isinstance(p, dict) and p.get("st") == "doc" for r in p.get("r") or []}
