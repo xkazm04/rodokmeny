@@ -349,7 +349,7 @@ def snimek(druh, xid, n, out, volby):
 def zapis_svazek(klic, zaznam):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import zapis   # jen ta jedna položka, formát souboru zůstane (tools/zapis.py)
-    zapis.zapis("svazky", klic, zaznam, sloucit=True)
+    zapis.zapis_svazek(klic, zaznam)   # ručně upravená pole (popis) zůstanou
     print(f"{klic} -> {zaznam['svazek']}")
 
 

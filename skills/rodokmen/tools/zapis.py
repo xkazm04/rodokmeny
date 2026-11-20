@@ -460,10 +460,33 @@ def main():
     zapis(nazev, klic, obj, sloucit, prepsat)
 
 
+OBNOVIT = {"snimku"}   # u svazku z archivu vždy podle archivu (počet snímků se mění)
+
+
+def zapis_svazek(klic, polozka):
+    """Svazek z archivu (příkaz „svazek“ v aron_img.py, portafontium.py, ebadatelna.py): chybějící pole doplní,
+    počet snímků obnoví; jinou neprázdnou hodnotu, kterou už svazek má (třeba ručně rozšířený popis), nechá
+    a vypíše rozdíl."""
+    path = os.path.join(ROOT, "data", "svazky.json")
+    try:
+        stare = json.load(open(path, encoding="utf-8-sig")).get(klic) if os.path.exists(path) else None
+    except (OSError, ValueError, AttributeError):
+        stare = None   # vadný soubor ohlásí zapis()
+    nove = dict(polozka)
+    if isinstance(stare, dict):
+        for k, v in polozka.items():
+            if k not in OBNOVIT and stare.get(k) not in (None, "") and stare.get(k) != v:
+                del nove[k]
+                print(f"svazek {klic}: „{k}“ nechávám, jak je v data/svazky.json (archiv uvádí: "
+                      f"{json.dumps(v, ensure_ascii=False)[:120]}). Přepsat podle archivu: zapis.py svazky {klic} "
+                      "<vstup.json> --sloucit")
+    zapis("svazky", klic, nove, sloucit=True)
+
+
 def zapis(nazev, klic, obj, sloucit=False, prepsat=False):
     """Zapíše jednu položku do data/<nazev>.json, zbytek souboru nechá doslova. Volají ho i jiné nástroje
-    (`aron_img.py`, `portafontium.py`, `ebadatelna.py` u příkazu svazek – se `sloucit=True`, ať ručně doplněná
-    pole svazku zůstanou)."""
+    (`aron_img.py`, `portafontium.py`, `ebadatelna.py` u příkazu svazek – přes zapis_svazek, ať ručně doplněná
+    a upravená pole svazku zůstanou)."""
     if not isinstance(obj, dict):
         sys.exit("Vstup musí být jeden objekt JSON ({…}).")
     path = os.path.join(ROOT, "data", nazev + ".json")

@@ -59,5 +59,17 @@ with contextlib.redirect_stdout(io.StringIO()):
 text3 = open(cesta, encoding="utf-8").read()
 check("ručně doplněné pole zůstane", json.loads(text3)["pf_horni-lhota-01"].get("obce") == "Horní Lhota, Dolní Lhota", text3)
 
+
+# ručně rozšířený popis svazku opakované „svazek“ nepřepíše zkráceným popisem z archivu, jen ohlásí rozdíl (review #29)
+zapis.zapis("svazky", "pf_horni-lhota-01", {"popis": "Horní Lhota, Dolní Lhota, Mlýnec (ověřeno)"}, sloucit=True)
+pf.info = lambda kniha: (kniha, {"Signatura": "1", "Typ": "N", "Místo": "Horní Lhota"}, [1, 2, 3, 4, 5], None)
+out = io.StringIO()
+with contextlib.redirect_stdout(out):
+    pf.svazek("horni-lhota-01")
+sv = json.loads(open(cesta, encoding="utf-8").read())["pf_horni-lhota-01"]
+check("ručně upravený popis zůstane", sv["popis"] == "Horní Lhota, Dolní Lhota, Mlýnec (ověřeno)", sv)
+check("rozdíl ohlášen", "popis" in out.getvalue(), out.getvalue())
+check("počet snímků se obnoví", sv["snimku"] == 5, sv)
+
 print(f"\n{sum(vysledky)} z {len(vysledky)} v pořádku")
 sys.exit(0 if all(vysledky) else 1)
