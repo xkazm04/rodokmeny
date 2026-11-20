@@ -12,7 +12,7 @@ Matriky jsou online u osmi státních archivů – podle toho, **kde předci ži
 | AHMP | hl. m. Praha | katalog.ahmp.cz (Pragapublica) | **ano – `ahmp_search.sh`, `ahmp_scan.py`** |
 | MZA Brno | jižní Morava, Vysočina z části | Acta Publica – www.mza.cz/actapublica | **jen v prohlížeči** – snímek obrazovky přiblíženého zápisu (postup níže) |
 | ZA Opava | severní Morava a Slezsko, Olomoucko a Litovelsko (matriky Prostějovska jsou v MZA Brno) | Digitální badatelna – digi.archives.cz/da/ | **jen v prohlížeči, nejlépe Playwright** – celý snímek z dlaždic, které načte prohlížeč (postup níže; CAPTCHU řeší uživatel) |
-| Národní archiv | židovské matriky (HBMa), soupisy; pražské policejní přihlášky 1850–1914 | HBMa: VadeMeCum NA – vademecum.nacr.cz (Digitální badatelna → Matriky židovských náboženských obcí; stará adresa badatelna.eu už nepatří archivu); digi.nacr.cz/prihlasky2 | přihlášky **ano – `policie_prihlasky.py`** |
+| Národní archiv | židovské matriky (HBMa), soupisy; pražské policejní přihlášky 1850–1914 | HBMa: VadeMeCum NA – vademecum.nacr.cz (Digitální badatelna → Matriky židovských náboženských obcí; stará adresa badatelna.eu už nepatří archivu); digi.nacr.cz/prihlasky2 | přihlášky **ano – `policie_prihlasky.py`**; HBMa snímky `soal_zoomify.py` |
 
 **Hranice archivů u matrik** kopírují staré diecéze a kraje, ne dnešní okresy: matriky far na Prostějovsku jsou
 v MZA Brno, i když okresní archiv (SOkA Prostějov) patří pod ZA Opava. Když obec v jednom archivu nenajdeš, zkus
@@ -257,6 +257,10 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   `fetch`). Ohlásí ji stránka „!“ s **HTTP 200** (asi 116 bajtů) – kontroluj obsah, ne stavový kód. Dotazy jen postupně
   (žádné `Promise.all`), pauza aspoň 3 s, vždy jen jedna smyčka; po blokaci 35 minut nic (další pokusy ji prodlužují).
   Pomocníkům to napiš do zadání.
+- **Jiné servery Zoomify** (mapy z Jagellonské digitální knihovny jbc.bj.uj.edu.pl, např. WIG 1:100 000): `soal_zoomify.py`
+  bere jen servery ze seznamu `SERVERY` v nástroji. Nový server tam přidej jen po přečtení jeho robots.txt a podmínek
+  a s limitem v `slusne.py` (neznámý web 10 s na dotaz, dlaždice po jedné); obecný režim „jakýkoli server“ není.
+
 ## ZA Opava (severní Morava, Slezsko, Olomoucko, Litovelsko) – jen v prohlížeči, nejlépe Playwright
 - Pozor na hranici: obce na Litovelsku a Olomoucku patří pod **ZA Opava**, ne pod MZA Brno. **Matriky far na
   Prostějovsku ale jsou v MZA Brno** (Acta Publica); v ZA Opava je jen SOkA Prostějov a fondy farních úřadů bez
@@ -420,6 +424,18 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   (rozpis čísel, poznámky typu „čp. 134 má 2 archy“), pak archy po domech. 1857 uvádí jen rok narození, 1869 a 1880
   místo i datum; sloupec dat narození bývá psaný svisle – při čtení přiblížený výřez otoč o 90°.
 - **Pozemkové knihy a katastry Moravy** jsou zdarma a bez přihlášení v ARON MZA (www.mza.cz/aron) – Starší prameny níže.
+
+## Národní archiv – židovské matriky HBMa (VadeMeCum, vademecum.nacr.cz) – `tools/soal_zoomify.py`
+- Cesta: na.gov.cz → Badatelna → Digitální badatelna → Matriky židovských náboženských obcí → VadeMeCum → „Listování
+  v pomůcce“; u svazku ikona obrázku (`Zoomify.action?entityRef=…&scanIndex=0`, otevírá nové okno – adresu vezmi
+  z odkazu). Hledání v pomůcce dávej do uvozovek (`"IVANOVICE NA HANÉ"`), jinak vrací i hesla cizích knih.
+- Snímky jsou Zoomify. Uuid snímků jsou v `src` náhledů `…/dao/images/<složka>/<uuid>.jpg/nahled_maly.jpg`; snímek
+  v plném rozlišení: `python3 -I tools/soal_zoomify.py "https://vademecum.nacr.cz/mrimage/vademecum/zoomify//cz/archives/CZ-100000010/inventare/dao/images/<složka>/<uuid>.jpg" 0 pracovni/x.jpg`.
+- **Šetrně:** robots.txt VadeMeCum je `Disallow: /` (ověřeno 20. 11. 2026); nástroj je povolený rozhodnutím projektu
+  jen pro snímky, které čteš. Brzda: 1 dotaz za 10 s, dlaždice po jedné 1 za s – snímek trvá minuty, celé svazky nikdy.
+  Pro orientaci stačí `1` (poloviční rozlišení). Na 403/429/503 se web zastaví – skonči. Skrytý panel vestavěného
+  prohlížeče Claude desktop snímky nevykreslí (černé plátno) – ať uživatel panel zobrazí.
+- U konvertitů stojí za přečtení křest dospělého (rodiče, dřívější bydliště, odkud farář znal rok narození).
 
 ## Pražské policejní přihlášky 1850–1914 (Národní archiv) – `tools/policie_prihlasky.py`
 - Karty pražských rodin: hlava rodiny, manželka s rokem a místem narození, děti s roky, adresy, někdy místo sňatku.

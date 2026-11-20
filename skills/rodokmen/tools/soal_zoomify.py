@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Snímek matriky ve formátu Zoomify (SOA Litoměřice) v plném rozlišení – bez prohlížeče a bez cookies.
+"""Snímek ve formátu Zoomify v plném rozlišení – bez prohlížeče a bez cookies. Jen servery ze seznamu SERVERY:
+SOA Litoměřice (matriky), Národní archiv – VadeMeCum (židovské matriky HBMa, inventáře) a Jagellonská digitální
+knihovna (mapy). Jiný server nástroj odmítne – přidat ho jde jen zápisem do SERVERY (a limitu do tools/slusne.py)
+po přečtení jeho robots.txt a podmínek; obecný režim „jakýkoli server“ záměrně není.
 
 ZA Opava (images.archives.cz) od listopadu 2026 nástroje nepouští (robots.txt, obrázky HTTP 403/404) – snímky
 odtud ukládej z prohlížeče snímků (reference/portaly.md, ZA Opava; nejlépe Playwright).
@@ -13,9 +16,14 @@ Použití (z kořene projektu):
                 (další snímky téže knihy mají stejnou cestu, liší se jen číslem obrázku)
     adresa    = celá adresa obrázku začínající https:// (s „/ImageProperties.xml“ na konci i bez), např.
                 https://images.soalitomerice.cz/ximage/matriky/zoomify/cz/archives/CZ-214000010/NAD-<číslo>/dao/images/<složka>/<uuid>.jpg
+                Národní archiv (HBMa): https://vademecum.nacr.cz/mrimage/vademecum/zoomify//cz/archives/CZ-100000010/inventare/dao/images/<složka>/<uuid>.jpg
+                (uuid z náhledu snímku …/<uuid>.jpg/nahled_maly.jpg v prohlížeči VadeMeCum; reference/portaly.md, Národní archiv)
+                Jagellonská knihovna (jbc.bj.uj.edu.pl): adresa Zoomify obrázku z prohlížeče (síťový provoz, ImageProperties.xml)
     zmenseni  = 0 plné rozlišení (na čtení a výřez), 1 poloviční (na orientaci), 2 čtvrtinové
 POZOR: aplikace digi.soalitomerice.cz po ~100 rychlých požadavcích zablokuje přístup na 30 minut. Prohlížečem jen
 najdi knihu a cestu k obrázkům, snímky pak stahuj tímto nástrojem po jednom.
+Národní archiv a Jagellonská knihovna: dlaždice jen po jedné (brzda 1 za s, dotazy 1 za 10 s) – plný snímek trvá minuty.
+Stahuj jen snímky, které čteš, nikdy celé svazky. Snímky jen pro vlastní bádání; na web rodiny nanejvýš výřez zápisu.
 """
 import glob, math, os, re, shutil, subprocess, sys, tempfile, time, urllib.error, urllib.parse, urllib.request
 import concurrent.futures as cf
@@ -25,7 +33,14 @@ for _s in (sys.stdout, sys.stderr):   # UTF-8 výstup i na Windows bez -X utf8 (
         _s.reconfigure(encoding="utf-8", errors="replace")
 
 BASE = "https://images.soalitomerice.cz/ximage/matriky/zoomify/cz/archives/CZ-214000010/matriky/"
-HOSTS = ("images.soalitomerice.cz",)   # jen obrázkový server archivu (snímky zpracovává ImageMagick); ZA Opava ne (výše)
+# Povolené servery Zoomify: server -> počet souběžných dlaždic. Nový server jen po přečtení robots.txt a podmínek,
+# s limitem v tools/slusne.py (LIMITY, neznámý web aspoň 10 s na dotaz) a stahováním po jedné dlaždici. ZA Opava ne (výše).
+SERVERY = {
+    "images.soalitomerice.cz": 4,    # SOA Litoměřice – 4 souběžně (jako 4 prohlížeče), brzda 0,1 s
+    "vademecum.nacr.cz": 1,          # Národní archiv, VadeMeCum (HBMa) – robots.txt „Disallow: /“; přijato 20. 11. 2026, po jedné
+    "jbc.bj.uj.edu.pl": 1,           # Jagellonská digitální knihovna (mapy WIG aj.) – po jedné
+}
+HOSTS = tuple(SERVERY)
 
 
 def magick():
@@ -70,7 +85,8 @@ def main():
         sys.exit("ZA Opava od listopadu 2026 nástroje nepouští (robots.txt, obrázky HTTP 403/404). Snímek ulož "
                  "z prohlížeče snímků – Playwright složí dlaždice, které prohlížeč načetl (reference/portaly.md, ZA Opava).")
     if urllib.parse.urlsplit(base).scheme != "https" or urllib.parse.urlsplit(base).hostname not in HOSTS:
-        sys.exit(f"Adresa musí být https:// na serveru archivu ({', '.join(HOSTS)}), ne {base[:80]}")
+        sys.exit(f"Adresa musí být https:// na povoleném serveru Zoomify ({', '.join(HOSTS)}), ne {base[:80]}\n"
+                 "Jiný server nástroj záměrně nestahuje (seznam SERVERY v nástroji; přidává se po kontrole pravidel webu).")
     red, out = int(sys.argv[2]), sys.argv[3]
     MAGICK = magick()
     x = get(base + "/ImageProperties.xml").decode()
@@ -95,7 +111,7 @@ def main():
             f = os.path.join(d, f"{y:03d}_{xx:03d}.jpg")
             with open(f, "wb") as fh:
                 fh.write(get(f"{base}/TileGroup{g}/{L}-{xx}-{y}.jpg"))
-        with cf.ThreadPoolExecutor(4) as ex:   # 4 souběžně: několikrát rychlejší, server archivu nezatěžuje víc než 4 prohlížeče
+        with cf.ThreadPoolExecutor(SERVERY[urllib.parse.urlsplit(base).hostname]) as ex:   # SOA Litoměřice 4 souběžně, ostatní po jedné
             list(ex.map(tile, [(y, xx) for y in range(ny) for xx in range(nx)]))
         # řádky dlaždic +append, pak řádky pod sebe -append (montage na ImageMagicku 7.1.2 padá bez písma);
         # krátká jména (cwd=d) a po řádcích: celá stránka v jednom příkazu by na Windows přesáhla limit příkazové řádky

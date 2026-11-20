@@ -299,7 +299,7 @@ a `zdroje/` (výřezy pro web / plné rozlišení), `dokumenty/` (originály od 
 | `ahmp_search.sh`, `ahmp_scan.py` | matriky Prahy (AHMP) |
 | `policie_prihlasky.py` | pražské policejní přihlášky 1850–1914 |
 | `obeti.py`, `arolsen.py` | oběti nacismu (holocaust.cz, Arolsen Archives); **souhlas s podmínkami portálu potvrzuje uživatel sám** (`!python3 -I tools/obeti.py souhlas`), Claude nikdy |
-| `soal_zoomify.py` | snímek SOA Litoměřice (knihu najdi v prohlížeči); ZA Opava jen v prohlížeči (`portaly.md`) |
+| `soal_zoomify.py` | snímek Zoomify: SOA Litoměřice, NA VadeMeCum (HBMa), Jagellonská knihovna (jen tyto servery); ZA Opava jen v prohlížeči (`portaly.md`) |
 | `matricula_dl.sh`, `matricula_batch.sh` | snímky z Matriculy (Rakousko, Bavorsko, Polsko…) |
 | `anno.py`, `anno_snap.py`, `kramerius.py` | noviny: ANNO (rakouské, `--ztraty` = seznamy ztrát 1914–1919), Kramerius (české) |
 | `mapa_knihy.py` | mapa knihy po vsích a montáž sloupce jmen (`matriky.md`) |

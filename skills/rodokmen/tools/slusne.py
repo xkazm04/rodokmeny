@@ -16,7 +16,7 @@ Archivy blokují IP adresu po sérii rychlých dotazů (MZA, ZA Opava…). Nást
 Pravidla (pro každý web zvlášť, společně pro všechny procesy i projekty na počítači – mají jednu IP adresu):
   - dotazy (stránky, hledání, API) nejvýš 1 za 2 s (ZA Opava 1 za 4 s; Porta fontium, Slovakiana, digi.nacr.cz, holocaust.cz,
     Arolsen a další weby bez zveřejněného limitu, kam chodí nové nástroje, 1 za 10 s i snímky),
-    obrázky a dlaždice nejvýš 10 za s;
+    obrázky a dlaždice nejvýš 10 za s (dlaždice VadeMeCum NA a Jagellonské knihovny 1 za s);
     omezuje se frekvence, ne souběh (vlákna stahování dlaždic nevadí),
   - po odpovědi 429/503 (u dotazu i 403), po stránce „zablokováno“ nebo po 3 nepovedených spojeních za sebou
     se web zastaví pro všechny procesy a nástroj hned skončí (kód 3). Nic se neopakuje, nic se neobchází.
@@ -49,6 +49,8 @@ LIMITY = {                           # konec názvu webu: (dotaz, obrázek)
     "slovakiana.sk": (10.0, 10.0),   # Slovakiana (SNA) – robots.txt „Crawl-delay: 10“, platí i pro API wcm.… a snímky content.…
     "holocaust.cz": (10.0, 10.0),    # databáze obětí (obeti.py) – limit neuvádí, proto opatrně 10 s
     "arolsen-archives.org": (10.0, 10.0),   # Arolsen Archives (arolsen.py) – API i obrázky karet; limit neuvádí, 10 s
+    "vademecum.nacr.cz": (10.0, 1.0),       # NA VadeMeCum (soal_zoomify.py, HBMa) – robots.txt „Disallow: /“; dlaždice po jedné, 1 za s
+    "jbc.bj.uj.edu.pl": (10.0, 1.0),        # Jagellonská digitální knihovna (Zoomify mapy) – dlaždice po jedné, 1 za s
 }
 ZAKAZ = {                            # konec názvu webu: (cesty povolené skriptům, hláška pro ostatní)
     suffix: (re.compile(r"/actapublica/matrika/hledani"),
