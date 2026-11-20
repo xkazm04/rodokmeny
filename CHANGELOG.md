@@ -15,6 +15,8 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Rejstřík dat `tools/rejstrik.py`: hledání v deníku, zápisech, přepisech a poznámkách bez čtení celých souborů
   (SQLite s fulltextem bez diakritiky v `pracovni/`, sestaví se sám). `osoba 84` ukáže vše o osobě, `svazek …`
   které snímky jsme už prošli, `hledej`, `podklady rod 8` a další (upstream #203).
+- `aron_search.py` vypíše samostatné svazky rejstříků („index NAROZENÝCH…“) zvlášť nahoře – pomocníci je mezi
+  matrikami přehlíželi a četli knihy bez rejstříku stranu po straně (upstream #214, #213).
 
 **Opravy**
 - Odkaz „otevřít v archivu“ u zápisů z ARONu otevře správný snímek, ne první stránku knihy (`aron_img.py link` dává
@@ -101,6 +103,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   rodného příjmení babičky, legitimované dítě pod příjmením matky (upstream #208, #215, #217).
 - Pravidlo o dokladu u záporného výsledku platí i pro vlastní čtení Clauda, ne jen pro pomocníky: předem vypsat
   varianty příjmení a sloupec jmen a rodičů číst řádek po řádku (upstream #213).
+- Samostatné svazky rejstříků hledat dřív, než se začne číst kniha bez rejstříku (i v zadání pomocníka); `matriky.md`
+  popisuje jejich stavbu: uvnitř písmene chronologicky, číslo = strana, posun snímek – strana v každé knize jiný,
+  „duplicitní“ = opis (upstream #214).
 
 ## 0.10.2 – 16. 11. 2026
 

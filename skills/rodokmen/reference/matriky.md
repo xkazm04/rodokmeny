@@ -46,7 +46,13 @@ zhruba po roce 1910 často online nebudou (kniha pokračuje za rok 1926, lhůta 
    U starých far se vyplatí nejdřív najít **souhrnný index** přes víc desetiletí (např. N/O/Z 1636–1746) – dovede
    rychle až do 17. století. Rejstříky bývají podle **německého pravopisu**: česká jména na O a V hledej i pod W
    (Otava = Wotawa, Vávra = Wawra). Knihy pro více obcí bývají řazené po obcích, rejstřík na konci (viz níže).
-   Velké fary mají rejstříky i jako **samostatné svazky** (např. rejstřík oddaných přes 300 let) – hledej je nejdřív.
+   Velké fary mají rejstříky i jako **samostatné svazky** (např. rejstřík oddaných přes 300 let) – hledej je nejdřív,
+   než ty nebo pomocník začnete číst knihu bez rejstříku stranu po straně (skutečný případ: pět pomocníků četlo knihu
+   oddaných naslepo, samostatný rejstřík pak dal 37 nositelů příjmení za pár snímků; `aron_search.py` je vypíše nahoře).
+   Stavba bývá: podle prvního písmene příjmení, **uvnitř písmene chronologicky**, ne abecedně; sloupce jméno, den
+   a měsíc, rok, římské číslo knihy, číslo, obec, čp. **Číslo je strana, ne číslo zápisu**; posun snímek – strana je
+   v každé knize jiný (kalibruj na jednom snímku). „Duplicitní se sign. …“ v katalogu = opis téhož rejstříku, ne další
+   část.
    **Když matrika chybí** (není online nebo se nedochovala), zkus rejstřík – bývá vedený zvlášť a přežil i tam, kde kniha
    ne. Zápis v rejstříku dokládá datum, místo a otce; zapiš ho jako `prob` (opis, ne originál) a matriku zkus později.
 4. **Bez indexu: listuj chronologicky** – ale nejdřív ověř, že kniha není řazená po vsích (níže). Odhadni pozici podle let na prvních a posledních snímcích svazku (půlení intervalu).

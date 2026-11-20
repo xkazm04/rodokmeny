@@ -31,7 +31,9 @@ Adresy u nevyzkoušených portálů ověř při prvním použití (portály se m
 
 ## ARON (SOA Zámrsk) – hotové nástroje
 - **Hledání svazků:** `python3 -I tools/aron_search.py "Holice"` → řádky `apu_id | signatura, roky | druh, obce`.
-  Popis obsahuje druh knihy (NAROZENÝCH / ODDANÝCH / ZEMŘELÝCH, index) a všechny obce farnosti.
+  Popis obsahuje druh knihy (NAROZENÝCH / ODDANÝCH / ZEMŘELÝCH, index) a všechny obce farnosti. **Samostatné svazky
+  rejstříků** („římskokatolický index NAROZENÝCH…“, vlastní signatura i apu) nástroj vypíše zvlášť nahoře – začni
+  jimi (`matriky.md` → Jak vypadá hledání, bod 3).
 - **Informace o svazku:** `python3 -I tools/aron_img.py <apu_id> info` → název a počet snímků.
 - **Stažení snímku:** `python3 -I tools/aron_img.py <apu_id> <snímek> 0 pracovni/holice_n_57.jpg`
   (0 = plné rozlišení – vždy na čtení a výřez; 1 = poloviční jen na rychlou orientaci, např. hledání stránky podle záhlaví).
