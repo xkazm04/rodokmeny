@@ -62,15 +62,34 @@ Adresy u nevyzkoušených portálů ověř při prvním použití (portály se m
   „Matriční knihy“ (stránka je v rámci `ram_obsah`) → seznam knih s roky a obcemi; kliknutí otevře knihu v nové záložce.
   **Zkontroluj název a okres**: u stejnojmenných obcí portál vybere jinou (Buk → Bukovka), u měst i okres nebo synagogu.
   Malé osady portál nezná (Malá Chyška) – hledej farní nebo sousední obec a osadu v popisu knih.
-- Snímek: `https://digi.ceskearchivy.cz/<kniha>/<snímek>` (zároveň trvalý odkaz). Knihy mívají dobrovolnický jmenný
-  rejstřík (stránka místa → „Rejstříky“) – obrovská úspora; ne každá kniha ho má.
+- Snímek: `https://digi.ceskearchivy.cz/DA?menu=3&id=<kniha>&page=<snímek>` (= „Snímek / Image N“ v liště) – tento
+  tvar dávej do `odkaz` a deníku. **Krátký tvar `/<kniha>/<n>` není vždy snímek n** (u některých knih n−1 nebo n+2,
+  posun se mění i uvnitř knihy; prohlížeč se navíc umí vrátit na naposledy prohlížený snímek). Po načtení vždy
+  zkontroluj číslo snímku v liště; když nesedí, přejdi na něj polem „Snímek“, ne opakovaným načítáním adresy.
+- **Než začneš listovat, zkus práci dobrovolníků** – ušetří desítky až stovky načtení; zkus i sousední farnosti panství:
+  - **Rejstříky knihy** (záložka „Rejstříky“ / INDEXES u knihy): u každé obce „rok → snímek“ zvlášť pro N, O, Z, přímo
+    `pages/indexes.php?id2=<id obce>&pis=<písmeno>&druh=<0 N | 1 O | 2 Z>&menu2=1&page=1&id=<id knihy>`. U knih po vsích
+    je číslo strana v oddílu vsi. Písmena s diakritikou vracejí stránku písmene A. Uvnitř písmene bývá řazení podle data;
+    hledej i pod W (Wopawa = Opava). Ne každá kniha rejstřík má.
+  - **Jmenný rejstřík místa:** stránka místa → Rejstříky → Jmenný rejstřík (`indexes_general.php?…&pismeno=V`), odkaz
+    vede přímo na snímek; u menších obcí jen vybrané roky.
+  - **Globální hledání** (pole v horní liště) prohledává i poznámky uživatelů u snímků a jmenný rejstřík sčítání 1921.
+    Dotaz **v uvozovkách** („Jméno Příjmení“, „Příjmení, matka“) vrátí dobrovolnické výpisy s číslem knihy a snímku
+    (id výsledku `<kniha>_1_<snímek>`); bez uvozovek vrací desetitisíce výsledků.
+  - **Poznámky dobrovolníků k celé knize** (`pages/sharenotes.php`, s hledáním v textu): v jednom projektu přes 30
+    nalezených zápisů za den v knihách bez rejstříku.
+  - Panel „Index | Poznámky uživatelů“ u snímku přečteš bez přibližování: `innerText` prvků `#poznamky_b`,
+    `#poznamky_c` v rámu `ram_obsah` (projdi i vnořené rámy) – jedno volání místo snímku obrazovky; dobrovolníci tam
+    často píšou celý přepis.
+  Dobrovolnický výpis je vodítko a dobré „druhé čtení“, ne doklad: data bývají o den vedle, zápis vždy přečti na snímku;
+  „nenalezeno“ v rejstříku ani v poznámkách nic nevylučuje.
 - **Každé zobrazení snímku stáhne všechny dlaždice znovu** – i šipka zpět na snímek, který byl právě na obrazovce
   (rám se načte znovu s novým tokenem, mezipaměť prohlížeče nepomůže). Na snímku proto vyřiď všechno najednou: přibliž
   a přečti všechny zápisy, které můžeš potřebovat, než přejdeš dál.
 - Prohlížeč je Zoomify v rámci `ram_obsah`. Postup: snímek okna (scale css) → odečti rohy zápisu → úryvek níže
   (browser_evaluate) schová panely Navigátor a Náhledy, přiblíží zápis a vrátí odkaz `/<kniha>/<snímek>/<x>/<y>/<zoom>/0`
-  přímo na zápis (do `odkaz`) → snímek okna v rozlišení zařízení do `pracovni/trebon_<kniha>_<snímek>.png` → `vyrez.py`
-  (ořízni lištu nahoře a dole):
+  přímo na zápis (do `odkaz`, když číslo snímku sedí s lištou) → snímek okna v rozlišení zařízení do
+  `pracovni/trebon_<kniha>_<snímek>.png` → `vyrez.py` (ořízni lištu nahoře a dole):
   ```js
   async () => {
     const [x0, y0, x1, y1] = [185, 688, 590, 795];   // rohy zápisu na snímku okna (CSS px)

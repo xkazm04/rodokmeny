@@ -77,6 +77,10 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   kopií. „Nezahlédnut při listování“ ani prázdný výsledek databáze nejsou doklad (upstream #192).
 - Uherské sčítání 1869 není jen z archivů Bytča, Banská Bystrica a Nitra: katalog FamilySearch má záznam pro každou
   župu („Népszámlálás, <župa> 1869“). Doplněny sčítací hárky 1930 na Slovakianě (upstream #192, #161).
+- SOA Třeboň: krátký odkaz `/<kniha>/<n>` nemusí vést na snímek n (bývá n−1 nebo n+2) – do `odkaz` a deníku patří
+  `DA?menu=3&id=<kniha>&page=<n>` podle čísla v liště. Než Claude začne listovat, zkusí práci dobrovolníků: rejstříky
+  knihy po obcích, jmenný rejstřík místa, globální hledání v uvozovkách (i poznámky uživatelů), poznámky ke knize
+  a panel poznámek u snímku (upstream #167, #198, #208, #213, #217).
 
 ## 0.10.2 – 16. 11. 2026
 
