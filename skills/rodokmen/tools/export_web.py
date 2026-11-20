@@ -407,8 +407,16 @@ def main():
 
     copied = removed = 0
     klice = list(recs) + [d["img"] for d in docs_cfg] + ([cfg["uvod"]["foto"]] if cfg.get("uvod", {}).get("foto") else [])
-    zv = os.path.join(DATA, "zvyrazneni.json")
-    hl_mtime = os.path.getmtime(zv) if os.path.exists(zv) else 0
+    # rámečky už nakreslené do public/zdroje (klíč → rámečky): překreslit jen snímky, jejichž rámečky se změnily.
+    # Dřív se po každé změně data/zvyrazneni.json (každý ramecek.py) překreslovaly všechny plné snímky s rámečky
+    # (stovky velkých skenů přes ImageMagick, export trval minuty). Evidence je mimo public/, na web nejde.
+    nakresleno_json = os.path.join(WEB, ".ramecky_zdroju.json")
+    try:
+        nakresleno = json.load(open(nakresleno_json, encoding="utf-8"))
+    except (OSError, ValueError):
+        nakresleno = None   # první běh s evidencí: stávající soubory ber jako aktuální a jen je zapiš
+    prvni_evidence = nakresleno is None
+    nakresleno = nakresleno or {}
     for sub, src_dir in (("img", VYREZY), ("zdroje", ZDROJE)):
         dst_dir = os.path.join(WEB, "public", sub)
         os.makedirs(dst_dir, exist_ok=True)
@@ -417,11 +425,15 @@ def main():
             dst = os.path.join(dst_dir, key + ".jpg")
             if not os.path.exists(src):
                 continue
-            boxes = hl.get(key, {}).get("boxes", [])
+            boxes = hl.get(key, {}).get("boxes", []) if sub == "zdroje" else []
+            if sub == "zdroje" and prvni_evidence and os.path.exists(dst):
+                nakresleno[key] = boxes
             stale = not os.path.exists(dst) or os.path.getmtime(src) > os.path.getmtime(dst) \
-                or (sub == "zdroje" and boxes and hl_mtime > os.path.getmtime(dst))
+                or (sub == "zdroje" and nakresleno.get(key, []) != boxes)
             if not stale:
                 continue
+            if sub == "zdroje":
+                nakresleno[key] = boxes
             if sub == "zdroje" and boxes and draw_boxes(src, dst, boxes, os.path.join(VYREZY, key + ".jpg")):
                 copied += 1
                 continue
@@ -433,6 +445,9 @@ def main():
             if f.lower().endswith(".jpg") and f not in chtene and os.path.isfile(os.path.join(dst_dir, f)):
                 os.remove(os.path.join(dst_dir, f))
                 removed += 1
+    # evidence jen pro snímky, které v public/zdroje opravdu jsou (smazaný a znovu přidaný se nakreslí znovu)
+    nakresleno = {k: v for k, v in nakresleno.items() if os.path.exists(os.path.join(WEB, "public", "zdroje", k + ".jpg"))}
+    write(nakresleno_json, json.dumps(nakresleno, ensure_ascii=False, sort_keys=True))
     print(f"{len(people)} osob, {len(families)} rodin, {len(records)} zápisů, {len(lines)} rodů, {len(places)} míst; "
           f"zkopírováno {copied} obrázků" + (f", smazáno {removed} starých" if removed else "") +
           f"; přihlášení {'zapnuté' if gated else 'VYPNUTÉ (web je otevřený)'}")

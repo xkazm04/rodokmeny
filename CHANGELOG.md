@@ -38,6 +38,8 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - `ged_import.py` rozumí českým datům z MyHeritage a Family Tree Builderu („Odhadovaný: 23. úno, 1907“, „Okolo roku
   1790“, „Po roce 1900“, „Před rokem 1896“, „Neověřený rok úmrtí: 1957“, zkratky měsíců led, úno… čvn, čvc) – dřív je
   vynechal nebo přenesl celou větu (upstream #143). Fronta zápisů uvádí lhůtu pro úmrtí 75 let.
+- `npm run data` je na velkých projektech mnohem rychlejší: rámečky překreslí jen u snímků, jejichž rámeček se
+  změnil (evidence `web/.ramecky_zdroju.json`), dřív po každém `ramecek.py` všechny (upstream #216).
 
 **Návody**
 - Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré

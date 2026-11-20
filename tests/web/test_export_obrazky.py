@@ -51,6 +51,37 @@ try:
     check("ostatní obrázky nechá", set(puvodni) - {stazeny} <= set(zbyva), (puvodni, zbyva))
     check("soubor, který není .jpg, nechá", "poznamka.txt" in zbyva, zbyva)
     check("výpis řekne, kolik smazal", "smazáno 3 starých" in out, out)
+
+    # rámečky: překreslit jen snímky, jejichž rámečky se změnily (evidence web/.ramecky_zdroju.json, upstream #216)
+    import json, time
+    evidence = os.path.join(proj, "web", ".ramecky_zdroju.json")
+    zv_cesta = os.path.join(proj, "data", "zvyrazneni.json")
+    zv = json.load(open(zv_cesta, encoding="utf-8"))
+    ev = json.load(open(evidence, encoding="utf-8")) if os.path.exists(evidence) else {}
+    check("evidence rámečků vznikne a má plné snímky s rámečky", set(zv) & set(ev) and
+          all(ev[k] == zv[k]["boxes"] for k in set(zv) & set(ev)), ev)
+    check("smazaný snímek v evidenci není", "smazany_zapis_1890" not in ev, ev)
+    a, b = sorted(set(zv) & set(ev))[:2]
+    ZNACKA = b"\xff\xd8 neprekreslovat \xff\xd9"
+    for k in (a, b):
+        with open(os.path.join(zdr, k + ".jpg"), "wb") as f:
+            f.write(ZNACKA)
+    time.sleep(0.05)
+    zv[a]["boxes"] = [[0.1, 0.2, 0.9, 0.5]]
+    with open(zv_cesta, "w", encoding="utf-8", newline="\n") as f:
+        json.dump(zv, f, ensure_ascii=False)
+    rc, out = export()
+    obsah = {k: open(os.path.join(zdr, k + ".jpg"), "rb").read() for k in (a, b)}
+    check("snímek se změněným rámečkem se překreslí", rc == 0 and obsah[a] != ZNACKA, out)
+    check("snímek beze změny rámečku se nepřekresluje", obsah[b] == ZNACKA, out)
+    check("evidence má nový rámeček", json.load(open(evidence, encoding="utf-8")).get(a) == zv[a]["boxes"])
+
+    os.remove(evidence)   # projekt ze starší verze: první běh převezme stávající soubory bez překreslení
+    with open(os.path.join(zdr, a + ".jpg"), "wb") as f:
+        f.write(ZNACKA)
+    rc, out = export()
+    check("první běh s evidencí nic nepřekreslí", rc == 0 and open(os.path.join(zdr, a + ".jpg"), "rb").read() == ZNACKA
+          and os.path.exists(evidence), out)
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
