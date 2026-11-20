@@ -118,6 +118,12 @@ def main():
 
         out = spust(tmp, "seznam")
         over("seznam případů", "matej_32" in out, out)
+
+        # dočasný soubor má jedinečný název – pevná cesta „….json.tmp“ jiného běhu uložení nepřekazí (review #1)
+        os.makedirs(os.path.join(tmp, "data", "rodiny", "matej_32.json.tmp"))
+        r = subprocess.run(PY + [os.path.join(tmp, "tools", "rodiny.py"), "ukol", "matej_32", "vse", "3", "sčítání"],
+                           cwd=tmp, capture_output=True, text=True, encoding="utf-8")
+        over("uložení s cizím …json.tmp projde", r.returncode == 0, r.stdout + r.stderr)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     chyb = sum(1 for _, ok in VYSLEDKY if not ok)

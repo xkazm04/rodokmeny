@@ -30,7 +30,7 @@ svedek, baba, zemrely, manzel, manzelka, rodic, jiny. Jména piš česky v 1. p�
 Nástroj jména porovnává volně (latinská a německá křestní jména, -ová, w/v, cz/č…), proto jsou shody jen NÁMĚTY:
 každou ověř v zápisu. Rozhoduje doklad, ne počet shod. Do data/osoby.py jde až potvrzený kandidát.
 """
-import json, os, re, sys
+import json, os, re, sys, tempfile
 from collections import defaultdict
 from datetime import date
 
@@ -69,11 +69,17 @@ def nacti(pripad):
 
 def uloz(pripad, d):
     os.makedirs(SLOZKA, exist_ok=True)
-    tmp = cesta(pripad) + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        json.dump(d, f, ensure_ascii=False, indent=1)
-        f.write("\n")
-    os.replace(tmp, cesta(pripad))
+    # dočasný soubor s jedinečným názvem – dva zápisy najednou si ho nepřepíšou
+    fd, tmp = tempfile.mkstemp(dir=SLOZKA, prefix=pripad + ".json.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as f:
+            json.dump(d, f, ensure_ascii=False, indent=1)
+            f.write("\n")
+        os.replace(tmp, cesta(pripad))
+    except BaseException:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
 
 
 def nove_id(seznam, pismeno):
