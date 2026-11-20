@@ -20,6 +20,16 @@ def over(nazev, a, b):
 for m, z in (("Kufa", "Kufová"), ("Kuffa", "Kufová"), ("Mika", "Miková"), ("Hula", "Hulová"), ("Novák", "Nováková"),
              ("Nowak", "Nováková"), ("Pech", "Pechová"), ("Javůrek", "Javůrková")):
     over(f"prijmeni_klic {m} = {z}", jmena.prijmeni_klic(m), jmena.prijmeni_klic(z))
+# přídavná jména: Novotný = Novotná, Malý = Malá, Dvorský = Dvorská, i bez čárky (Novotny)
+for m, z in (("Novotný", "Novotná"), ("Malý", "Malá"), ("Dvorský", "Dvorská"), ("Novotny", "Novotná"),
+             ("Veselý", "Veselá")):
+    over(f"prijmeni_klic {m} = {z}", jmena.prijmeni_klic(m), jmena.prijmeni_klic(z))
+over("prijmeni_klic Novotný ≠ Novák", jmena.prijmeni_klic("Novotný") == jmena.prijmeni_klic("Novák"), False)
+over("prijmeni_klic Malý ≠ Malík", jmena.prijmeni_klic("Malý") == jmena.prijmeni_klic("Malík"), False)
+over("krestni_klic Matthaeus = Matouš", jmena.krestni_klic("Matthaeus"), jmena.krestni_klic("Matouš"))
+over("krestni_klic Matthäus = Matouš", jmena.krestni_klic("Matthäus"), jmena.krestni_klic("Matouš"))
+over("krestni_klic Mathias = Matěj", jmena.krestni_klic("Mathias"), jmena.krestni_klic("Matěj"))
+over("krestni_klic Matthaeus ≠ Matěj", jmena.krestni_klic("Matthaeus") == jmena.krestni_klic("Matěj"), False)
 over("prijmeni_klic Novák", jmena.prijmeni_klic("Novák"), "novak")
 over("prijmeni_klic Dvořák beze změny", jmena.prijmeni_klic("Dvořák"), "dvorak")
 over("krestni_klic Johann Georg", jmena.krestni_klic("Johann Georg"), "jan")
