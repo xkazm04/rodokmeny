@@ -132,6 +132,8 @@ Pravidla, která chrání kvalitu:
   Než ztotožníš křest s předkem, ověř, že nejde o stejnojmenného sourozence, který zemřel (nekronymum, `matriky.md` → Pasti).
 - **Čti celý zápis včetně okrajů** – pozdější poznámky o úmrtí, sňatku, legitimaci bývají nejcennější.
 - **Rodina přes čísla domů**: stejné číslo popisné a řemeslo přes generace je silná stopa; v knize hledej celé domácnosti.
+  U **sčítání lidu** vytěž celou domácnost (i další domy stejného příjmení) a pak dohledej křty – sčítání rodiče
+  nejmenuje (`metodika.md` → Sčítání lidu).
 - **Celá rodina a víc kandidátů** (`tools/rodiny.py`, postup v `reference/matriky.md`): křty sourozenců doplní, co v zápisu
   předka chybí. Když na předka sedí víc lidí stejného jména (18. století), zapiš všechny jako kandidáty a čti po vrstvách,
   dokud se jejich kmotři, svědci nebo dům nepotkají s doloženými údaji. Nevybírej prvního nalezeného.
@@ -206,8 +208,8 @@ uživateli, ať ví, proč kredity tolik neubývají.
   0–1, rozdělí zápis na dvě čitelné poloviny), než ho zapíšeš jako `doc`. Uživateli to vysvětli správně: je to stejný
   model, jde o princip čtyř očí – pomocník nemá kontext (dvě rodiny stejného jména ve vsi).
 - Na špatně čitelné knihy (kurent 1. poloviny 19. století, vybledlé snímky) pomocníky nepouštěj, nebo jim dej přesný
-  snímek; ARON a Porta fontium zvládají dobře. Prohlížeč může mít najednou jen jeden pomocník, proto dávej přednost
-  nástrojům bez prohlížeče.
+  snímek; ARON a Porta fontium zvládají dobře. Prohlížeč může mít najednou jen jeden pomocník (Claude in Chrome má
+  pro všechny jednu skupinu karet – souběžní si zavírají karty), proto dávej přednost nástrojům bez prohlížeče.
 - **Po každé větší větvi kontrola silnějším modelem** (jen čtení dat a výřezů, bez sítě) – postup v
   `reference/zadani_pomocnika.md` → Kontrola dat silnějším modelem.
 

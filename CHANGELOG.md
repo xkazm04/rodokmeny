@@ -77,6 +77,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   nezobrazil (upstream #74, #89).
 - `kontrola.py` nechce odkaz na snímek u zápisů ze svazku bez `portal` (doklad od rodiny, kopie z badatelny)
   (upstream #37, #89).
+- Příkaz `svazek` v `aron_img.py`, `portafontium.py` a `ebadatelna.py` zapíše jen svou položku přes `zapis.py` –
+  dřív přepsal celý `data/svazky.json` (jiné odsazení, ručně psané položky přeformátované) a ručně doplněná pole
+  svazku zahodil. `portafontium.py svazek <kniha> vypis` jen vypíše (upstream #189, #200).
 - Mapa na webu ukáže osobu jen v obcích, kde sama žila: ne u fary, okresu, přívlastku („Chlum u Hořic“), rodné obce
   matky („roz. Nováková z Bašnic“) ani u muže v obci nevěsty. `kontrola.py` vypíše všechny doložené předky bez své
   obce, ne jen tři (upstream #139).
@@ -88,9 +91,14 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   diakritiku, číst stránku jako obrázek, jak soupis zapsat (obvykle `prob`); kniha zemřelých mateřské fary nemusí
   zapisovat filiální vsi – ověř na vzorcích (upstream #84, #89).
 - Typické pasti v `reference/matriky.md`: sloupce ledig/Witwer, křížek v knize narozených, rozsah rejstříku, vdova
-  jako „dcera“ prvního muže, kandidátní zápis není doklad, roky z cizích stromů nepatří do `y`; portály: SOA Třeboň
-  se vrací na předchozí snímek, Matricula bez prohlížeče pomocníkovi obraz nedá; zadání pomocníka: jedna úzká stopa
-  a kontrola dat silnějším modelem po větší větvi (upstream #187).
+  jako „dcera“ prvního muže, kandidátní zápis není doklad, roky z cizích stromů nepatří do `y`; Matricula bez
+  prohlížeče pomocníkovi obraz nedá; zadání pomocníka: jedna úzká stopa a kontrola dat silnějším modelem po větší
+  větvi (upstream #187).
+- Sčítání lidu (`metodika.md`): vytěžit celou domácnost a další domy stejného příjmení, pak dohledat křty (sčítání
+  rodiče nejmenuje), indexy MyHeritage 1921 jen jako ukazatel. Portály: SOA Třeboň ověření člověka (ALTCHA) řeší jen
+  uživatel, adresa snímku rovnou ve 100 %, sčítání a kroniky na stránce místa; Porta fontium ne přes `slusne.py curl`;
+  ZA Opava snímek o 1–2 vedle a indexy MyHeritage jako rozcestník; krajské Krameriusy (API v7 s OCR). Pomocníci:
+  dočasné odkazy `nova1` na nové osoby, přehled výřezů montáží, čtení ve 100 % (upstream #189).
 - Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré
   diecéze, takže když obec v jednom archivu není, zkus sousední (upstream #114).
 - `SIDE` v `osoby.py` a `reference/data.md`: `k` je předek, jehož je příbuzný sourozencem (ne „ke kterému patří“);

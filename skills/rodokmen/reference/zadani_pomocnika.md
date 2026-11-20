@@ -44,6 +44,8 @@ Pravidla:
   snímek | stav (přečteno / nečitelné / NEPŘEČTENÝ) | rok, první a poslední jméno | nálezy (souřadnice zápisu
   x0,y0,x1,y1 jako zlomky 0–1, přepis) | související výskyty (vzácné příjmení rodu, stejný dům).
 - Když hlídač čtení další čtení zamítne, skonči a vrať, co máš.
+- Z prohlížeče čti a ukládej zápis přiblížený na 100 % – z přehledového zmenšení vznikají chybná čtení.
+- Nové osoby označ nova1, nova2… (s odkazem na otce, matku, manžela), ne odhadnutými čísly.
 - Píšeš jen do pracovni/pom_<větev>/, do data/ nikdy. Síť jen přes python3 -I tools/slusne.py …;
   hláška „zastavený“ = skonči a ohlas to.
 - <technické pasti z reference/matriky.md pro macOS nebo Windows>
@@ -51,6 +53,11 @@ Výsledek: obsah souboru vysledek.md, seznam NEPŘEČTENÝCH snímků a čtení 
 ```
 
 ## Po návratu pomocníka
+- Nové osoby ať pomocník ve výsledku označí **dočasnými odkazy** (`nova1`, `nova2` – s otcem, matkou, manželem),
+  ne odhadnutými čísly osob; čísla a zařazení do `P`/`SIDE` určíš ty při zápisu.
+- Po větším kole si před zápisem prohlédni všechny nové výřezy pohromadě
+  (`magick montage vyrezy/<klíč>.jpg … -geometry +6+6 pracovni/montaz.jpg`) – špatně zvolený výřez nebo zápis jiné
+  osoby je tak vidět hned.
 - **Výsledek přerušeného běhu je neověřený** (limit, chyba, hlídač): snímky bez řádku ve `vysledek.md` ber jako
   neprošlé, i když souhrn tvrdí opak.
 - Kontrolní zápis nepřečetl správně → jeho záporné výsledky neplatí.

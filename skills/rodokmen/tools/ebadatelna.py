@@ -347,14 +347,9 @@ def snimek(druh, xid, n, out, volby):
 # ---------- svazky.json ----------
 
 def zapis_svazek(klic, zaznam):
-    path = os.path.join(ROOT, "data", "svazky.json")
-    d = {}
-    if os.path.exists(path):
-        with open(path, encoding="utf-8") as f:
-            d = json.load(f)
-    d[klic] = zaznam
-    with open(path, "w", encoding="utf-8", newline="\n") as f:
-        json.dump(d, f, ensure_ascii=False, indent=1)
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import zapis   # jen ta jedna položka, formát souboru zůstane (tools/zapis.py)
+    zapis.zapis("svazky", klic, zaznam, sloucit=True)
     print(f"{klic} -> {zaznam['svazek']}")
 
 

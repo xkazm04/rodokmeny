@@ -87,6 +87,16 @@ operátů), SOA Třeboň (stránka místa → Sčítání lidu), ARON, FamilySea
   (1857 vlevo nahoře, 1880 vpravo nahoře, 1890 v záhlaví); dům = 1–3 snímky (1910 obálka a osoby). Líc a rub se střídají, listy
   bývají nafocené dvakrát a v některých vsích jdou domy sestupně – pořadí nejdřív zjisti ze 3–4 vzdálených snímků.
   Velkostatek mívá vlastní osadu („… Zámek“), čeleď je tam.
+- **Kde dál:** Porta fontium u některých okresů (1880–1921, jen v prohlížeči), jinde bývají archy ve fondu obce nebo
+  okresního úřadu ve státním okresním archivu – zeptej se archivu. **Indexy MyHeritage** (sčítání 1921) bez
+  předplatného ukážou jen jména a roky – stačí jako ukazatel. Podle místa je zúží jen ruční výběr z nabídky míst
+  (adresa ani automaticky vyplněný formulář místo nevezmou) – ať to udělá uživatel a pošle adresu výsledků.
+- **Vytěž celou domácnost**, ne jen hledanou osobu: všechny osoby se vztahem, daty a místem narození, sloupce o sňatku
+  a ovdovění. Projdi i ostatní domy obce se stejným příjmením a dům rodiny manželky.
+- **Potom dohledej křty.** Vztah ze sčítání („syn“, „sestra přednosty“) je doložený jen k přednostovi, rodiče
+  nejmenuje: sourozence předka zapiš jako doloženého až s křtem (oba rodiče výslovně), do té doby `prob`. Spolubydlící
+  stejného příjmení bez uvedeného vztahu je stopa do deníku, ne příbuzný.
+- **Zápis:** `druh` „S“ v `zaznamy.json`, klíč např. `horni_lhota_scitani_1921_cp12`, výřez celé domácnosti.
 
 ## Chyby, na které si dát pozor
 (Doplněk k „Typickým pastem“ v `matriky.md`.)
