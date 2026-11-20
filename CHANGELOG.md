@@ -6,7 +6,7 @@ dá v repozitáři **Watch → Custom → Releases**.
 
 Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to podle souboru `VERZE`).
 
-## Nevydáno
+## 0.11.0 – 20. 11. 2026
 
 **Nové**
 - Hlídač čtení snímků (`tools/hlidac_cteni.py`): pomocníkovi zamítne třetí čtení téhož snímku a víc než 30 snímků,
