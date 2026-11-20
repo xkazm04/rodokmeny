@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Data for the family-view page /strom/ (Strom).
 
-Reads web/src/data/site.json (ancestors, already privacy-sanitised by tools/export_web.py) and the SIDE list
-in data/osoby.py (side relatives with the optional keys id / v / koho / rodice / sex), and writes
-web/src/generated/strom.json: one node per person with parents, spouses and children.
-Run after export_web.py (scripts/data.mjs does that).
+tools/export_web.py calls build() with the site data (ancestors, already privacy-sanitised) and the SIDE list from
+data/osoby.py (side relatives with the optional keys id / v / koho / rodice / sex); it writes
+web/src/generated/strom.json: one node per person with parents, spouses and children. Run on its own, it reads
+web/src/data/site.json and data/osoby.py itself (after export_web.py).
 """
 import json
 import os
@@ -37,12 +37,14 @@ def guess_sex(name):
 
 
 def main():
-    with open(SITE, encoding="utf-8") as f:
+    with open(SITE, encoding="utf-8-sig") as f:
         site = json.load(f)
     ns = {}
-    exec(open(os.path.join(ROOT, "data", "osoby.py"), encoding="utf-8").read(), ns)
-    side = ns.get("SIDE", [])
+    exec(open(os.path.join(ROOT, "data", "osoby.py"), encoding="utf-8-sig").read(), ns)   # utf-8-sig: BOM z Windows
+    build(site, ns.get("SIDE", []))
 
+
+def build(site, side):
     people = site["people"]
     by_k = {p["k"]: slug for slug, p in people.items()}
     for a, slug in (site.get("aliases") or {}).items():
@@ -107,34 +109,37 @@ def main():
         nodes[i] = dict(id=i, name=name, years=years, sex=s.get("sex") or guess_sex(name), page=None, rel="",
                         status="", st="side", color=None, facts=s.get("f", []), text=s.get("t", ""),
                         parents=[], spouses=[], children=[], k=None, gen=None, line=None, lineSlug=None, photo=s.get("foto"),
-                        records=[dict(key=k, **rec_title.get(k, dict(title=k, date=""))) for k in s.get("r", [])],
+                        records=[dict(key=k, **rec_title[k]) for k in s.get("r", []) if k in rec_title],   # jen zápisy se stránkou
                         docs=[dict(img=d["img"], caption=d.get("caption", "")) for d in site.get("docs", [])
                               if d.get("img") == s.get("foto") or d.get("img") in s.get("fotky", [])])
 
     def target(s):
         return ids.get(s["koho"]) if s.get("koho") else by_k.get(s["k"])
 
-    for kind in ("sour", "manz", "dite"):          # spouses before children, so a child gets both parents
-        for s in side:
-            if not s.get("id") or s.get("v", "sour") != kind:
-                continue
-            i, t = ids[s["id"]], target(s)
-            if not t:
-                continue
-            if kind == "sour":
-                anchor = people.get(t, {})
-                if s.get("rodice") != "matka":
-                    link_parent(i, anchor.get("father"))
-                if s.get("rodice") != "otec":
-                    link_parent(i, anchor.get("mother"))
-            elif kind == "manz":
-                link_spouse(i, t)
-            else:
-                link_parent(i, t)
-                if s.get("rodice") in ("otec", "matka"):   # child of this parent only (other parent not in the data)
-                    continue
-                for sp in node(t)["spouses"]:
-                    link_parent(i, sp)
+    def entries(kind):
+        return [(s, ids[s["id"]], target(s)) for s in side if s.get("id") and s.get("v", "sour") == kind and target(s)]
+
+    for s, i, t in entries("manz"):                # spouses before children, so a child gets both parents
+        link_spouse(i, t)
+    for s, i, t in entries("dite"):
+        link_parent(i, t)
+        if s.get("rodice") in ("otec", "matka"):   # child of this parent only (other parent not in the data)
+            continue
+        if len(node(t)["spouses"]) == 1:
+            link_parent(i, node(t)["spouses"][0])
+        elif node(t)["spouses"]:                   # remarried: the other parent is unknown, do not guess
+            print(f"POZOR: strom – {s['n']}: {node(t)['name']} má víc manželů, druhého rodiče nevím; kreslím jen "
+                  f"jednoho (rodice='otec'/'matka' hlášku vypne)")
+    # siblings last and repeatedly: the target (also a side relative, in any order in SIDE) may get its parents later
+    siblings = entries("sour")
+    for _ in range(len(siblings) + 1):
+        before = sum(len(n["parents"]) for n in nodes.values())
+        for s, i, t in siblings:
+            for par in list(node(t)["parents"]):
+                if s.get("rodice") != ("matka" if node(par)["sex"] == "M" else "otec"):
+                    link_parent(i, par)
+        if sum(len(n["parents"]) for n in nodes.values()) == before:
+            break
 
     def birth(i):
         return year_of(node(i)["years"])

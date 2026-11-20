@@ -62,6 +62,7 @@ P = {
   - `koho` – `id` jiného bočního příbuzného, ke kterému se `v` vztahuje (manžel sestry, děti sestry); bez něj předek `k`;
   - `rodice` – `"otec"` / `"matka"` u nevlastního sourozence (společný jen tento rodič); u dítěte (`v="dite"`) znamená,
     že je dítětem jen osoby `koho`, ne jejích manželů v datech (např. dítě z druhého manželství, jehož matka v datech není);
+    bez `rodice` dostane dítě za druhého rodiče manžela osoby `koho` – jen když je v datech jediný (víc manželů: jen `koho`);
   - `sex` – `"M"` / `"F"`, když pohlaví nejde odhadnout z koncovky příjmení;
   - `f` – fakta jako u předků (`"* 1892 Holice"`, `"× 1913 Ostřetín Karel Zeman"`); `foto` – obrázek z `dokumenty.json`
     jako portrét na kartičce, `fotky=[…]` další obrázky v panelu.

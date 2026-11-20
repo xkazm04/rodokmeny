@@ -65,6 +65,19 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - `ged_import.py`: citace sňatku u rodiny se počítá k osobě; ústní a neznámé zdroje už nejsou „Record Match“.
 - `denik.py` počítá i řádky bez mezer („|2|“); deník, případy rodin, rejstřík a data se zapisují přes dočasný soubor
   s jedinečným názvem.
+- Hlídač čtení snímků při úklidu maže jen své stavové soubory, nikdy cizí soubory ve složce.
+- Aktualizace projektu: vlastní hooky ve stejné skupině jako hlídač zůstanou (i po `--bez-hlidace`); hlídač čtení
+  se nezapne, dokud čeká `tools/hlidac_cteni.py` v konfliktu; starší `.gitignore` dostane `.playwright-mcp/`.
+- Brzda: krajské Krameriusy (a další weby se stejným limitem pro dotaz i snímek) mají jeden společný rozestup.
+- Hlídač sítě nezamítne příkaz, který Python jen zmiňuje v textu v uvozovkách (např. zpráva commitu).
+- Strom: `strom.json` zapisuje `export_web.py` a rozložení počítá i `npm run build` – nasazení přes Docker bez Node
+  už nespadne ani neukáže starý strom; `osoby.py` s BOM (Windows) nevadí.
+- Strom: dítě osoby s víc manžely nedostane za rodiče všechny; sourozenec bočního příbuzného (`koho`) dostane jeho
+  rodiče; nevlastní sourozenec visí jen pod společným rodičem; předek přes dvě větve má obě spojnice; filtr rodů
+  rozliší dva rody stejného jména; klepnutí do mapky míří přesně; „Na začátek“ funguje i opakovaně; zápis bez
+  stránky se v panelu neodkazuje.
+- Stránka osoby: „Další děti“ neukazují sourozence bočního příbuzného (`koho`).
+- Příběhy: galerie rodinných dokumentů zůstane i bez hlavního příběhu.
 
 **Návody**
 - MZA: místo pevného limitu 45–60 snímků za den skončit při skutečném příznaku (bílé dlaždice, 403/429/503)

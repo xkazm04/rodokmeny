@@ -11,11 +11,13 @@ Co dělá: když Read volá pomocník (ve vstupu hooku je `agent_id`, v hlavní 
   - třetí čtení téhož snímku (RODOKMEN_CTENI_OPAKOVANI, výchozí 2),
   - čtení nad 30 snímků celkem (RODOKMEN_CTENI_MAX; zadání má nejvýš 15 snímků, každý nejvýš dvakrát).
 Hlavní konverzaci nehlídá nikdy. Při jakékoli vlastní chybě čtení povolí – rozbitý hlídač nesmí zastavit práci.
-Stav: ~/.cache/rodokmen_cteni/<session>_<pomocník>.log (řádek na čtení), soubory starší 3 dnů maže.
+Stav: ~/.cache/rodokmen_cteni/<session>_<pomocník>.cteni.log (řádek na čtení); své stavy (*.cteni.log) starší 3 dnů
+maže, jiné soubory ve složce nechá.
 """
 import json, os, sys, time
 
 OBRAZKY = (".jpg", ".jpeg", ".png", ".webp", ".gif")
+PRIPONA = ".cteni.log"   # stav hlídače; úklid maže jen tyto soubory (složka z RODOKMEN_CTENI_SLOZKA může být cizí)
 
 
 def slozka():
@@ -36,14 +38,15 @@ def main():
         sl = slozka()
         os.makedirs(sl, exist_ok=True)
         zaklad = "".join(c if c.isalnum() or c in "-_" else "_" for c in f"{vstup.get('session_id', 's')}_{vstup['agent_id']}")
-        cesta = os.path.join(sl, zaklad + ".log")
+        cesta = os.path.join(sl, zaklad + PRIPONA)
         cteni = []
         if os.path.exists(cesta):
             with open(cesta, encoding="utf-8") as f:
                 cteni = [r.rstrip("\n") for r in f]
-        for stary in os.listdir(sl):   # úklid starých stavů
+        for stary in os.listdir(sl):   # úklid starých stavů – jen vlastních
             p = os.path.join(sl, stary)
-            if time.time() - os.path.getmtime(p) > 3 * 86400:
+            if (stary.endswith(PRIPONA) and os.path.isfile(p) and not os.path.islink(p)
+                    and time.time() - os.path.getmtime(p) > 3 * 86400):
                 os.remove(p)
     except Exception:
         return 0   # chyba hlídače nesmí zastavit práci

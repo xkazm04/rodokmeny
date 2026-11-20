@@ -10,7 +10,7 @@ import glob, os, shutil, subprocess, sys, tempfile, time, traceback
 
 SKILL = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "skills/rodokmen")
 RADKY = [f"radek {i}" for i in range(1, 21)]
-POCET = 21   # počet případů v pripady()
+POCET = 22   # počet případů v pripady()
 PRESKOCENO = "přeskočeno: "   # případ, který tu nejde vyzkoušet (počítá se zvlášť)
 
 
@@ -93,6 +93,13 @@ def pripady(koren):
     assert cti(proj("tools", "skript.sh")) == "#!/bin/sh\necho ahoj\n"
     assert cti(proj(".skill_sablona", "tools", "skript.sh")) == "#!/bin/sh\necho ahoj\n"
     yield "nový projekt uloží šablonu do .skill_sablona/"
+
+    # 1b. existující .gitignore ze starší verze dostane nová pravidla, vlastní zůstanou (i CRLF), opakovaně jen jednou
+    zapis(proj(".gitignore"), "# moje\nmoje_slozka/\n", nl="\r\n")
+    spust(s, p)
+    spust(s, p)
+    assert cti(proj(".gitignore")) == "# moje\r\nmoje_slozka/\r\n.playwright-mcp/\r\n", cti(proj(".gitignore"))
+    yield ".gitignore starého projektu dostane .playwright-mcp/"
 
     # 2. neupravený soubor, šablona se změnila → přepsat bez zálohy
     nove = zmen(RADKY, 0, "radek 1 z nove sablony")

@@ -96,7 +96,7 @@ def posoudit(tool, cmd, cwd):
         zbytek = re.split(r"[;&|\n]", cmd[m.end():], maxsplit=1)[0]
         if (URL.search(zbytek) or "$" in zbytek) and not jen_volne(zbytek):
             return f"{m.group(1)} přímo na web"
-    for m in PYTHON.finditer(cmd):
+    for m in PYTHON.finditer(holy):   # python mimo text v uvozovkách; argumenty z cmd (pozice sedí)
         zbytek = re.split(r"[;&|]", cmd[m.end():], maxsplit=1)[0].split()
         args = [a for a in zbytek if a not in ("-I", "-u", "-X", "utf8", "-B", "-E", "-s")]
         if args and args[0].strip("\"'").endswith("slusne.py"):
