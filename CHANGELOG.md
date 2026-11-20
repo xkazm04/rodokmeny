@@ -40,12 +40,16 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   vynechal nebo přenesl celou větu (upstream #143). Fronta zápisů uvádí lhůtu pro úmrtí 75 let.
 - `npm run data` je na velkých projektech mnohem rychlejší: rámečky překreslí jen u snímků, jejichž rámeček se
   změnil (evidence `web/.ramecky_zdroju.json`), dřív po každém `ramecek.py` všechny (upstream #216).
+- `aron_img.py` stahuje snímek bez udané úrovně v plném rozlišení (dřív poloviční – kurent z něj byl rozmazaný
+  a četl se špatně). Archiv to nezatíží víc, sken se stahuje celý jedním požadavkem tak jako tak (upstream #119, #120).
 
 **Návody**
 - Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré
   diecéze, takže když obec v jednom archivu není, zkus sousední (upstream #114).
 - `SIDE` v `osoby.py` a `reference/data.md`: `k` je předek, jehož je příbuzný sourozencem (ne „ke kterému patří“);
   dítě předka 16 mimo linii má `k=8` (upstream #68).
+- Zápisy se čtou jen z plného rozlišení (ARON úroveň 0, bez `nahled`, v prohlížeči přiblížit); zmenšenina jen na
+  hledání stránky (upstream #119, #120).
 
 ## 0.10.2 – 16. 11. 2026
 

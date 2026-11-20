@@ -89,6 +89,9 @@ Základní smyčka pro každou osobu:
    rejstřík, začni jím.
 4. **Stáhni snímek** do `pracovni/<svazek>/` a nech ho tam – před dalším stažením se podívej, jestli ho už nemáš.
    Najdi zápis, **přečti ho sám ze snímku** (přiblíž si výřez v plném rozlišení).
+   **Čti jen z plného rozlišení** (ARON úroveň `0`, Porta fontium a eBadatelna bez `nahled`, v prohlížeči přiblížit na
+   nejvyšší detail a počkat na načtení): zmenšený snímek je rozmazaný a ruka se z něj čte špatně, hodí se jen na hledání
+   stránky. Nečitelné místo řeš výřezem z plného rozlišení, ne zvětšením zmenšeniny.
 5. **Zapiš nález** (vždy všech 6 kroků, i když to zdržuje):
    1. svazek do `data/svazky.json` (ARON: `python3 -I tools/aron_img.py <apu> svazek`, jinak `tools/zapis.py svazky`),
    2. zápis do `data/zaznamy.json` (klíč = popisný název, např. `holice_krest_jan_novak_1890`; odkaz na snímek) přes `tools/zapis.py`,
