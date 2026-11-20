@@ -153,6 +153,24 @@ try:
 finally:
     shutil.rmtree(tmp)
 
+# řádky bez mezer kolem čísla „|2|“ (platný markdown, rejstřík je zná) se počítají do čísel (review #44)
+tmp = tempfile.mkdtemp()
+try:
+    log = os.path.join(tmp, "research_log.md")
+    with open(log, "w", encoding="utf-8", newline="\n") as f:
+        f.write("# Deník\n\n| # | datum | zdroj | rozsah | hledáno | výsledek | citace |\n|---|---|---|---|---|---|---|\n"
+                "|2| 2026-11-11 | a | b | c | d | e |\n|  3b  | 2026-11-11 | a | b | c | d | e |\n")
+    denik.LOG = log
+    denik.text_main = lambda: ""
+    try:
+        n = denik.pridej(dict(zdroj="z", rozsah="r", hledano="h", vysledek="v"))
+    except SystemExit as e:
+        n = e
+    VYSLEDKY.append((n == 4, f"denik: řádky „|2|“ a „|  3b  |“ započítané, další číslo 4 ({n})"))
+    VYSLEDKY.append((not [x for x in os.listdir(tmp) if x.endswith(".tmp")], "denik: nezůstal dočasný soubor"))
+finally:
+    shutil.rmtree(tmp)
+
 spatne = [t for ok, t in VYSLEDKY if not ok]
 for ok, t in VYSLEDKY:
     print(("OK   " if ok else "CHYBA"), t)

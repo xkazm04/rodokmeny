@@ -210,16 +210,22 @@ def oprav_odkazy(opravit):
         if f and f["type"] == "TILE":
             dobre += 1
         elif tile:
-            nahrady[file_id] = tile["id"]
+            nahrady[(apu, dao_id, file_id)] = tile["id"]
         else:
             nezname.append(f"…/apu/{apu}/dao/{dao_id}/file/{file_id}")
     zmenene = {}
     for p, t in texty.items():
-        nove = t
-        for stare, tile_id in nahrady.items():
-            nove = nove.replace(stare, tile_id)
+        kolik = [0]
+
+        def oprav(m):   # jen id souboru v ověřeném odkazu prohlížeče, ne stejné id jinde v textu
+            tile_id = nahrady.get(m.groups())
+            if not tile_id:
+                return m.group(0)
+            kolik[0] += 1
+            return m.group(0)[:m.start(3) - m.start(0)] + tile_id
+        nove = ODKAZ.sub(oprav, t)
         if nove != t:
-            zmenene[p] = (nove, sum(t.count(stare) for stare in nahrady))
+            zmenene[p] = (nove, kolik[0])
     print(f"odkazy na snímky ARON: {dobre + len(nahrady) + len(nezname)} různých, správně {dobre}, "
           f"na první snímek {len(nahrady)}" + (f", nenalezeno ve svazku {len(nezname)}" if nezname else ""))
     for p, (_, kolik) in zmenene.items():
@@ -265,7 +271,7 @@ if __name__ == "__main__":
         polozka = dict(archiv=fond if rest else "", portal="ARON", svazek=rest or vol["name"],
                        popis=(vol.get("description") or "")[:300], snimku=len(tiles),
                        url=f"https://aron.vychodoceskearchivy.cz/apu/{vol['id']}")
-        zapis.zapis("svazky", apu[:8], polozka, sloucit=True)
+        zapis.zapis_svazek(apu[:8], polozka)   # ručně upravená pole (popis) zůstanou
         print(apu[:8], "->", polozka["svazek"])
         sys.exit(0)
     if sys.argv[2] == "link":

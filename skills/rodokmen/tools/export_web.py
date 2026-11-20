@@ -76,6 +76,11 @@ def frontmatter(text):
         if not kv:
             continue
         v = kv.group(2)
+        if v[:1] in ("\"", "'"):   # hodnota v uvozovkách – „#“ uvnitř nechat, komentář za ní pryč
+            q = re.match(r'"(?:[^"\\]|\\.)*"' if v[0] == '"' else r"'(?:[^']|'')*'", v)
+            v = q.group(0) if q else v
+        else:   # komentář YAML „  # …“ za hodnotou (jako v reference/pribehy.md) – web ho čte stejně
+            v = re.sub(r"(?:^|\s+)#.*$", "", v)
         if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
             try:
                 v = json.loads(v) if v[0] == '"' else v[1:-1].replace("''", "'")
@@ -497,9 +502,19 @@ def main():
     try:
         nakresleno = json.load(open(nakresleno_json, encoding="utf-8"))
     except (OSError, ValueError):
-        nakresleno = None   # první běh s evidencí: stávající soubory ber jako aktuální a jen je zapiš
-    prvni_evidence = nakresleno is None
-    nakresleno = nakresleno or {}
+        nakresleno = None   # první běh s evidencí: stávající soubory novější než rámečky ber jako aktuální
+    prvni_evidence = not isinstance(nakresleno, dict)
+    nakresleno = {} if prvni_evidence else nakresleno
+    zv_json = os.path.join(DATA, "zvyrazneni.json")
+    zv_cas = os.path.getmtime(zv_json) if os.path.exists(zv_json) else 0
+    # obrázky, které export sám vytvořil (img/<klíč>.jpg, zdroje/<klíč>.jpg) – mazat se smí jen ty, ne ručně přidané
+    exportovane_json = os.path.join(WEB, ".exportovane_obrazky.json")
+    try:
+        drive = json.load(open(exportovane_json, encoding="utf-8"))
+        drive = {p for p in drive if isinstance(p, str) and re.fullmatch(r"(?:img|zdroje)/[^/\\]+\.jpg", p)}
+    except (OSError, ValueError, TypeError):
+        drive = None   # první běh s evidencí: nic nemazat, jen ohlásit neznámé obrázky
+    exportovane = set()
     for sub, src_dir in (("img", VYREZY), ("zdroje", ZDROJE)):
         dst_dir = os.path.join(WEB, "public", sub)
         os.makedirs(dst_dir, exist_ok=True)
@@ -508,26 +523,36 @@ def main():
             dst = os.path.join(dst_dir, key + ".jpg")
             if not os.path.exists(src):
                 continue
+            exportovane.add(f"{sub}/{key}.jpg")
             boxes = hl.get(key, {}).get("boxes", []) if sub == "zdroje" else []
-            if sub == "zdroje" and prvni_evidence and os.path.exists(dst):
-                nakresleno[key] = boxes
-            stale = not os.path.exists(dst) or os.path.getmtime(src) > os.path.getmtime(dst) \
-                or (sub == "zdroje" and nakresleno.get(key, []) != boxes)
+            if sub == "zdroje" and prvni_evidence and os.path.exists(dst) and os.path.getmtime(dst) >= zv_cas:
+                nakresleno[key] = boxes   # soubor vznikl po poslední změně rámečků – má je aktuální
+            ramecky_jinak = sub == "zdroje" and nakresleno.get(key) != boxes
+            if ramecky_jinak and nakresleno.get(key) == [] and not magick_bin():
+                ramecky_jinak = False   # kopie bez rámečků (chybí ImageMagick) – nakreslí se, až bude
+            stale = not os.path.exists(dst) or os.path.getmtime(src) > os.path.getmtime(dst) or ramecky_jinak
             if not stale:
                 continue
-            if sub == "zdroje":
-                nakresleno[key] = boxes
+            copied += 1
             if sub == "zdroje" and boxes and draw_boxes(src, dst, boxes, os.path.join(VYREZY, key + ".jpg")):
-                copied += 1
+                nakresleno[key] = boxes
                 continue
             shutil.copy2(src, dst)
-            copied += 1
-        # obrázky smazaných nebo stažených zápisů a dokumentů pryč – jinak by dál šly na web (upstream #25)
-        chtene = {key + ".jpg" for key in klice if os.path.exists(os.path.join(src_dir, key + ".jpg"))}
-        for f in os.listdir(dst_dir):
-            if f.lower().endswith(".jpg") and f not in chtene and os.path.isfile(os.path.join(dst_dir, f)):
-                os.remove(os.path.join(dst_dir, f))
-                removed += 1
+            if sub == "zdroje":
+                nakresleno[key] = []   # v souboru rámečky nejsou (zapíše se, co opravdu je)
+        if drive is None:
+            nezname = sorted(f for f in os.listdir(dst_dir) if f.lower().endswith(".jpg") and f"{sub}/{f}" not in exportovane)
+            if nezname:
+                print(f"POZOR: web/public/{sub} má {len(nezname)} obrázků, které k datům nepatří ({', '.join(nezname[:5])}"
+                      f"{' …' if len(nezname) > 5 else ''}). Export maže jen obrázky, které sám vytvořil; jsou-li ze "
+                      "smazaných zápisů, smaž je ručně.")
+    # obrázky smazaných nebo stažených zápisů a dokumentů pryč – jinak by dál šly na web (upstream #25)
+    for rel in sorted((drive or set()) - exportovane):
+        p = os.path.join(WEB, "public", *rel.split("/"))
+        if os.path.isfile(p):
+            os.remove(p)
+            removed += 1
+    write(exportovane_json, json.dumps(sorted(exportovane), ensure_ascii=False, indent=0))
     # evidence jen pro snímky, které v public/zdroje opravdu jsou (smazaný a znovu přidaný se nakreslí znovu)
     nakresleno = {k: v for k, v in nakresleno.items() if os.path.exists(os.path.join(WEB, "public", "zdroje", k + ".jpg"))}
     write(nakresleno_json, json.dumps(nakresleno, ensure_ascii=False, sort_keys=True))

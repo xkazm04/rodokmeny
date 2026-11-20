@@ -251,7 +251,7 @@ def svazek(kniha, jen_vypsat=False):
         return
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     import zapis   # jen ta jedna položka, formát souboru zůstane (tools/zapis.py)
-    zapis.zapis("svazky", klic, polozka, sloucit=True)
+    zapis.zapis_svazek(klic, polozka)   # ručně upravená pole (popis) zůstanou
     print(klic, "->", polozka["svazek"])
 
 

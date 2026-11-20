@@ -66,6 +66,17 @@ try:
     rc, out, site = export()
     check("pořadí z web.json „pribehy“", [s["slug"] for s in site["stories"]] == ["mlynari", "kovari"], site["stories"])
 
+    # frontmatter s komentáři za hodnotou jako v reference/pribehy.md (review #43); „#“ v uvozovkách zůstane
+    zapis(os.path.join(proj, "data", "pribehy", "komentar.md"),
+          '---\ntitle: "Mlýn č. 5 # u kostela"   # název\nlead: Jedna věta.\nrod: 9\n'
+          "menu: Mlynáři          # nepovinné – vlastní položka v menu webu\n"
+          "koncept: true          # nepovinné – na webu se štítkem „koncept“\n---\n\n## Mlýn\nText.\n")
+    rc, out, site = export()
+    k = next((s for s in site["stories"] if s["slug"] == "komentar"), {})
+    check("frontmatter: komentář za hodnotou se nepočítá do hodnoty",
+          k.get("menu") == "Mlynáři" and k.get("koncept") is True and k.get("title") == "Mlýn č. 5 # u kostela", k)
+    os.remove(os.path.join(proj, "data", "pribehy", "komentar.md"))
+
     os.remove(os.path.join(proj, "data", "pribehy", "kovari.md"))
     os.remove(os.path.join(proj, "data", "pribeh.md"))
     rc, out, site = export()

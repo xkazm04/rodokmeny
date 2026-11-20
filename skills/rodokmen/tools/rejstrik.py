@@ -29,7 +29,7 @@ Propojení textu s osobou: číslo osoby „č. 84“ / „#84“, klíč zápis
 jméno má víc předků a rok u jména rozhodl / nerozhodl, jak='side' zmínka bočního příbuzného z SIDE → jeho předek)
 jsou vodítko, ne jistota; jisté je jen jak='citace'/'stitek'. Jména se hledají ve všech pádech (Pešek/Peška, Karel/Karla).
 """
-import json, os, re, runpy, sqlite3, sys, unicodedata
+import json, os, re, runpy, sqlite3, sys, tempfile, unicodedata
 for _s in (sys.stdout, sys.stderr):   # UTF-8 výstup i na Windows bez -X utf8 (cp1250 neumí třeba „→“)
     if hasattr(_s, "reconfigure"):
         _s.reconfigure(encoding="utf-8", errors="replace")
@@ -48,11 +48,16 @@ VYSTUPY = {os.path.normcase(os.path.join(ROOT, "kniha", "podklady", "rejstrik"))
 
 
 def zdroje_md():
-    """Markdown soubory v data/ s druhem; dělí se podle nadpisů (##) nebo odrážek (historie, stav)."""
+    """Markdown soubory v data/ s druhem (i příběhy data/pribehy/*.md); dělí se podle nadpisů (##) nebo odrážek
+    (historie, stav)."""
     if not os.path.isdir(DATA):
         return {}
-    return {f: DRUH_MD.get(f, os.path.splitext(f)[0].lower()) for f in sorted(os.listdir(DATA))
-            if f.endswith(".md") and f not in NE_MD}
+    out = {f: DRUH_MD.get(f, os.path.splitext(f)[0].lower()) for f in sorted(os.listdir(DATA))
+           if f.endswith(".md") and f not in NE_MD}
+    pribehy = os.path.join(DATA, "pribehy")
+    if os.path.isdir(pribehy):
+        out.update({"pribehy/" + f: "pribeh" for f in sorted(os.listdir(pribehy)) if f.endswith(".md")})
+    return out
 VYGENEROVANO = "Vygenerováno nástrojem `tools/rejstrik.py podklady`"  # takové soubory se neindexují
 RE_SEP = re.compile(r"(?<!\\)\|")
 RE_CIS = re.compile(r"(?:\bč\.|#)\s*(\d{1,5}(?:\s*(?:,|a|–|-)\s*\d{1,5})*)")
@@ -77,7 +82,7 @@ def kontext_walk():
 
 
 def jload(name):
-    with open(os.path.join(DATA, name), encoding="utf-8") as f:
+    with open(os.path.join(DATA, name), encoding="utf-8-sig") as f:   # i s BOM (editor na Windows)
         return json.load(f)
 
 
@@ -199,11 +204,27 @@ def oddily(text, druh):
     return out
 
 
+def otisk():
+    """Zdroje rejstříku a jejich velikost a čas změny – smazaný, přejmenovaný i přidaný starší soubor je změna."""
+    return {os.path.relpath(p, ROOT).replace("\\", "/"): f"{os.stat(p).st_mtime_ns}:{os.stat(p).st_size}"
+            for p in zdroje()}
+
+
 def postav():
     os.makedirs(os.path.dirname(DB), exist_ok=True)
-    tmp = DB + ".tmp"
-    if os.path.exists(tmp):
-        os.remove(tmp)
+    # dočasná databáze s jedinečným názvem – dvě stavby najednou si ji nesmažou
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(DB), prefix="rejstrik.", suffix=".sqlite.tmp")
+    os.close(fd)
+    try:
+        postav_do(tmp)
+        os.replace(tmp, DB)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+
+
+def postav_do(tmp):
+    zdroje_ted = otisk()   # před čtením: soubor změněný během stavby se příště pozná
     c = sqlite3.connect(tmp)
     c.executescript("""
     CREATE TABLE osoby(cislo INTEGER PRIMARY KEY, jmeno, roky, st, rod INTEGER, generace INTEGER, note, druh);
@@ -222,9 +243,11 @@ def postav():
     CREATE TABLE zminky(druh, ref, cislo INTEGER, jak);   -- ref = klíč zápisu / řádek deníku / id textu
     CREATE TABLE zminky_mist(druh, ref, misto);
     CREATE TABLE stitky(druh, ref, klic, hodnota);       -- štítky <!-- osoby: … · rod: … · téma: … -->
+    CREATE TABLE zdroje(soubor PRIMARY KEY, otisk);
     CREATE VIRTUAL TABLE fts USING fts5(druh UNINDEXED, ref UNINDEXED, nadpis, text,
                                         tokenize='unicode61 remove_diacritics 2');
     """)
+    c.executemany("INSERT INTO zdroje VALUES(?,?)", zdroje_ted.items())
     d = runpy.run_path(os.path.join(DATA, "osoby.py"))
     P, SIDE = d.get("P", {}), d.get("SIDE", [])
     platna = set(P)
@@ -329,7 +352,7 @@ def postav():
 
     # deník: tabulka | # | datum | zdroj | rozsah | hledáno | výsledek | citace |
     videne = set()  # číslo řádku omylem dvakrát → druhý výskyt „12b“, ať se neztratí
-    with open(os.path.join(DATA, "research_log.md"), encoding="utf-8") as f:
+    with open(os.path.join(DATA, "research_log.md"), encoding="utf-8-sig") as f:
         for line in f:
             if not re.match(r"\|\s*\d+[a-z]?\s*\|", line):  # i dodatečně vložené řádky „53b“
                 continue
@@ -363,7 +386,7 @@ def postav():
         p = os.path.join(DATA, soubor)
         if not os.path.exists(p):
             continue
-        with open(p, encoding="utf-8") as f:
+        with open(p, encoding="utf-8-sig") as f:
             txt = f.read()
         for nad, body in oddily(txt, druh):
             tid += 1
@@ -385,7 +408,7 @@ def postav():
             p = os.path.join(d_, fn)
             rel = os.path.relpath(p, ROOT).replace("\\", "/")
             druh = "pomocnik" if "/pomocnici/" in rel else "kontext"
-            with open(p, encoding="utf-8", errors="replace") as f:
+            with open(p, encoding="utf-8-sig", errors="replace") as f:
                 txt = f.read()
             if VYGENEROVANO in txt[:400]:  # starší výstup `podklady` uložený mezi ručními podklady
                 continue
@@ -395,11 +418,25 @@ def postav():
                 fts(druh, tid, f"{rel}: {nad}", body)
     c.commit()
     c.close()
-    os.replace(tmp, DB)
+
+
+def aktualni():
+    """Rejstřík odpovídá zdrojům: stejné soubory se stejnou velikostí a časem změny."""
+    if not os.path.exists(DB):
+        return False
+    try:
+        c = sqlite3.connect(DB)
+        try:
+            ulozeno = dict(c.execute("SELECT soubor, otisk FROM zdroje").fetchall())
+        finally:
+            c.close()
+    except sqlite3.Error:   # starší rejstřík bez tabulky zdroje
+        return False
+    return ulozeno == otisk()
 
 
 def otevri():
-    if not os.path.exists(DB) or max(os.path.getmtime(p) for p in zdroje()) > os.path.getmtime(DB):
+    if not aktualni():
         postav()
     c = sqlite3.connect(DB)
     c.row_factory = sqlite3.Row
@@ -423,7 +460,12 @@ def popis_ref(c, druh, ref):
         return f"osoba č. {ref}"
     if druh in ("zaznam", "prepis", "svazek", "dokument"):
         return f"{druh} {ref}"
-    r = c.execute("SELECT soubor, nadpis FROM texty WHERE id=?", (ref,)).fetchone()
+    if druh == "side":   # ref = pořadí v SIDE, ne id oddílu textu
+        r = c.execute("SELECT jmeno FROM side WHERE id=?", (ref,)).fetchone()
+        return f"boční příbuzný {r[0]}" if r else f"side {ref}"
+    if druh in ("issue", "hypoteza"):   # ref = pořadí v ISSUES / HYPOTEZY (osoby.py)
+        return f"{'otevřená otázka (issue)' if druh == 'issue' else 'hypotéza'} {int(ref) + 1} v osoby.py"
+    r = c.execute("SELECT soubor, nadpis FROM texty WHERE id=? AND druh=?", (ref, druh)).fetchone()
     return f"{r['soubor']} › {kratce(r['nadpis'], 70)}" if r else f"{druh} {ref}"
 
 
@@ -537,7 +579,7 @@ def zapis(c, q):
         print()
 
 
-RE_SN = re.compile(r"sn\.\s*\d+(?:\s*[–-]\s*\d+)?(?:\s*(?:,|a)\s*\d+(?:\s*[–-]\s*\d+)?)*")
+RE_SN = re.compile(r"(?:sn\.|sním(?:ek|ky|ků|cích|ku))\s*\d+(?:\s*[–-]\s*\d+)?(?:\s*(?:,|a)\s*\d+(?:\s*[–-]\s*\d+)?)*")
 
 
 def svazek(c, q):

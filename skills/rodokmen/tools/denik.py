@@ -21,7 +21,7 @@ Použití (z kořene projektu):
 
 Svislou čáru „|“ v textu nástroj sám zapíše jako „\\|“ a konce řádků nahradí mezerou.
 """
-import datetime, json, os, re, subprocess, sys
+import datetime, json, os, re, subprocess, sys, tempfile
 
 for _s in (sys.stdout, sys.stderr):
     if hasattr(_s, "reconfigure"):
@@ -32,7 +32,7 @@ LOG = os.path.join(ROOT, "data", "research_log.md")
 SLOUPCE = ["#", "datum", "zdroj", "rozsah", "hledáno", "výsledek", "citace"]
 # číslo řádku, od kterého se kontrolují sloupce (projekt se staršími řádky jiného tvaru: --od N nebo proměnná DENIK_OD)
 DENIK_OD = int(os.environ["DENIK_OD"]) if os.environ.get("DENIK_OD", "").isdigit() else 1
-RADEK = re.compile(r"^\| (\d+)([a-z]?) \|")   # „| 533 |“ i doplněný řádek „| 533b |“
+RADEK = re.compile(r"^\|\s*(\d+)([a-z]?)\s*\|")   # „| 533 |“, doplněný řádek „| 533b |“ i „|533|“ (jako rejstrik.py)
 SEP = re.compile(r"(?<!\\)\|")
 ODDELOVAC = re.compile(r"^\|(\s*:?-+:?\s*\|)+\s*$")   # |---|---| pod hlavičkou (prázdný deník ze šablony)
 
@@ -102,8 +102,9 @@ def bunka(v):
     return re.sub(r"(?<!\\)\|", r"\\|", v)
 
 
-def pridej(udaje):
-    """Přidá řádek, vrátí jeho číslo. udaje: zdroj, rozsah, hledano, vysledek, citace, datum."""
+def priprav(udaje):
+    """Zkontroluje údaje i deník a vrátí (číslo, nový text deníku) – nic nezapisuje (nalez.py tím ověří řádek
+    deníku dřív, než cokoli zapíše)."""
     chybi = [k for k in ("zdroj", "rozsah", "hledano", "vysledek") if not str(udaje.get(k) or "").strip()]
     if chybi:
         sys.exit("Chybí: " + ", ".join(chybi) + " (každý řádek deníku má mít zdroj, rozsah, co se hledalo a výsledek).")
@@ -125,11 +126,22 @@ def pridej(udaje):
     posledni = zbytek.splitlines()[-1] if zbytek else ""
     if not (RADEK.match(posledni) or ODDELOVAC.match(posledni)):
         sys.exit("Deník nekončí řádkem tabulky – nový řádek by nebyl v tabulce. Oprav konec data/research_log.md ručně.")
-    novy = zbytek + eol + radek + eol
-    tmp = LOG + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="") as f:
-        f.write(novy)
-    os.replace(tmp, LOG)
+    return cislo, zbytek + eol + radek + eol
+
+
+def pridej(udaje):
+    """Přidá řádek, vrátí jeho číslo. udaje: zdroj, rozsah, hledano, vysledek, citace, datum."""
+    cislo, novy = priprav(udaje)
+    # dočasný soubor s jedinečným názvem – dva zápisy najednou si ho nepřepíšou
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(LOG), prefix="research_log.md.", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
+            f.write(novy)
+        os.replace(tmp, LOG)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
     return cislo
 
 

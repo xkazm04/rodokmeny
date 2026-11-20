@@ -169,6 +169,50 @@ def _(d):
     assert "»Odkazník«" in out and "/osoba/jan-odkaznik/" in out and "example.org/odkaznik/1" in out, out
 
 
+@test("smazaný zdroj zmizí z rejstříku, i když zbylé soubory jsou starší (review #36)")
+def _(d):
+    assert "souhrn.md" in spust(d, "hledej", "Unikátníslovo123")
+    os.remove(os.path.join(d, "kontext", "souhrn.md"))
+    out = spust(d, "hledej", "Unikátníslovo123")
+    assert "Nic nenalezeno" in out, out
+
+
+@test("JSON s BOM (Windows editor) rejstřík nerozbije (review #37)")
+def _(d):
+    p = os.path.join(d, "data", "svazky.json")
+    text = open(p, encoding="utf-8").read()
+    open(p, "w", encoding="utf-8-sig", newline="\n").write(text)
+    assert "osoby:" in spust(d)
+
+
+@test("výsledek z SIDE / otázky neukáže cizí oddíl markdownu jako zdroj (review #38)")
+def _(d):
+    out = spust(d, "hledej", "nemanželská", "--zdroj", "issue")
+    assert "issue" in out.lower() or "otázk" in out, out
+    assert "data/" not in out and "kontext/" not in out, out
+
+
+@test("příběhy v data/pribehy/ se indexují (review #39)")
+def _(d):
+    zapis(os.path.join(d, "data", "pribehy", "mlynari.md"), "---\ntitle: Mlynáři\n---\n\n## Mlýn\nMlynarskeslovo77\n")
+    out = spust(d, "hledej", "Mlynarskeslovo77")
+    assert "data/pribehy/mlynari.md" in out, out
+
+
+@test("cizí dočasný soubor rejstříku nepřekáží stavbě (review #40)")
+def _(d):
+    os.makedirs(os.path.join(d, "pracovni", "rejstrik.sqlite.tmp"))   # pevná cesta dřívější verze, třeba jiný běh
+    assert "osoby:" in spust(d)
+
+
+@test("svazek najde rozsah „snímky 50–60“ (review #45)")
+def _(d):
+    with open(os.path.join(d, "data", "research_log.md"), "a", encoding="utf-8", newline="\n") as f:
+        f.write("| 6 | 2026-01-05 | ARON ukazka01 | snímky 50–60 | křty | nic | — |\n")
+    out = spust(d, "svazek", "ukazka01")
+    assert "snímky 50–60" in out, out
+
+
 @test("chybi a rod proběhnou")
 def _(d):
     spust(d, "chybi")

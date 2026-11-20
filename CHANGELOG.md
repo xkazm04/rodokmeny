@@ -50,6 +50,21 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Obsahové kontroly: rok ze stromu potvrzený zápisem se nehlásí jako „jen ze stromu“; chybějící narození nebo úmrtí
   v `y` se hlásí zvlášť; „svobodný“ ve faktu × „vdovec“ v přepisu se hlásí taky.
 - Vějíř a web: „1849 (?)“ se ukáže jako „1849?“, ne jako jistý rok.
+- `zapis.py --smazat` a `prejmenuj`: klíč s cestou („../foto“) odmítnou, nejdřív zkontrolují všechny soubory
+  a při chybě uprostřed vrátí vše zpět; obrázek, který používá i rodinný dokument, nechají; nový klíč nesmí mít
+  přepis ani rámeček; druhé smazání téhož klíče nepřepíše první zálohu; deník s BOM a konci řádků CRLF zůstane.
+- `nalez.py`: `nahled` nepřepíše výřez a rámeček existujícího zápisu (bez `--prepsat`), přepis a řádek deníku
+  zkontroluje dřív, než cokoli zapíše, přijme druh I a J a nepřevezme cizí svazek ARONu se stejným začátkem apu.
+- Příkaz `svazek` (ARON, Porta fontium, eBadatelna) nepřepíše ručně upravený popis svazku, jen ohlásí rozdíl.
+- `aron_img.py odkazy --opravit` mění id souboru jen v odkazu prohlížeče, ne stejné id jinde v textu.
+- Export webu maže jen obrázky, které sám vytvořil (ručně přidané v `web/public/img` zůstanou), rámečky bez
+  ImageMagicku dokreslí, až bude, a po aktualizaci překreslí snímky starší než poslední změna rámečků.
+- Frontmatter příběhu: komentář za hodnotou (`menu: Mlynáři  # …`) už není součástí hodnoty.
+- Rejstřík: smazaný soubor zmizí z hledání, čte JSON s BOM, indexuje `data/pribehy/`, u výsledků z SIDE a otázek
+  neukazuje cizí soubor a `svazek` pozná „snímky 50–60“.
+- `ged_import.py`: citace sňatku u rodiny se počítá k osobě; ústní a neznámé zdroje už nejsou „Record Match“.
+- `denik.py` počítá i řádky bez mezer („|2|“); deník, případy rodin, rejstřík a data se zapisují přes dočasný soubor
+  s jedinečným názvem.
 
 **Návody**
 - MZA: místo pevného limitu 45–60 snímků za den skončit při skutečném příznaku (bílé dlaždice, 403/429/503)
