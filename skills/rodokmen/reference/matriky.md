@@ -257,6 +257,17 @@ vsi a sňatek byl v oddílu městyse; ves měla oddíl až na snímcích 380–4
 - Dítě zapsané pod jiným křestním jménem, než jakým ho volala rodina (Františka → v rodině Anna).
 - Předek v dospělosti „Jan“ byl pokřtěn jako Václav: starší Václav zemřel a mladší dítě dostalo jeho jméno, v dospělosti
   ho volali jinak. V rejstříku proto hledej **všechny děti rodičů** (podle příjmení a domu), ne jen hledané jméno.
+- **Sloupce „ledig / Witwer“ (svobodný / vdovec) v tabulkových oddacích knihách** neodhaduj: jednička nebo čárka stojí
+  v jednom ze sloupců, porovnej její vodorovnou polohu s řádkem nad a pod. Dvakrát se tak „svobodný“ ženich ukázal
+  jako vdovec (Jevíčko 1793 a 1837), a to mění, kde hledat první manželství.
+- **Křížek u jména v knize narozených** nemusí znamenat úmrtí (bývá to značka kontroly nebo opisu). Úmrtí ověř v knize zemřelých.
+- **Rejstřík má rozsah let** – „jediný takový v rejstříku“ platí jen pro ty roky. Rejstříky zaměňují podobná příjmení
+  (Jandik × Jenisch): kontroluj zápis, ne řádek rejstříku.
+- **Vdova zapsaná jako „dcera“ prvního muže:** „Dorota, dcera X“, ale X byl její první manžel. Při nesouhlasu příjmení prověř vdovství.
+- **Kandidátní zápis není doklad:** zápis, u kterého si nejsi jistý, že patří předkovi, nepiš do `r` osoby (web ho ukáže
+  jako doklad) – patří do `SIDE`, `HYPOTEZY` nebo poznámky, a jeho název má říkat „kandidát“.
+- **Údaje z cizích stromů (MyHeritage, strom příbuzných) nepiš do `y`** u osoby se stavem `doc` – web je ukáže jako
+  doložené. Nech je ve faktu se zdrojem, nebo k roku v `y` připiš „(?)“.
 - **Jméno po zemřelém sourozenci (nekronymum):** najdeš-li křest se správným jménem a rodiči, projdi i další roky a knihu
   zemřelých – předkem je ten, kdo přežil. Věk ve sňatku či úmrtí k rozhodnutí nestačí (bývá chybný o 4–10 let).
 - **Oddělené řady chlapců a dívek:** kniha může mít křty chlapců a dívek v různých částech (dívky sn. 126–166, chlapci

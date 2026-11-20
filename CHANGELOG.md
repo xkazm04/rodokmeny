@@ -22,6 +22,15 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   mladší 15 let, věk přes 105 let) a stejnou osobu na dvou číslech bez `SAME` (`tools/graf.py`). Ověřený neobvyklý
   údaj se odškrtne polem `overeno` v `osoby.py`. `graf.py strom` zkontroluje cizí GEDCOM před importem, `rodiny.py`
   pomáhá skládat rodinu ze sourozenců a rozhodovat mezi kandidáty stejného jména (upstream #201, #76, #126, #135).
+- Zápis nálezu jedním příkazem `tools/nalez.py nahled|zapis vstup.json`: snímek (ARON) nebo místní obrázek, výřez,
+  rámeček, zápis, přepis, odkazy u osob a řádek deníku – nic se nevynechá a vše se ověří dřív, než se cokoli zapíše
+  (upstream #187).
+- Deník přes `tools/denik.py pridej`: další číslo (i proti `origin/main`), svislé čáry a konce řádků v textu neporuší
+  tabulku, sloupce podle hlavičky. `kontrola.py` hlásí prázdný řádek uvnitř tabulky (web ji na něm ukončí), řádky
+  s jiným počtem sloupců a zdvojená čísla (upstream #187).
+- `kontrola.py` hlídá i obsahové chyby (`tools/kontrola_dat.py`): roky v `y` nesedí s fakty, rok jen z cizího stromu
+  u doložené osoby, kandidátní zápis citovaný jako doklad, zastaralé věty („křest se nečetl“), ženich „ledig“
+  v přepisu × „vdovec“ ve faktech. Data čte stejně jako ostatní kontroly (`datumy.py`) (upstream #187).
 
 **Opravy**
 - Odkaz „otevřít v archivu“ u zápisů z ARONu otevře správný snímek, ne první stránku knihy (`aron_img.py link` dává
@@ -59,8 +68,14 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - `aron_img.py` stahuje snímek bez udané úrovně v plném rozlišení (dřív poloviční – kurent z něj byl rozmazaný
   a četl se špatně). Archiv to nezatíží víc, sken se stahuje celý jedním požadavkem tak jako tak (upstream #119, #120).
 - `overit.py` dělá poloviny zápisu do 1568 px (dřív 1900 px, které nástroj Read stejně potichu zmenšil) (upstream #43).
+- `zapis.py` rozbalí vstup `{"klíč": {…}}` a vstup s víc položkami najednou odmítne – dřív ho uložil celý pod jeden
+  nesmyslný klíč (upstream #187).
 
 **Návody**
+- Typické pasti v `reference/matriky.md`: sloupce ledig/Witwer, křížek v knize narozených, rozsah rejstříku, vdova
+  jako „dcera“ prvního muže, kandidátní zápis není doklad, roky z cizích stromů nepatří do `y`; portály: SOA Třeboň
+  se vrací na předchozí snímek, Matricula bez prohlížeče pomocníkovi obraz nedá; zadání pomocníka: jedna úzká stopa
+  a kontrola dat silnějším modelem po větší větvi (upstream #187).
 - Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré
   diecéze, takže když obec v jednom archivu není, zkus sousední (upstream #114).
 - `SIDE` v `osoby.py` a `reference/data.md`: `k` je předek, jehož je příbuzný sourozencem (ne „ke kterému patří“);

@@ -4,7 +4,8 @@
 Použití: kontrola.py
 Vypíše CHYBY (rozbijí web nebo jsou věcně špatně) a UPOZORNĚNÍ (něco chybí, doplnit).
 Hlídá i časovou návaznost narození, sňatků a úmrtí (pravidla v tools/chronologie.py),
-stejnou osobu na dvou číslech bez SAME (tools/graf.py).
+stejnou osobu na dvou číslech bez SAME (tools/graf.py), obsahové chyby (tools/kontrola_dat.py) a tabulku deníku
+(tools/denik.py).
 Návratový kód 1, pokud jsou chyby.
 """
 import datetime, json, os, re, sys, unicodedata
@@ -367,6 +368,20 @@ def main():
                     "a pravidla nebo rozpracované věci na konci se ztratí. Zkrať ho pod 35 kB: přehled kol jen za "
                     "poslední 2–3 dny, hotové body smaž (podrobnosti jsou v deníku), orientaci v knihách dej do "
                     "samostatného souboru.")
+
+    try:   # obsahové kontroly (y × fakta, roky z cizích stromů, kandidáti jako doklad, ledig × vdovec …)
+        import kontrola_dat
+        warn += kontrola_dat.kontroly(P, SIDE, zaz, prep)
+    except ImportError:   # projekt se starší sadou nástrojů
+        pass
+    try:   # tabulka deníku: prázdný řádek uvnitř ji na webu ukončí; sloupce podle hlavičky, čísla bez zdvojení
+        import denik
+        if os.path.exists(os.path.join(DATA, "research_log.md")):
+            e_d, w_d = denik.kontrola(open(os.path.join(DATA, "research_log.md"), encoding="utf-8-sig").read())
+            err += e_d
+            warn += w_d
+    except ImportError:
+        pass
 
     log = os.path.join(DATA, "research_log.md")
     rows = sum(1 for l in open(log, encoding="utf-8-sig") if re.match(r"^\| \d+ \|", l)) if os.path.exists(log) else 0

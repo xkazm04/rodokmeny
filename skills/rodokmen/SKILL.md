@@ -104,14 +104,20 @@ Základní smyčka pro každou osobu:
    6. osobu/osoby do `data/osoby.py` (`f` fakta, `r` klíč zápisu, `st="doc"`), sourozence a kmotry-příbuzné do `SIDE`;
       klíč zápisu k existující osobě přidej `python3 -I tools/zapis.py odkaz <číslo osoby | část jména z SIDE> <klíč>`.
    Nová obec předků → `tools/mista.py pridej "Obec"` (mapa), nový pradědeček nebo prababička (8–15) → rod do `LINES`.
+   Všech 6 kroků a řádek deníku jde udělat jedním příkazem: `python3 -I tools/nalez.py nahled pracovni/x.json` (ověří vstup,
+   udělá výřez a rámeček – prohlédni si ho), pak `nalez.py zapis pracovni/x.json` (vzor vstupu v `nalez.py --help`).
 6. **Zapiš hledání do deníku** `data/research_log.md` – i neúspěšné, s rozsahem (které roky / snímky jsi prošel)
    a u neúspěšného, jestli s dokladem, nebo jen orientačně (Pomocníci níže). Osoby označ číslem (`č. 84`), ať jdou najít.
    **Zjevně související výskyt** po cestě (vzácné příjmení rodu, stejný dům, jméno z rodinného vyprávění) zapiš do
    výsledku se snímkem – je to stopa, ne doklad. Když se hledání zasekne, projdi deník právě kvůli takovým stopám.
+   Řádek přidávej `python3 -I tools/denik.py pridej --zdroj … --rozsah … --hledano … --vysledek …` (vezme další číslo,
+   ohlídá sloupce, svislé čáry a prázdné řádky), **nikdy `printf >>` ani `echo >>`** – rozbije tabulku a web ji neukáže.
 7. Spusť `python3 -I tools/kontrola.py` a oprav chyby.
    Hlásí i časovou návaznost (`chronologie.py`: věk rodičů, dítě po smrti rodiče, sňatek po úmrtí…) a stejnou osobu
    na dvou číslech bez `SAME` (`graf.py predci`). Všechny kontroly čtou data stejně (`datumy.py`: „asi 1760–64“,
    „před 1740“, „pokřtěn 4. 12. 1786“). Ověřený neobvyklý údaj odškrtni polem `overeno` (`reference/data.md`).
+   Obsahové chyby hlídá `kontrola_dat.py`: roky v `y` × fakta, roky z cizího stromu u `doc`, kandidátní zápis citovaný
+   jako doklad, zastaralé věty („křest se nečetl“), ženich „ledig“ v přepisu × „vdovec“ ve faktech.
 
 Pravidla, která chrání kvalitu:
 - **Než něco ohlásíš jako nové, prohledej** `data/osoby.py`, `data/zaznamy.json` a `data/research_log.md`
@@ -202,6 +208,8 @@ uživateli, ať ví, proč kredity tolik neubývají.
 - Na špatně čitelné knihy (kurent 1. poloviny 19. století, vybledlé snímky) pomocníky nepouštěj, nebo jim dej přesný
   snímek; ARON a Porta fontium zvládají dobře. Prohlížeč může mít najednou jen jeden pomocník, proto dávej přednost
   nástrojům bez prohlížeče.
+- **Po každé větší větvi kontrola silnějším modelem** (jen čtení dat a výřezů, bez sítě) – postup v
+  `reference/zadani_pomocnika.md` → Kontrola dat silnějším modelem.
 
 ### Kdy přestat
 Linie končí, když matriky mlčí (nemanželské dítě bez otce, shořelé knihy, chybějící svazky) nebo když jsi
@@ -287,6 +295,9 @@ a `zdroje/` (výřezy pro web / plné rozlišení), `dokumenty/` (originály od 
 | `napady.py` | náměty na zajímavosti z dat |
 | `rejstrik.py` | rejstřík dat v SQLite: `osoba`, `svazek`, `hledej`, `zapis`, `denik`, `podklady`… (Hledání v datech) |
 | `kontrola.py` | kontrola dat; hlásí i citlivé údaje na webu, časovou návaznost a kdy psát příběh |
+| `kontrola_dat.py` | obsahové kontroly (y × fakta, cizí stromy u `doc`, kandidáti v `r`, zastaralé věty, ledig × vdovec); volá ji `kontrola.py` |
+| `denik.py pridej --zdroj … --rozsah … --hledano … --vysledek …` / `dalsi` / `kontrola` | řádek deníku bez rozbití tabulky; kontrola sloupců, prázdných řádků a čísel |
+| `nalez.py nahled\|zapis vstup.json` | zápis nálezu jedním příkazem: snímek, výřez, rámeček, zápis, přepis, osoby, deník |
 | `chronologie.py` | časová návaznost (věk rodičů, dítě po smrti rodiče, sňatek mladší 15 let / po úmrtí, věk přes 105 let) – volá ji `kontrola.py` |
 | `graf.py strom strom.ged ["Jméno"]`, `graf.py predci` | cizí strom před importem: cykly, dítě ve dvou rodinách, dvojníci, věk rodičů, předek víckrát (návrh `SAME`); `predci` = stejná osoba na dvou číslech bez `SAME` |
 | `rodiny.py novy/kandidat/zapis/ukol/prehled/prunik/rodiny …` | rekonstrukce rodiny ze sourozenců, rozhodování mezi kandidáty stejného jména (`matriky.md`) |

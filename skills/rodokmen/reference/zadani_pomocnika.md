@@ -56,3 +56,15 @@ Výsledek: obsah souboru vysledek.md, seznam NEPŘEČTENÝCH snímků a čtení 
 - Kontrolní zápis nepřečetl správně → jeho záporné výsledky neplatí.
 - Nepřečtené snímky dej dalšímu pomocníkovi nebo si je přečti sám – ne témuž pomocníkovi znovu.
 - Záporný výsledek a čtení pomocníka přijmi jen podle pravidel v `SKILL.md` → Pomocníci (doklad, `overit.py`).
+
+## Jedna úzká stopa
+Pomocníkovi dej **jednu stopu** (jedna kniha, jedna osoba). Široké zadání („4 stopy najednou“) nestihne – udělá jednu
+a o ostatních napíše, že „nic nenašel“.
+
+## Kontrola dat silnějším modelem
+Po každé větší větvi pusť 1–2 pomocníky na nejsilnějším modelu (Agent s `model: "opus"`), každého na jednu skupinu
+větví, **jen čtení nad daty a výřezy, bez sítě**. Zadání: projdi osoby, zápisy, přepisy a výřezy (`vyrezy/<klíč>.jpg`,
+plné rozlišení `zdroje/<klíč>.jpg`) a hledej chybná čtení, ztotožnění jen podle jména, roky bez dokladu, rozpory mezi
+zápisy. Při skutečném výzkumu tak našli dvě chybně přečtené kolonky „svobodný/vdovec“, přehozené rodiče a roky
+z MyHeritage vydávané za doložené. Opravy děláš ty, po ověření na výřezu. Zprávu pomocníka ulož do `kontext/`
+(v gitu), ne do `pracovni/` – jinak ji jiný počítač nevidí.
