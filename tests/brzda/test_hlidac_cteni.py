@@ -5,7 +5,7 @@ Z kořene repozitáře:
   python3 -I tests/brzda/test_hlidac_cteni.py skills/rodokmen
   (Windows: python -I -X utf8 …)
 """
-import json, os, shutil, subprocess, sys, tempfile
+import json, os, shutil, subprocess, sys, tempfile, time
 
 SKILL = os.path.abspath(sys.argv[1] if len(sys.argv) > 1 else "skills/rodokmen")
 sys.path.insert(0, os.path.join(SKILL, "tools"))
@@ -49,6 +49,19 @@ try:
     rc, err = cti(os.path.join(tmp, "pracovni", "s_100.jpg"), agent="pom3")
     check("31. snímek zamítne", vysl[30] == 2 and rc == 2 and "nepřečtených" in err, (vysl[30], rc, err))
     check("jiná konverzace má vlastní počítadlo", cti(snimek, session="s2")[0] == 0)
+
+    cizi_sl = os.path.join(tmp, "data_projektu")   # RODOKMEN_CTENI_SLOZKA omylem na složku s daty projektu
+    os.makedirs(cizi_sl)
+    stare = time.time() - 5 * 86400
+    for n in ("osoby.py", "denik.log", "s0_x.cteni.log"):
+        open(os.path.join(cizi_sl, n), "w").close()
+        os.utime(os.path.join(cizi_sl, n), (stare, stare))
+    env["RODOKMEN_CTENI_SLOZKA"] = cizi_sl
+    cti(snimek, agent="pom9")
+    env["RODOKMEN_CTENI_SLOZKA"] = os.path.join(tmp, "stav")
+    zbylo = sorted(os.listdir(cizi_sl))
+    check("úklid maže jen vlastní staré stavy, cizí soubory ve složce nechá",
+          "osoby.py" in zbylo and "denik.log" in zbylo and "s0_x.cteni.log" not in zbylo, zbylo)
 
     r = subprocess.run(prikaz, input="není json", capture_output=True, text=True, encoding="utf-8", env=env,
                        shell=isinstance(prikaz, str), timeout=30)
