@@ -6,7 +6,7 @@ Modul pro ostatní nástroje (chronologie.py, kontrola_dat.py, graf.py, rodiny.p
 Samostatně ukáže, jak čte zadaný text: `python -I -X utf8 tools/datumy.py "* asi 1760–64, † 1814"`.
 
 Každé datum je interval „nejdřív – nejpozději“ podle toho, jak přesně je zapsané:
-  „14. 2. 1890“ jeden den, „3/1867“ celý měsíc, „1890“ celý rok, „asi 1720“ ± ASI_ROKY let,
+  „14. 2. 1890“ jeden den, „3/1867“ i „3. 1867“ celý měsíc (u sňatku je „2. 1867“ pořadí sňatku), „1890“ celý rok, „asi 1720“ ± ASI_ROKY let,
   „před 1740“ cokoli do konce roku 1740, „po 1921“ cokoli od roku 1921, „mezi 1700 a 1710“, „1805/06“ jeden z roků,
   „asi 1760–64“ (u narození nebo úmrtí) rozmezí 1760–1764 a k tomu ± ASI_ROKY, „(?)“ nejistý údaj ± 1 rok.
 """
@@ -37,10 +37,12 @@ _DEN = r"(?P<d>\d{1,2})\.\s*(?:\(\?\)\s*)?(?P<m>\d{1,2})\.\s*(?P<y>\d{4})"
 _ROK = r"(?P<r>\d{4})(?:\s*/\s*(?P<alt>\d{4}|\d{2})(?!\d))?"
 _ROZSAH = r"(?:\s*[–—-]\s*(?P<do>\d{4}|\d{2})(?![\d./]))?"
 _NEJISTE = r"(?P<q>\s*\(\?\))?"
-_DATUM = re.compile(_PRED + rf"(?:{_DEN}|(?P<mm>\d{{1,2}})/(?P<my>\d{{4}})|{_ROK})" + _NEJISTE)
-_DATUM_ROZSAH = re.compile(_PRED + rf"(?:{_DEN}|(?P<mm>\d{{1,2}})/(?P<my>\d{{4}})|{_ROK}{_ROZSAH})" + _NEJISTE)
+_MESIC = r"(?P<mm>\d{1,2})(?:/|\.\s*)(?P<my>\d{4})"   # „3/1867“ i „8. 1945“ (tak měsíc píše ged_import.py)
+_DATUM = re.compile(_PRED + rf"(?:{_DEN}|{_MESIC}|{_ROK})" + _NEJISTE)
+_DATUM_ROZSAH = re.compile(_PRED + rf"(?:{_DEN}|{_MESIC}|{_ROK}{_ROZSAH})" + _NEJISTE)
 _MEZI = re.compile(r"(?:asi\s+)?mezi\s+(?:\d{1,2}\.\s*\d{1,2}\.\s*)?(\d{4})\s+a\s+(?:\d{1,2}\.\s*\d{1,2}\.\s*)?(\d{4})")
-_PORADI = re.compile(r"\(?[1-4]\.\)\s*|[1-4]\.\s+(?=\d{1,2}\.\s*\d{1,2}\.\s*\d{4}|\d{4}|asi|před|po\b|mezi)")
+_PORADI = re.compile(r"\(?[1-4]\.\)\s*|[1-4]\.\s+(?=\d{1,2}\.\s*\d{1,2}\.\s*\d{4}|asi|před|po\b|mezi)")
+_PORADI_ROK = re.compile(r"[1-4]\.\s+(?=\d{4})")   # „× 2. 1850“ = druhý sňatek 1850; jinde je „2. 1850“ únor
 _SLOVA = re.compile(r"(?:a\s+)?\(?(?:pokřtěn[aý]?|pokřt\.|křtěn[aý]?|křest|pohřeb|pohřben[aý]?|oddán[aiy]?)\)?[,:]?\s+")
 _VOLNE = re.compile(r"\d[\d.\s/–-]*(?:(?:nebo|či|a)\s+[\d.\s/–-]*)*?(?<!\d)(\d{4})(?!\d)")
 
@@ -86,13 +88,14 @@ def _interval(m):
     return Datum(od, do, approx, re.sub(r"\s+", " ", m.group(0)).strip(), rok)
 
 
-def cast(text, rozsah=False):
+def cast(text, rozsah=False, snatek=False):
     """Datum na začátku textu (po případné předponě „asi/před/po“, pořadí „2.“ a slovu „pokřtěn“), jinak None.
 
-    rozsah=True: „1760–64“ je rozmezí jednoho data (u narození nebo úmrtí); jinak pomlčka datum končí."""
+    rozsah=True: „1760–64“ je rozmezí jednoho data (u narození nebo úmrtí); jinak pomlčka datum končí.
+    snatek=True: „2. 1850“ je druhý sňatek v roce 1850 (jinak únor 1850)."""
     t = (text or "").strip()
     for _ in range(3):   # „* a pokřtěn …“, „× (2.) …“, „† (pohřeb) …“
-        m = _SLOVA.match(t) or _PORADI.match(t)
+        m = _SLOVA.match(t) or _PORADI.match(t) or (_PORADI_ROK.match(t) if snatek else None)
         if not m:
             break
         t = t[m.end():]
@@ -137,7 +140,7 @@ def fakt(f):
         return None
     s = f.lstrip()
     if s[:1] in ZNAKY:
-        return s[0], cast(s[1:], rozsah=s[0] != "×")
+        return s[0], cast(s[1:], rozsah=s[0] != "×", snatek=s[0] == "×")
     for rx, znak in ((_KREST, "*"), (_POHREB, "†")):
         m = rx.match(s)
         if m:
@@ -157,7 +160,8 @@ def z_y(y):
     y = (y or "").strip()
     if not re.search(r"\d{4}", y):
         return None, None
-    y = re.sub(r"(?<=\d)\s*-\s*(?=\d|\s|†|$)", "–", y.replace("—", "–"))   # „1930-2015“ jako „1930–2015“
+    y = re.sub(r"(?<=\d)\s*-\s*(?=\d|\s|†|$|před|po\b|asi|≈|cca|kolem|okolo|mezi|\?)", "–",
+               y.replace("—", "–"))   # „1930-2015“, „1850-před 1900“ jako „1930–2015“, „1850–před 1900“
     if "†" in y and not y.startswith("†"):                 # „* asi 1760–64, † 1814“, „* 1850 – † před 1900“
         hlava, _, ocas = y.partition("†")
         hlava = re.sub(r"[\s,;–]+$", "", hlava)

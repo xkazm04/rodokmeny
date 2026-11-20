@@ -86,6 +86,25 @@ def test_krest_jako_narozeni():
     P = {8: dict(n="Jan Novák", f=["křest 4. 12. 1786"]), 17: dict(n="Anna Malá", f=["† 1780"])}
     assert [(x.k, x.pravidlo) for x in chronologie.kontrola(P)] == [(8, "matka-zemrela")]
 
+def test_mesic_s_teckou():   # ged_import.py převádí „AUG 1945“ na „8. 1945“
+    d = fakt("† 8. 1945 Holice")[1]
+    assert (d.od, d.do) == (date(1945, 8, 1), date(1945, 8, 31))
+    d = fakt("* asi 8. 1945")[1]
+    assert d is not None and d.approx and roky(d) == (1940, 1950)
+    assert fakt("† 2. 1945")[1].od == date(1945, 2, 1)          # únor, ne pořadí
+    assert roky(fakt("× 2. 1945 Holice")[1]) == (1945, 1945)   # u sňatku je „2.“ pořadí sňatku
+    assert z_y("3. 1850–1900")[0].od == date(1850, 3, 1)
+
+
+def test_y_spojovnik_pred_predponou():   # „1850-před 1900“ jako „1850–před 1900“
+    for y in ("1850-před 1900", "1850 - před 1900", "1850 -před 1900", "1850- před 1900"):
+        n, u = z_y(y)
+        assert roky(n) == (1850, 1850) and u is not None and u.od == MIN and u.do == date(1900, 12, 31), y
+    n, u = z_y("1850-po 1900")
+    assert u is not None and u.do == MAX
+    n, u = z_y("1850-asi 1900")
+    assert roky(u) == (1895, 1905)
+
 
 if __name__ == "__main__":
     testy = [f for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]
