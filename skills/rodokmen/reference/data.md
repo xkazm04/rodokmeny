@@ -39,6 +39,10 @@ P = {
   `fam` od rodiny (i strom, který si rodina vede sama, např. GEDCOM z jejího MyHeritage), `mh` cizí strom z internetu, `unk`.
 - `LINES = {8: ("Novákové", "Kováři z Holic…"), …}` – jen čísla 8–15; název rodu = příjmení v množném čísle. Vyplň hned, jak znáš pradědečka nebo prababičku – bez LINES web neukáže rody a nepřijde rada k příběhu.
 - `SIDE` – sourozenci a další příbuzní: `dict(k=<číslo předka>, n="Josef Novák (1865–1920)", t="text", r=[klíče])`.
+  **`k` = předek, jehož je sourozencem** (ne „ke kterému patří“): web ho ukáže v rodině předka `k` jako jeho
+  bratra/sestru. Dítě předka 16, které není v linii, je sourozenec předka 8 → `k=8`; strýc výchozí osoby → `k=2` nebo `3`.
+  `t` začni vztahem k předkovi `k` („Bratr Jana.“, „Sestra Marie.“). `kontrola.py` upozorní na text „Syn/Dcera <jméno
+  předka k>“.
 - `ISSUES` – dvojice `("Otázka", "Vyřešeno: … / Hypotéza: … / Otevřené: …")` → stránka „Co hledáme“ (vyřešené se skryjí).
   Jde na web – nepiš sem citlivé věci (příčiny úmrtí, rodinné spory) bez souhlasu.
 - `HYPOTEZY` – `dict(rod=8, nadpis="…", text="…", polozky=[("jméno", "text")], zaznamy=[klíče])` → stránka rodu.

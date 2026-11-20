@@ -1,5 +1,6 @@
 # Přímí předci podle Kekulého čísel: 1 = výchozí osoba (ten, pro koho rodokmen děláme),
 # otec osoby n má číslo 2n, matka 2n+1. Tedy 2 = otec, 3 = matka, 4–7 prarodiče, 8–15 pradědečci a prababičky…
+# Po přidání větve ověř, že číslo nepadlo na osobu z jiné větve (kontrola.py porovná příjmení otce a dítěte).
 #
 # Každá osoba:  číslo: dict(n="Jméno Příjmení", y="1850–1910", st="doc", f=[...], r=[...], note="...")
 #   n    jméno; ženy rodným příjmením („Anna Dvořáková“), u nejistého čtení otazník („Marie Špalková (?)“)
@@ -25,7 +26,9 @@ P = {
 LINES = {
 }
 
-# Příbuzní mimo přímou linii (sourozenci, strýcové…): k = číslo předka, ke kterému patří.
+# Příbuzní mimo přímou linii: k = číslo předka, jehož je SOUROZENCEM (web ho ukáže jako jeho bratra/sestru).
+# Dítě předka 16, které není v linii, je sourozenec předka 8 → k=8. Strýc výchozí osoby (bratr otce 2) → k=2.
+# t začni vztahem k předkovi k („Bratr Jana.“, „Sestra Marie.“).
 # dict(k=16, n="Josef Novák (1865–1920)", t="Bratr Jana. Kovář v …", r=["klic_zapisu"])
 SIDE = [
 ]

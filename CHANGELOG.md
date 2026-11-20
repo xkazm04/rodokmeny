@@ -29,10 +29,18 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   seznam hypotéz s odkazy na rody (upstream #140).
 - `npm run data` smaže z webu obrázky zápisů a dokumentů, které už v datech nejsou (nebo jejich výřez) – smazaný
   zápis dřív dál šel na web i se snímkem (upstream #25).
+- `kontrola.py` upozorní, když otec (číslo 2n) nemá stejné příjmení jako dítě n – číslo nejspíš patří osobě z jiné
+  větve a vějíř pak nad dítětem končí (upstream #162).
+- `kontrola.py` upozorní na `data/STAV.md` větší než 35 kB – na začátku konverzace se uřízne a pravidla na konci se
+  ztratí (upstream #204).
+- `kontrola.py` upozorní na sourozence v `SIDE` s textem „Syn/Dcera <jméno předka k>“ – `k` je předek, jehož je
+  sourozencem, takže by na webu vyšel jako jeho bratr (upstream #68).
 
 **Návody**
 - Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré
   diecéze, takže když obec v jednom archivu není, zkus sousední (upstream #114).
+- `SIDE` v `osoby.py` a `reference/data.md`: `k` je předek, jehož je příbuzný sourozencem (ne „ke kterému patří“);
+  dítě předka 16 mimo linii má `k=8` (upstream #68).
 
 ## 0.10.2 – 16. 11. 2026
 

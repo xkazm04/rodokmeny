@@ -19,12 +19,14 @@ def zapis(cesta, text):
         f.write(text)
 
 
-def kontrola(P, SAME=None, zaznamy=(), prepisy=None, ukazka=(), mista=None):
+def kontrola(P, SAME=None, zaznamy=(), prepisy=None, ukazka=(), mista=None, SIDE=None, stav=None):
     """Postaví projekt a vrátí výstup kontrola.py; zápisy s klíčem v `ukazka` jsou vymyšlené (jako v ukázce).
     Když kontrola neskončí kódem 0 (chyba v datech, pád), výstup začíná „NÁVRATOVÝ KÓD“ a případ neprojde."""
     tmp = tempfile.mkdtemp(prefix="kontrola_cisla_")
     try:
-        zapis(os.path.join(tmp, "data", "osoby.py"), f"P = {P!r}\nSAME = {SAME or {}!r}\n")
+        zapis(os.path.join(tmp, "data", "osoby.py"), f"P = {P!r}\nSAME = {SAME or {}!r}\nSIDE = {SIDE or []!r}\n")
+        if stav is not None:
+            zapis(os.path.join(tmp, "data", "STAV.md"), stav)
         if mista:
             zapis(os.path.join(tmp, "data", "mista.json"), json.dumps(mista, ensure_ascii=False))
         zaz = [dict(klic=k, druh="křest", datum="1900", nazev=k, shrnuti=s, odkaz="https://example.org/snimek",
@@ -235,6 +237,38 @@ for cislo in ("zápis č. 23", "str. č. 23", "snímek č. 23", "fol. No 23"):
     P = {1: osoba("Jan Novák", "* Holice čp. 23", st="doc", r=["krest_jan_1900"])}
     out = kontrola(P, zaznamy=[("krest_jan_1900", f"Křest Jana Nováka, {cislo}")])
     ma(f"„{cislo}“ nedokládá čp. 23 – upozornění", out, "čp. 23 " + CP, True)
+
+# Otec (2n) s jiným příjmením než dítě n – číslo nejspíš patří jiné osobě (upstream #162)
+P = {1: osoba("Petr Novák"), 2: osoba("Jan Novák"), 3: osoba("Marie Králová"), 4: osoba("Josef Dvořák"),
+     6: osoba("Karel Král")}
+out = kontrola(P)
+ma("otec 4 Dvořák u dítěte Nováka – upozornění", out, "osoba 4 (Josef Dvořák): otec osoby 2", True)
+ma("otec 6 Král u dcery Králové – bez upozornění", out, "osoba 6 (Karel Král)", False)
+P = {1: osoba("Petr Novák"), 2: osoba("Jan Novák"), 3: osoba("Anna Kufová"), 6: osoba("Josef Kufa"),
+     4: osoba("Václav Hahn"), 5: osoba("Marie Mikolášová"), 10: osoba("Jiří Mika"),
+     8: osoba("Jan Hána (Hahn)"), 12: osoba("otec neuveden"), 7: osoba("(jméno skryto)"), 14: osoba("Pavel Dvořák")}
+out = kontrola(P)
+ma("Kufa / Kufová – bez upozornění", out, "osoba 6 (Josef Kufa)", False)
+ma("varianta v závorce (Hána (Hahn) × Hahn) – bez upozornění", out, "osoba 8 (", False)
+ma("Mika × Mikolášová (stejná první 3 písmena) – bez upozornění", out, "osoba 10 (", False)
+ma("otec neuveden – bez upozornění", out, "osoba 12 (", False)
+ma("dítě se skrytým jménem – bez upozornění", out, "osoba 14 (", False)
+ma("otec 4 Hahn u dítěte Nováka – upozornění", out, "osoba 4 (Václav Hahn): otec osoby 2", True)
+
+# SIDE: k = předek, jehož je sourozencem; „Syn Jana“ u k = Jan je nejspíš chyba (upstream #68)
+P = {1: osoba("Petr Novák"), 2: osoba("Jan Novák"), 4: osoba("Josef Novák")}
+out = kontrola(P, SIDE=[dict(k=2, n="Karel Novák", t="Syn Jana, zemřel v dětství."),
+                        dict(k=4, n="Anna Nováková", t="Sestra Josefa."),
+                        dict(k=2, n="Marie Nováková", t="Dcera Josefa, sestra Jana.")])
+ma("SIDE „Syn Jana“ u k=2 (Jan) – upozornění", out, "'Karel Novák': text „Syn Jana“ zní jako dítě předka 2", True)
+ma("SIDE upozornění radí k=1", out, "patří ke k=1 (výchozí osoba)", True)
+ma("SIDE „Sestra Josefa“ – bez upozornění", out, "'Anna Nováková'", False)
+ma("SIDE „Dcera Josefa“ u k=2 (Jan) – bez upozornění", out, "'Marie Nováková'", False)
+
+# STAV.md nad 35 kB se na začátku konverzace uřízne (upstream #204)
+P = {1: osoba("Petr Novák")}
+ma("STAV.md 40 kB – upozornění", kontrola(P, stav="x" * 40_000), "data/STAV.md má 40 kB", True)
+ma("STAV.md 10 kB – bez upozornění", kontrola(P, stav="x" * 10_000), "data/STAV.md má", False)
 
 print(f"\n{sum(VYSLEDKY)} z {len(VYSLEDKY)} v pořádku")
 sys.exit(0 if all(VYSLEDKY) else 1)

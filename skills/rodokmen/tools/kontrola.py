@@ -71,6 +71,12 @@ def main():
                 err.append(f"boční příbuzný '{s.get('n')}' cituje neexistující zápis '{r}'")
         if not (s.get("t") or "").strip():
             warn.append(f"boční příbuzný '{s.get('n')}' nemá text (t) – na webu bude jen jméno")
+        rodic = dite_predka(s, P)
+        if rodic:
+            k = s["k"]
+            warn.append(f"boční příbuzný '{s.get('n')}': text „{rodic}“ zní jako dítě předka {k} ({P[k].get('n')}), ale k "
+                        f"znamená předka, jehož je SOUROZENCEM – na webu by vyšel jako jeho bratr/sestra. Dítě předka {k} "
+                        f"patří ke k={k // 2}" + (" (výchozí osoba)" if k // 2 == 1 else "") + ".")
     for a, c in SAME.items():
         if c not in P:
             err.append(f"SAME: {a} -> {c}, ale osoba {c} neexistuje")
@@ -195,6 +201,14 @@ def main():
             warn.append(f"osoba {k} ({p.get('n')}): žádný sňatek (×) nejmenuje partnera {sp} ({P[sp].get('n')})"
                         " – patří sňatek k této osobě, je číslo správně?")
 
+    for k, p in P.items():   # otec (2n) má mít stejné příjmení jako dítě n – jinak číslo nejspíš patří jiné osobě
+        if not isinstance(k, int) or k < 4 or k % 2 or k in SAME or k // 2 not in P or neznamy(p):
+            continue
+        a, b = kmeny_prijmeni(p.get("n")), kmeny_prijmeni(P[k // 2].get("n"))
+        if a and b and not a & b:
+            warn.append(f"osoba {k} ({p.get('n')}): otec osoby {k // 2} ({P[k // 2].get('n')}), ale příjmení nesedí – "
+                        "je číslo správně (otec = 2n, matka = 2n+1)? Nemanželské dítě nebo změnu jména napiš do faktů.")
+
     # Číslo domu v zápisu: za „čp.“, „č.“, „čís.“, „No“, „N.“, „N°“, „Nro“, „Nr.“, „Haus“, „domu“, v poli „[Dům] …“
     # nebo hned za obcí z mista.json („z Břilic 23“). Datum („5. 1. 1767“, „23. února“, „9. 9bris“), věk, rok
     # ani číslo zápisu, strany či snímku („zápis č. 23“) dům nedokládají.
@@ -315,6 +329,13 @@ def main():
             warn.append(f"rod {jmeno} má už {n} generací – je čas napsat příběh rodu "
                         f"(data/pribeh.md, reference/pribehy.md); koncept nejdřív ukaž uživateli v chatu")
 
+    stav = os.path.join(DATA, "STAV.md")   # na začátku konverzace se čte celý – dlouhý se uřízne a konec se ztratí
+    if os.path.exists(stav) and os.path.getsize(stav) > 35_000:
+        warn.append(f"data/STAV.md má {os.path.getsize(stav) // 1000} kB – při čtení na začátku konverzace se uřízne "
+                    "a pravidla nebo rozpracované věci na konci se ztratí. Zkrať ho pod 35 kB: přehled kol jen za "
+                    "poslední 2–3 dny, hotové body smaž (podrobnosti jsou v deníku), orientaci v knihách dej do "
+                    "samostatného souboru.")
+
     log = os.path.join(DATA, "research_log.md")
     rows = sum(1 for l in open(log, encoding="utf-8-sig") if re.match(r"^\| \d+ \|", l)) if os.path.exists(log) else 0
     print(f"{len(P)} osob, {len(zaz)} zápisů, {len(svazky)} svazků, {rows} řádků deníku")
@@ -325,6 +346,35 @@ def main():
     if not err and not warn:
         print("Vše v pořádku.")
     sys.exit(1 if err else 0)
+
+
+def kmeny_prijmeni(n):
+    """První 3 písmena slov jména kromě křestního, bez diakritiky (Kufa i Kufová → kuf); varianty v závorce
+    (Hána (Hahn)) se berou jako další kandidáti, „roz.“, „starší“, „mladší“ ne. Skrytá osoba → prázdná množina."""
+    if not isinstance(n, str) or "skryt" in n.lower():   # „(jméno skryto)“
+        return set()
+    out = set()
+    for w in re.sub(r"[(),]", " ", n).split()[1:]:
+        w = re.sub(r"[^a-z]", "", "".join(c for c in unicodedata.normalize("NFD", w.lower()) if not unicodedata.combining(c)))
+        if len(w) >= 3 and not w.startswith(("roz", "star", "mlad")):
+            out.add(w[:3])
+    return out
+
+def tvary_jmena(jmeno):
+    """1. a 2. pád křestního jména (Jan → jan, jana; Anna → anny; Marie → marie) – stačí na hrubé porovnání."""
+    j = jmeno.lower()
+    return {j, j + "a", j[:-1] + "y", j[:-1] + "i", j[:-1] + "e"} if len(j) > 2 else {j}
+
+
+def dite_predka(s, P):
+    """Text bočního příbuzného „Syn Jana…“, kde Jan je předek k: vazba je nejspíš špatně (upstream #68).
+    Vrátí úryvek, nebo None."""
+    k = s.get("k")
+    jmeno = (P.get(k, {}).get("n") or "").split() if isinstance(P.get(k), dict) else []
+    m = re.search(r"\b(syn|dcera|dítě)\s+(\w+)", s.get("t") or "", re.I)
+    if not jmeno or not m or k == 1:
+        return None
+    return m.group(0) if m.group(2).lower() in tvary_jmena(jmeno[0]) else None
 
 
 if __name__ == "__main__":
