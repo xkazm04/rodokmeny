@@ -27,6 +27,8 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   v `ISSUES`, jejíž text nezačíná stavem („Otevřené:“, „Částečně vyřešeno:“, „Vyřešeno:“, „Hypotéza:“) (upstream #140).
 - Stránka „Co hledáme“ ukáže štítek jen u známého stavu (dřív dala do štítku cokoli před první dvojtečkou) a přidává
   seznam hypotéz s odkazy na rody (upstream #140).
+- `npm run data` smaže z webu obrázky zápisů a dokumentů, které už v datech nejsou (nebo jejich výřez) – smazaný
+  zápis dřív dál šel na web i se snímkem (upstream #25).
 
 **Návody**
 - Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré

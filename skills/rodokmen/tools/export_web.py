@@ -405,13 +405,14 @@ def main():
 
     gated = login_files(cfg)
 
-    copied = 0
+    copied = removed = 0
+    klice = list(recs) + [d["img"] for d in docs_cfg] + ([cfg["uvod"]["foto"]] if cfg.get("uvod", {}).get("foto") else [])
     zv = os.path.join(DATA, "zvyrazneni.json")
     hl_mtime = os.path.getmtime(zv) if os.path.exists(zv) else 0
     for sub, src_dir in (("img", VYREZY), ("zdroje", ZDROJE)):
         dst_dir = os.path.join(WEB, "public", sub)
         os.makedirs(dst_dir, exist_ok=True)
-        for key in list(recs) + [d["img"] for d in docs_cfg] + ([cfg["uvod"]["foto"]] if cfg.get("uvod", {}).get("foto") else []):
+        for key in klice:
             src = os.path.join(src_dir, key + ".jpg")
             dst = os.path.join(dst_dir, key + ".jpg")
             if not os.path.exists(src):
@@ -426,8 +427,15 @@ def main():
                 continue
             shutil.copy2(src, dst)
             copied += 1
+        # obrázky smazaných nebo stažených zápisů a dokumentů pryč – jinak by dál šly na web (upstream #25)
+        chtene = {key + ".jpg" for key in klice if os.path.exists(os.path.join(src_dir, key + ".jpg"))}
+        for f in os.listdir(dst_dir):
+            if f.lower().endswith(".jpg") and f not in chtene and os.path.isfile(os.path.join(dst_dir, f)):
+                os.remove(os.path.join(dst_dir, f))
+                removed += 1
     print(f"{len(people)} osob, {len(families)} rodin, {len(records)} zápisů, {len(lines)} rodů, {len(places)} míst; "
-          f"zkopírováno {copied} obrázků; přihlášení {'zapnuté' if gated else 'VYPNUTÉ (web je otevřený)'}")
+          f"zkopírováno {copied} obrázků" + (f", smazáno {removed} starých" if removed else "") +
+          f"; přihlášení {'zapnuté' if gated else 'VYPNUTÉ (web je otevřený)'}")
 
     # odkazy v textech, které nikam nevedou (adresa osoby se změní třeba doplněním roku narození: jan-novak → jan-novak-1798)
     targets = dict(osoba=people, zdroj=recs, rod=lines, rodina=families)
