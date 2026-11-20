@@ -6,6 +6,13 @@ dá v repozitáři **Watch → Custom → Releases**.
 
 Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to podle souboru `VERZE`).
 
+## Nevydáno
+
+**Opravy**
+- Odkaz „otevřít v archivu“ u zápisů z ARONu otevře správný snímek, ne první stránku knihy (`aron_img.py link` dává
+  id souboru TILE). Starší odkazy v `data/` najde `aron_img.py odkazy` a opraví `aron_img.py odkazy --opravit`
+  (upstream #18, #22).
+
 ## 0.10.2 – 16. 11. 2026
 
 Opravná verze: bezpečnější založení a aktualizace projektu, správný požadavek na Node a pravidla, aby chybné „není

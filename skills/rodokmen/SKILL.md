@@ -43,6 +43,8 @@ Najdeš v ní `tools/` (nástroje), `template/` (šablona projektu a webu) a `re
      podle `reference/web.md` → Aktualizace staršího projektu. Odmítne-li, připomeň to až příště. Po aktualizaci ať
      uživatel restartuje Claude Code (změny v `.claude/settings.json` se jinak nemusí projevit). Hlásí-li výpis
      „Hlídač sítě: vypnutý“, zeptej se, jestli ho zapnout (`--hlidac`, vysvětlení v `reference/instalace.md`).
+     Má projekt zápisy z ARONu, spusť po aktualizaci `python3 -I tools/aron_img.py odkazy` – starší odkazy otevírají
+     knihu na prvním snímku, opraví je `… odkazy --opravit`.
    - Hlídač sítě kontrolu zamítne (starší projekt) → spusť ji přes brzdu: `python3 -I tools/slusne.py SKILL_DIR/tools/verze.py <složka projektu>`.
 2. Projekt ještě není → **Fáze 0**.
 
@@ -234,7 +236,7 @@ a `zdroje/` (výřezy pro web / plné rozlišení), `dokumenty/` (originály od 
 ## Nástroje (`tools/`, z kořene projektu `python3 -I tools/<nástroj>`, skripty `.sh` přes `bash`; přepínače vypíše `--help`)
 | Nástroj | K čemu |
 |---|---|
-| `aron_search.py`, `aron_img.py` | ARON (SOA Zámrsk): hledání svazků; snímek, trvalý odkaz, zápis svazku |
+| `aron_search.py`, `aron_img.py` | ARON (SOA Zámrsk): hledání svazků; snímek, trvalý odkaz, zápis svazku, oprava starých odkazů (`odkazy`) |
 | `portafontium.py` | SOA Plzeň (Porta fontium) bez prohlížeče |
 | `ebadatelna.py` | SOA Praha: trvalý odkaz, náhled a výřez ze snímku uloženého z prohlížeče (stahovat nesmí) |
 | `ahmp_search.sh`, `ahmp_scan.py` | matriky Prahy (AHMP) |
