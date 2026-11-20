@@ -133,7 +133,9 @@ v `web/src/data/site.json` (`people`). Při přejmenování osoby se slug změn�
 - **GEDCOM** (`.ged`, export z MyHeritage/Geni/FamilySearch): `python3 -I tools/ged_import.py dokumenty/strom.ged "Jméno Příjmení"`
   vypíše předky s čísly, všechny události a poznámky a **frontu zápisů** (nejmladší známá událost u každého předka,
   a jestli už je v archivu). `--osoby` dá kostru pro `osoby.py`. Poznámky ve stromu bývají plné rodinných historek –
-  přečti je a vytěž do `udaje_od_rodiny.md`.
+  přečti je a vytěž do `udaje_od_rodiny.md`. U každého předka vypíše i **zdroje** (citace SOUR): **Smart Match** = údaj
+  z cizího stromu („… Web Site“, název stromu) – osoba doložená jen takhle dostane v kostře `mh`, ne `fam`;
+  **Record Match** = záznam (sčítání, matrika, BillionGraves) – ověř ho přečtením zápisu jako první.
   Předtím `python3 -I tools/graf.py strom dokumenty/strom.ged "Jméno Příjmení"`: cizí stromy mívají dvojníky (táž osoba
   dvakrát, třeba u obou manželek otce) a nemožné vazby (matce by bylo 6 let). Nástroj u dítěte ve dvou rodinách ukáže,
   kterou bere `ged_import.py` a která je podle dat možná, a u předka, který je v rodokmenu víckrát, navrhne `SAME`.

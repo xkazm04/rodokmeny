@@ -8,6 +8,11 @@ Použití (z kořene projektu):
                                                                         události, poznámky a FRONTA ZÁPISŮ k vyhledání
   … "Jméno Příjmení" --osoby   -> totéž jako kostra pro data/osoby.py (stav "fam", ke kontrole a doplnění)
 
+Zdroje (citace SOUR u osoby a jejích událostí → název TITL a autor AUTH zdroje) se vypíšou u každého předka a rozliší:
+  Smart Match  – údaj převzatý z cizího stromu („… Web Site“, „MyHeritage Family Trees“, název cizího stromu, Geni) →
+                 osoba doložená jen takhle dostane v kostře stav "mh" (ne "fam") a poznámku, odkud údaje jsou
+  Record Match – záznam (sčítání, matrika, BillionGraves…) – stopa k zápisu, který je potřeba přečíst
+
 Fronta zápisů: u každého předka nejmladší známá událost s místem (úmrtí, pak sňatek, pak narození) –
 úmrtní a oddací zápisy uvádějí datum a místo narození i rodiče, proto se hledá od nejmladšího zápisu.
 E-maily a adresy ze stromu se nevypisují.
@@ -16,7 +21,7 @@ Kódování: UTF-8; starší soubory s hlavičkou „1 CHAR ANSI“ (Brother's K
 Česká data z MyHeritage a Family Tree Builderu („Odhadovaný: 23. úno, 1907“, „Okolo roku 1790“, „Po roce 1900“,
 „Před rokem 1896“, „Neověřený rok úmrtí: 1957“) se převedou na „asi 23. 2. 1907“, „asi 1790“, „po 1900“, „před 1896“, „1957 (?)“.
 """
-import datetime, re, sys
+import datetime, html, re, sys
 if __name__ == "__main__" and (len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help")):   # nápověda; import (graf.py) ne
     sys.exit(__doc__.strip())
 from collections import defaultdict
@@ -182,6 +187,35 @@ def parents(ind, recs):
     return None, None
 
 
+# Zdroj z cizího stromu (MyHeritage Smart Match, Geni, FamilySearch Family Tree); ostatní citace jsou záznamy.
+CIZI_STROM = re.compile(r"web\s*site|family\s*trees?|\bstrom|smart\s*match|\bgeni\b|familysearch\s+family\s+tree"
+                        r"|ancestry\s+(?:family|member)\s+trees?|wikitree", re.I)
+
+
+def zdroje(ind, recs):
+    """[(název zdroje, „Smart Match“ | „Record Match“)] z citací SOUR u osoby a u jejích událostí (bez opakování)."""
+    out = []
+    uzly = [n for n in ind["_sub"] if n["tag"] == "SOUR"]
+    uzly += [c for n in ind["_sub"] if n["tag"] != "SOUR" for c in n["_sub"] if c["tag"] == "SOUR"]
+    for n in uzly:
+        v = n.get("val", "").strip()
+        zdroj = recs.get(v) if re.fullmatch(r"@[^@]+@", v) else None
+        if zdroj:
+            titl, auth = first(zdroj, "TITL"), first(zdroj, "AUTH")
+            nazev = titl or auth or v
+            if auth and titl and auth not in titl:
+                nazev = f"{titl} ({auth})"
+        else:
+            nazev = v or first(n, "PAGE")
+        nazev = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", nazev))).strip()[:120]
+        if not nazev:
+            continue
+        druh = "Smart Match" if CIZI_STROM.search(nazev + " " + first(n, "PAGE")) else "Record Match"
+        if (nazev, druh) not in out:
+            out.append((nazev, druh))
+    return out
+
+
 def find(recs, query):
     q = query.lower().split()
     hits = [r for r in recs.values() if r["_type"] == "INDI" and all(w in name(r).lower() for w in q)]
@@ -244,15 +278,22 @@ def main():
         b = next((year(d) for t, d, p, x in ev if t == "BIRT"), None)
         dd = next((year(d) for t, d, p, x in ev if t == "DEAT"), None)
         y = f"{b}–{dd}" if b and dd else (f"* {b}" if b else (f"† {dd}" if dd else ""))
+        zdr = zdroje(ind, recs)
+        jen_cizi = bool(zdr) and all(d == "Smart Match" for _, d in zdr)   # údaje jen z cizích stromů → mh
         if as_py:
             note = " ".join(notes)   # !r = platný Python i pro uvozovky a „\“ ve jménech a poznámkách (osoby.py se spouští přes exec)
-            print(f' {k}: dict(n={name(ind)!r}, y={y!r}, st="fam", f={facts!r}, r=[]' + (f', note={note[:300]!r}' if note else "") + "),")
+            if jen_cizi:
+                note = (f"Údaje jen z cizího stromu (Smart Match: {'; '.join(t for t, _ in zdr)[:150]}). " + note).strip()
+            st = "mh" if jen_cizi else "fam"
+            print(f' {k}: dict(n={name(ind)!r}, y={y!r}, st="{st}", f={facts!r}, r=[]' + (f', note={note[:300]!r}' if note else "") + "),")
         else:
-            print(f"\n{k} | {name(ind)} | {y}")
+            print(f"\n{k} | {name(ind)} | {y}" + ("  [jen cizí stromy → mh]" if jen_cizi else ""))
             for f in facts:
                 print("   ", f)
             for n in notes:
                 print("    pozn.:", n.replace("\n", " ")[:600])
+            for t, d in zdr:
+                print(f"    zdroj: {t} – {d}" + (" (cizí strom)" if d == "Smart Match" else " (záznam – přečti zápis)"))
         dated = [(t, d, p) for t, d, p, x in ev if p or d]
         for pref in ("DEAT", "BURI", "MARR", "BIRT", "CHR"):
             hit = [e for e in dated if e[0] == pref and e[2]]
@@ -267,7 +308,7 @@ def main():
     now = datetime.date.today().year
     for k, n, what, d, p in queue:
         y = year(d)
-        limit = {"úmrtí": 30, "sňatek": 75}.get(what, 100)
+        limit = {"úmrtí": 75, "sňatek": 75}.get(what, 100)
         where = "" if not y else ("  → matriky online" if now - y > limit else "  → zatím jen matriční úřad (lhůta)")
         print(f"  {k:>4} {n}: {what} {d} {p}".rstrip() + where)
 

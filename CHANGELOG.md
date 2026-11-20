@@ -30,6 +30,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - `kontrola.py` upozorní, když se otec nebo matka téže osoby jmenuje ve dvou citovaných zápisech (nebo v zápisu
   a v `osoby.py`) jinak – čte pole přepisu `[Otec]`, `[Matka]`, `[Otec ženicha]`, `[Mutter der Braut]`…, latinské
   a německé tvary jmen bere jako stejné (Joannes = Jan). Pojistka proti chybnému čtení pomocníka (upstream #161, #205).
+- `ged_import.py` vypíše u každého předka zdroje z GEDCOMu (citace SOUR → název a autor) a rozliší Smart Match (cizí
+  strom) a Record Match (záznam: sčítání, BillionGraves…). Osoba doložená jen cizími stromy dostane v kostře
+  `--osoby` stav `mh` s poznámkou, odkud údaje jsou – dřív to šlo jen u zálohy `.ftb` (upstream #30, #143).
 - Zápis nálezu jedním příkazem `tools/nalez.py nahled|zapis vstup.json`: snímek (ARON) nebo místní obrázek, výřez,
   rámeček, zápis, přepis, odkazy u osob a řádek deníku – nic se nevynechá a vše se ověří dřív, než se cokoli zapíše
   (upstream #187).
@@ -70,7 +73,8 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   sourozencem, takže by na webu vyšel jako jeho bratr (upstream #68).
 - `ged_import.py` rozumí českým datům z MyHeritage a Family Tree Builderu („Odhadovaný: 23. úno, 1907“, „Okolo roku
   1790“, „Po roce 1900“, „Před rokem 1896“, „Neověřený rok úmrtí: 1957“, zkratky měsíců led, úno… čvn, čvc) – dřív je
-  vynechal nebo přenesl celou větu (upstream #143). Fronta zápisů uvádí lhůtu pro úmrtí 75 let.
+  vynechal nebo přenesl celou větu (upstream #143). Fronta zápisů uvádí lhůtu pro úmrtí 75 let a podle ní i počítá
+  (dřív 30), co už je v archivu.
 - `npm run data` je na velkých projektech mnohem rychlejší: rámečky překreslí jen u snímků, jejichž rámeček se
   změnil (evidence `web/.ramecky_zdroju.json`), dřív po každém `ramecek.py` všechny (upstream #216).
 - `aron_img.py` stahuje snímek bez udané úrovně v plném rozlišení (dřív poloviční – kurent z něj byl rozmazaný
