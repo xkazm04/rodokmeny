@@ -19,7 +19,8 @@ def zapis(cesta, text):
         f.write(text)
 
 
-def kontrola(P, SAME=None, zaznamy=(), prepisy=None, ukazka=(), mista=None, SIDE=None, stav=None):
+def kontrola(P, SAME=None, zaznamy=(), prepisy=None, ukazka=(), mista=None, SIDE=None, stav=None, svazky=None,
+             bez_odkazu=None):
     """Postaví projekt a vrátí výstup kontrola.py; zápisy s klíčem v `ukazka` jsou vymyšlené (jako v ukázce).
     Když kontrola neskončí kódem 0 (chyba v datech, pád), výstup začíná „NÁVRATOVÝ KÓD“ a případ neprojde."""
     tmp = tempfile.mkdtemp(prefix="kontrola_cisla_")
@@ -31,6 +32,12 @@ def kontrola(P, SAME=None, zaznamy=(), prepisy=None, ukazka=(), mista=None, SIDE
             zapis(os.path.join(tmp, "data", "mista.json"), json.dumps(mista, ensure_ascii=False))
         zaz = [dict(klic=k, druh="křest", datum="1900", nazev=k, shrnuti=s, odkaz="https://example.org/snimek",
                     **({"ukazka": True} if k in ukazka else {})) for k, s in zaznamy]
+        if svazky:
+            zapis(os.path.join(tmp, "data", "svazky.json"), json.dumps(svazky, ensure_ascii=False))
+        for z in zaz:   # bez_odkazu = {klíč zápisu: svazek} – zápis bez pole „odkaz“
+            if z["klic"] in (bez_odkazu or {}):
+                del z["odkaz"]
+                z["svazek"] = bez_odkazu[z["klic"]]
         zapis(os.path.join(tmp, "data", "zaznamy.json"), json.dumps(zaz, ensure_ascii=False))
         zapis(os.path.join(tmp, "data", "prepisy.json"), json.dumps(prepisy or {}, ensure_ascii=False))
         os.makedirs(os.path.join(tmp, "tools"))
@@ -273,6 +280,15 @@ ma("SIDE „Dcera Josefa“ u k=2 (Jan) – bez upozornění", out, "'Marie Nov�
 P = {1: osoba("Petr Novák")}
 ma("STAV.md 40 kB – upozornění", kontrola(P, stav="x" * 40_000), "data/STAV.md má 40 kB", True)
 ma("STAV.md 10 kB – bez upozornění", kontrola(P, stav="x" * 10_000), "data/STAV.md má", False)
+
+# Doklad od rodiny (svazek bez „portal“) nemá online odkaz – nehlásit „chybí odkaz“ (upstream #37)
+P = {1: osoba("Petr Novák", r=["rodina_rl", "aron_krest"])}
+out = kontrola(P, zaznamy=[("rodina_rl", "Rodný list"), ("aron_krest", "Křest")],
+               svazky={"rodina": {"archiv": "doklady od rodiny", "svazek": "Rodné listy"},
+                       "s1": {"archiv": "SOA Zámrsk", "portal": "ARON", "svazek": "N 1900"}},
+               bez_odkazu={"rodina_rl": "rodina", "aron_krest": "s1"})
+ma("doklad od rodiny bez odkazu – bez upozornění", out, "zápis rodina_rl: chybí odkaz", False)
+ma("zápis z ARONu bez odkazu – upozornění", out, "zápis aron_krest: chybí odkaz", True)
 
 print(f"\n{sum(VYSLEDKY)} z {len(VYSLEDKY)} v pořádku")
 sys.exit(0 if all(VYSLEDKY) else 1)

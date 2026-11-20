@@ -15,8 +15,18 @@ nástroj nic nezmění a vypíše je (pak --sloucit, nebo --prepsat). Python skr
   zapis.py odkaz <osoba> <klíč zápisu> [<klíč> …]
     Přidá klíč(e) do seznamu `r` v data/osoby.py: osoba = Kekulého číslo (P), nebo část jména bočního příbuzného
     (SIDE, musí sedět na jediného). Zbytek souboru zůstane doslova, klíč musí být v zaznamy.json.
+
+  zapis.py --smazat <klíč zápisu>
+    Smaže zápis, který se ukázal jako omyl (cizí rodina): položku v zaznamy, prepisy a zvyrazneni (zbytek souborů
+    beze změny) a výřezy vyrezy/<klíč>.jpg a zdroje/<klíč>.jpg přesune do pracovni/smazano_<datum>/ (jdou vrátit).
+    Když zápis ještě cituje osoba, boční příbuzný nebo text na webu (osoby.py, pribeh.md, pribehy/, zajimavosti.md,
+    web.json), nic nesmaže a vypíše kde; zmínky v deníku a dalších poznámkách jen ohlásí.
+
+  zapis.py prejmenuj <starý klíč> <nový klíč>
+    Přejmenuje zápis všude: zaznamy, prepisy, zvyrazneni, odkazy `r` a `zaznamy` i zmínky v textech osoby.py,
+    data/*.md a web.json (i v deníku) a výřezy vyrezy/ a zdroje/. Ostatní text souborů zůstane doslova.
 """
-import ast, json, os, re, sys
+import ast, json, os, re, shutil, sys, time
 for _s in (sys.stdout, sys.stderr):   # UTF-8 výstup i na Windows bez -X utf8 (cp1250 neumí třeba „→“)
     if hasattr(_s, "reconfigure"):
         _s.reconfigure(encoding="utf-8", errors="replace")
@@ -170,7 +180,171 @@ def odkaz(osoba, klice):
     print(f"data/osoby.py: {popis} – přidán zápis {', '.join(nove)}")
 
 
+def prepis_v_poradku(klic, v):
+    """prepisy.json: web čte jen „orig“ (přepis) a „cs“ (překlad); jiné pole by na webu tiše chybělo (upstream #74)."""
+    jine = sorted(set(v) - {"orig", "cs"})
+    chybi = [p for p in ("orig", "cs") if not isinstance(v.get(p), str) or not v[p].strip()]
+    if jine or chybi:
+        sys.exit(f"Přepis „{klic}“ nezapsán: má mít jen pole „orig“ (přepis originálu) a „cs“ (český překlad), "
+                 "obě neprázdná." + (f" Chybí: {', '.join(chybi)}." if chybi else "")
+                 + (f" Navíc: {', '.join(jine)} – web je nezobrazí (překlad patří do „cs“)." if jine else ""))
+
+
+def bez_polozky(text, poz, idx):
+    """Text JSON bez položky idx – zbytek souboru zůstane doslova (stejně jako při nahrazení)."""
+    if len(poz) == 1:
+        zacatek = WS.match(text).end()
+        return text[:zacatek + 1] + text[text.rindex("]" if text[zacatek] == "[" else "}"):]
+    if idx > 0:   # od konce předchozí hodnoty: „,\n <klíč>: hodnota“
+        return text[:poz[idx - 1][2]] + text[poz[idx][2]:]
+    zacatek = WS.match(text, WS.match(text).end() + 1).end()      # první položka (u slovníku i s klíčem)
+    za = WS.match(text, poz[0][2]).end() + 1                      # za čárku
+    return text[:zacatek] + text[WS.match(text, za).end():]
+
+
+def vzor_klice(klic):
+    return re.compile(r"(?<![\w-])" + re.escape(klic) + r"(?![\w-])")
+
+
+def soubory_dat():
+    """Textové soubory v data/, kde může být klíč zápisu: *.py, *.md, web.json a příběhy v data/pribehy/."""
+    data = os.path.join(ROOT, "data")
+    out = [f for f in sorted(os.listdir(data)) if f.endswith((".py", ".md")) or f == "web.json"]
+    if os.path.isdir(os.path.join(data, "pribehy")):
+        out += ["pribehy/" + f for f in sorted(os.listdir(os.path.join(data, "pribehy"))) if f.endswith(".md")]
+    return out
+
+
+def kdo_cituje(klic):
+    """Kde v datech je klíč zápisu ještě použitý (osoby.py, markdown, web.json)."""
+    vzor = vzor_klice(klic)
+    return [f for f in soubory_dat() if vzor.search(open(os.path.join(ROOT, "data", f), encoding="utf-8-sig").read())]
+
+
+BLOKUJE = ("osoby.py", "pribeh.md", "zajimavosti.md", "web.json")   # z nich vzniká obsah webu – citace musí pryč
+
+
+def zapis_text(path, text):
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+        f.write(text)
+    os.replace(tmp, path)
+
+
+def smazat(klic):
+    zminky = kdo_cituje(klic)
+    cituje = [f for f in zminky if f in BLOKUJE or f.startswith("pribehy/")]
+    if cituje:
+        sys.exit(f"Zápis „{klic}“ nesmazán: ještě ho cituje {', '.join('data/' + f for f in cituje)}. "
+                 "Nejdřív ho odeber z „r“ osob a z textů, pak smaž znovu.")
+    smazano = []
+    for nazev in ("zaznamy", "prepisy", "zvyrazneni"):
+        path = os.path.join(ROOT, "data", nazev + ".json")
+        if not os.path.exists(path):
+            continue
+        text = open(path, encoding="utf-8-sig").read()
+        data = json.loads(text) if text.strip() else None
+        if not data:
+            continue
+        poz = polozky(text)
+        if nazev in SEZNAMY:
+            idx = next((n for n, x in enumerate(data) if isinstance(x, dict) and x.get(SEZNAMY[nazev]) == klic), None)
+        else:
+            idx = next((n for n, (k, _, _) in enumerate(poz) if k == klic), None)
+        if idx is None:
+            continue
+        novy = bez_polozky(text, poz, idx)
+        ocekavano = [x for n, x in enumerate(data) if n != idx] if nazev in SEZNAMY else \
+            {k: v for k, v in data.items() if k != klic}
+        if json.loads(novy) != ocekavano:   # pojistka: smazala se právě ta jedna položka
+            sys.exit(f"data/{nazev}.json: smazání by změnilo víc než jednu položku – nic jsem nezměnil.")
+        zapis_text(path, novy)
+        smazano.append(f"data/{nazev}.json")
+    kam = os.path.join(ROOT, "pracovni", "smazano_" + time.strftime("%Y%m%d"))
+    for slozka in ("vyrezy", "zdroje"):
+        obr = os.path.join(ROOT, slozka, klic + ".jpg")
+        if os.path.exists(obr):
+            os.makedirs(os.path.join(kam, slozka), exist_ok=True)
+            shutil.move(obr, os.path.join(kam, slozka, klic + ".jpg"))
+            smazano.append(f"{slozka}/{klic}.jpg → {os.path.relpath(kam, ROOT)}/{slozka}/")
+    if not smazano:
+        sys.exit(f"Zápis „{klic}“ v datech není.")
+    print(f"smazán zápis „{klic}“: " + "; ".join(smazano))
+    jinde = [f for f in zminky if f not in cituje]
+    if jinde:
+        print(f"Zmiňuje ho i {', '.join('data/' + f for f in jinde)} – text nech, odkaz na web („/zdroj/{klic}/“) "
+              "případně uprav (npm run data ho ohlásí jako nefunkční).")
+    print("Do deníku (research_log.md) zapiš, proč zápis nepatří k rodině – ať ho příště nikdo nenajde „znovu“.")
+
+
+def prejmenovano(x, stary, novy):
+    """Struktura dat s klíčem zápisu `stary` nahrazeným `novy` ve všech řetězcích (na kontrolu výsledku)."""
+    if isinstance(x, str):
+        return vzor_klice(stary).sub(novy, x)
+    if isinstance(x, list):
+        return [prejmenovano(v, stary, novy) for v in x]
+    if isinstance(x, tuple):
+        return tuple(prejmenovano(v, stary, novy) for v in x)
+    if isinstance(x, dict):
+        return {prejmenovano(k, stary, novy): prejmenovano(v, stary, novy) for k, v in x.items()}
+    return x
+
+
+def prejmenuj(stary, novy):
+    if not re.fullmatch(r"[a-z0-9_]+", novy):
+        sys.exit(f"Nový klíč „{novy}“: jen malá písmena bez diakritiky, číslice a podtržítka (obec_druh_jmeno_rok).")
+    try:
+        zaz = json.load(open(os.path.join(ROOT, "data", "zaznamy.json"), encoding="utf-8-sig"))
+    except (OSError, ValueError) as e:
+        sys.exit(f"data/zaznamy.json nejde přečíst ({e}).")
+    klice = {z.get("klic") for z in zaz if isinstance(z, dict)}
+    if stary not in klice:
+        sys.exit(f"Zápis „{stary}“ v data/zaznamy.json není.")
+    if novy in klice or kdo_cituje(novy):
+        sys.exit(f"Klíč „{novy}“ už v datech je – vyber jiný.")
+    for slozka in ("vyrezy", "zdroje"):
+        if os.path.exists(os.path.join(ROOT, slozka, novy + ".jpg")):
+            sys.exit(f"{slozka}/{novy}.jpg už existuje – vyber jiný klíč.")
+    vzor = vzor_klice(stary)
+    zmeny = {}   # soubor → nový text; zapisuje se až po kontrole všech souborů
+    for nazev in ("zaznamy.json", "prepisy.json", "zvyrazneni.json", *soubory_dat()):
+        path = os.path.join(ROOT, "data", nazev)
+        if nazev in zmeny or not os.path.exists(path):
+            continue
+        text = open(path, encoding="utf-8-sig").read()
+        nove = vzor.sub(novy, text)
+        if nove == text:
+            continue
+        if nazev.endswith(".json"):   # pojistka: změnil se jen ten klíč
+            if json.loads(nove) != prejmenovano(json.loads(text), stary, novy):
+                sys.exit(f"data/{nazev}: přejmenování by změnilo i něco jiného – nic jsem nezměnil.")
+        elif nazev == "osoby.py":
+            try:
+                pred, po = nacti_osoby(text), nacti_osoby(nove)
+            except Exception as e:
+                sys.exit(f"data/osoby.py nejde načíst ({e}) – nic jsem nezměnil.")
+            for jmeno in set(pred) | set(po):
+                if jmeno != "__builtins__" and po.get(jmeno) != prejmenovano(pred.get(jmeno), stary, novy):
+                    sys.exit(f"data/osoby.py: přejmenování by změnilo i {jmeno} – nic jsem nezměnil, uprav ručně.")
+        zmeny[nazev] = nove
+    for nazev, nove in zmeny.items():
+        zapis_text(os.path.join(ROOT, "data", nazev), nove)
+    obrazky = []
+    for slozka in ("vyrezy", "zdroje"):
+        obr = os.path.join(ROOT, slozka, stary + ".jpg")
+        if os.path.exists(obr):
+            os.replace(obr, os.path.join(ROOT, slozka, novy + ".jpg"))
+            obrazky.append(f"{slozka}/{novy}.jpg")
+    print(f"přejmenováno „{stary}“ → „{novy}“: " + ", ".join(["data/" + f for f in zmeny] + obrazky))
+
+
 def main():
+    if len(sys.argv) == 3 and sys.argv[1] == "--smazat":
+        return smazat(sys.argv[2])
+    if sys.argv[1:2] == ["prejmenuj"]:
+        if len(sys.argv) != 4:
+            sys.exit(__doc__)
+        return prejmenuj(sys.argv[2], sys.argv[3])
     if sys.argv[1:2] == ["odkaz"]:
         if len(sys.argv) < 4:
             sys.exit(__doc__)
@@ -229,6 +403,8 @@ def main():
         odsazeni = radek[:len(radek) - len(radek.lstrip())]
         text = (text[:e] + ",\n" + odsazeni + ("" if seznam else json.dumps(klic, ensure_ascii=False) + ": ")
                 + jako(text, s, e, nove) + text[e:])
+    if nazev == "prepisy":
+        prepis_v_poradku(klic, nove)
     json.loads(text)   # pojistka: výsledek musí být platný JSON
 
     tmp = path + ".tmp"

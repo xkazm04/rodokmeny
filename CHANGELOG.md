@@ -22,6 +22,11 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   mladší 15 let, věk přes 105 let) a stejnou osobu na dvou číslech bez `SAME` (`tools/graf.py`). Ověřený neobvyklý
   údaj se odškrtne polem `overeno` v `osoby.py`. `graf.py strom` zkontroluje cizí GEDCOM před importem, `rodiny.py`
   pomáhá skládat rodinu ze sourozenců a rozhodovat mezi kandidáty stejného jména (upstream #201, #76, #126, #135).
+- `zapis.py --smazat <klíč>` smaže zápis, který se ukázal jako omyl: položku v `zaznamy`, `prepisy` a `zvyrazneni`
+  (zbytek souborů doslova) a výřezy přesune do `pracovni/smazano_<datum>/`; citovaný zápis nesmaže a řekne kde.
+  `zapis.py prejmenuj <starý> <nový>` změní klíč zápisu ve všech datech, textech i výřezech (upstream #54, #89, #127).
+- Stránka předka ukazuje „Další děti“ – sourozence dítěte v linii ze `SIDE` (text „Bratr…“/„Sestra…“); nadpis
+  „Sourozenci a další příbuzní“ (upstream #69, #89).
 - Zápis nálezu jedním příkazem `tools/nalez.py nahled|zapis vstup.json`: snímek (ARON) nebo místní obrázek, výřez,
   rámeček, zápis, přepis, odkazy u osob a řádek deníku – nic se nevynechá a vše se ověří dřív, než se cokoli zapíše
   (upstream #187).
@@ -68,6 +73,10 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - `aron_img.py` stahuje snímek bez udané úrovně v plném rozlišení (dřív poloviční – kurent z něj byl rozmazaný
   a četl se špatně). Archiv to nezatíží víc, sken se stahuje celý jedním požadavkem tak jako tak (upstream #119, #120).
 - `overit.py` dělá poloviny zápisu do 1568 px (dřív 1900 px, které nástroj Read stejně potichu zmenšil) (upstream #43).
+- `zapis.py prepisy` odmítne přepis bez neprázdných `orig` a `cs` nebo s jiným polem (`preklad`) – web by ho tiše
+  nezobrazil (upstream #74, #89).
+- `kontrola.py` nechce odkaz na snímek u zápisů ze svazku bez `portal` (doklad od rodiny, kopie z badatelny)
+  (upstream #37, #89).
 - Mapa na webu ukáže osobu jen v obcích, kde sama žila: ne u fary, okresu, přívlastku („Chlum u Hořic“), rodné obce
   matky („roz. Nováková z Bašnic“) ani u muže v obci nevěsty. `kontrola.py` vypíše všechny doložené předky bez své
   obce, ne jen tři (upstream #139).
@@ -75,6 +84,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   nesmyslný klíč (upstream #187).
 
 **Návody**
+- Soupis poddaných 1651: kde jsou PDF edic NA zdarma, nejdřív seznam zachovaných panství, `pdftotext` rozbíjí
+  diakritiku, číst stránku jako obrázek, jak soupis zapsat (obvykle `prob`); kniha zemřelých mateřské fary nemusí
+  zapisovat filiální vsi – ověř na vzorcích (upstream #84, #89).
 - Typické pasti v `reference/matriky.md`: sloupce ledig/Witwer, křížek v knize narozených, rozsah rejstříku, vdova
   jako „dcera“ prvního muže, kandidátní zápis není doklad, roky z cizích stromů nepatří do `y`; portály: SOA Třeboň
   se vrací na předchozí snímek, Matricula bez prohlížeče pomocníkovi obraz nedá; zadání pomocníka: jedna úzká stopa

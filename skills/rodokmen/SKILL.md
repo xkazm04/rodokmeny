@@ -290,7 +290,7 @@ a `zdroje/` (výřezy pro web / plné rozlišení), `dokumenty/` (originály od 
 | `cache.py` | sdílená mezipaměť snímků; uložení snímku z prohlížeče |
 | `ged_import.py`, `ftb_export.py` | rodinný strom (GEDCOM, záloha MyHeritage) – `data.md` |
 | `vyrez.py`, `ramecek.py`, `overit.py` | výřez zápisu (zlomky stránky), rámeček (zlomky výřezu, `--pozn` poznámka), ověření čtení na dvou polovinách |
-| `zapis.py` | zápis do `data/*.json` a odkazů `r` v `osoby.py` beze změny formátu |
+| `zapis.py` | zápis do `data/*.json` a odkazů `r` v `osoby.py` beze změny formátu; `--smazat <klíč>` zápis omylem, `prejmenuj <starý> <nový>` klíč všude |
 | `mista.py` | místa pro mapu (OpenStreetMap) |
 | `napady.py` | náměty na zajímavosti z dat |
 | `rejstrik.py` | rejstřík dat v SQLite: `osoba`, `svazek`, `hledej`, `zapis`, `denik`, `podklady`… (Hledání v datech) |
