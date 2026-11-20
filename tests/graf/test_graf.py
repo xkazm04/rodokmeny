@@ -215,6 +215,28 @@ def test_krest_a_ceske_datum():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def test_adopce():
+    """Adoptivní rodina (FAMC + PEDI adopted) není biologická: věk adoptivní matky ani „dvě rodiny“ se nehlásí."""
+    text = ("0 HEAD\n"
+            + osoba("@A@", "Josef /Malý/", "M", "1 BIRT", "2 DATE 1870")
+            + osoba("@B@", "Anna /Malá/", "F", "1 BIRT", "2 DATE 1875")
+            + osoba("@C@", "Marie /Bílá/", "F", "1 BIRT", "2 DATE 1844")              # adoptivní matka v 56 letech
+            + osoba("@D@", "Jan /Malý/", "M", "1 BIRT", "2 DATE 1900", "1 FAMC @F1@",
+                    "1 FAMC @F2@", "2 PEDI adopted")
+            + "0 @F1@ FAM\n1 HUSB @A@\n1 WIFE @B@\n1 CHIL @D@\n0 @F2@ FAM\n1 WIFE @C@\n1 CHIL @D@\n0 TRLR\n")
+    tmp, ged = strom(text)
+    try:
+        t = graf.nacti_strom(ged)
+        chrono = graf.chronologie(t)
+        pripad("adoptivní matce se věk při narození nehlásí", not any(p == "@C@" for _d, _h, p, _c in chrono), str(chrono))
+        pripad("biologická a adoptivní rodina nejsou „dítě ve dvou rodinách“", graf.vic_rodin(t) == [],
+               str(graf.vic_rodin(t)))
+        r = subprocess.run(PY + [GRAF, "strom", ged], capture_output=True, text=True, encoding="utf-8")
+        pripad("výpis strom: adopce se ukáže zvlášť", "adoptivní" in r.stdout and "@F2@" in r.stdout, r.stdout + r.stderr)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def test_cyklus():
     tmp, ged = strom(GED.replace("0 @F1@ FAM", "0 @F9@ FAM\n1 HUSB @I1@\n1 CHIL @I8@\n0 @F1@ FAM"))
     try:
@@ -308,7 +330,7 @@ def test_rodice_zapisu():
 
 
 if __name__ == "__main__":
-    for t in (test_strom, test_okrajove, test_krest_a_ceske_datum, test_cyklus, test_predci, test_kontrola, test_rodice_zapisu):
+    for t in (test_strom, test_okrajove, test_krest_a_ceske_datum, test_adopce, test_cyklus, test_predci, test_kontrola, test_rodice_zapisu):
         try:
             t()
         except Exception as e:  # noqa: BLE001 – spadlý případ se vypíše a test neprojde

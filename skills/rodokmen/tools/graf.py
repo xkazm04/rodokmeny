@@ -59,9 +59,9 @@ def _datum(text):
 
 def nacti_strom(path):
     """{'osoby': {id: …}, 'rodiny': {id: {h, w, deti}}, 'famc': {id: [rodiny z FAMC, jak je čte ged_import.py]},
-    'puvod': {id: [rodiny z FAMC i z CHIL]}} z GEDCOMu."""
+    'puvod': {id: [rodiny z FAMC i z CHIL]}, 'adopce': {id: {rodiny s PEDI adopted/foster nebo z ADOP}}} z GEDCOMu."""
     recs = gi.read(path)
-    osoby, rodiny, puvod = {}, {}, defaultdict(list)
+    osoby, rodiny, puvod, adopce = {}, {}, defaultdict(list), defaultdict(set)
     for i, r in recs.items():
         if r["_type"] == "INDI":
             raw = gi.first(r, "NAME")
@@ -76,6 +76,10 @@ def nacti_strom(path):
             for n in gi.sub(r, "FAMC"):
                 if n["val"].strip() not in puvod[i]:
                     puvod[i].append(n["val"].strip())
+                if gi.first(n, "PEDI").lower() in ("adopted", "foster"):   # adoptivní / pěstounská rodina
+                    adopce[i].add(n["val"].strip())
+            for a in gi.sub(r, "ADOP"):
+                adopce[i].update(n["val"].strip() for n in gi.sub(a, "FAMC"))
         elif r["_type"] == "FAM":
             rodiny[i] = dict(h=gi.first(r, "HUSB"), w=gi.first(r, "WIFE"), deti=[n["val"].strip() for n in gi.sub(r, "CHIL")])
     famc = {i: [f for f in fs if f in rodiny] for i, fs in puvod.items()}
@@ -84,7 +88,12 @@ def nacti_strom(path):
             if c in osoby and f not in puvod[c]:
                 puvod[c].append(f)
     puvod = {i: [f for f in fs if f in rodiny] for i, fs in puvod.items()}
-    return dict(osoby=osoby, rodiny=rodiny, puvod=puvod, famc=famc)
+    return dict(osoby=osoby, rodiny=rodiny, puvod=puvod, famc=famc, adopce=dict(adopce))
+
+
+def biologicke(t, i):
+    """Rodiny původu bez adoptivních a pěstounských – jen na ně platí věk rodičů a narození po jejich smrti."""
+    return [f for f in t["puvod"].get(i, []) if f not in t.get("adopce", {}).get(i, ())]
 
 
 def rodice(t, i, rodina=None):
@@ -128,7 +137,7 @@ def chronologie(t):
     """[(druh, hodnota, rodič, dítě)]; u úmrtí před narozením a věku přes 105 let je rodič = dítě = osoba."""
     out = []
     for c in t["osoby"]:
-        for p in rodice(t, c):
+        for p in dict.fromkeys(p for f in biologicke(t, c) for p in rodice(t, c, f)):
             why = _chybi_vek(t, p, c)
             if why:
                 out.append((why[0], why[1], p, c))
@@ -142,9 +151,11 @@ def chronologie(t):
 
 
 def vic_rodin(t):
-    """Osoby ve více rodinách původu: {osoba, rodiny, prvni (bere ji ged_import.py), mozne (chronologicky)}."""
+    """Osoby ve více biologických rodinách původu: {osoba, rodiny, prvni (bere ji ged_import.py), mozne
+    (chronologicky)}. Adoptivní rodina vedle biologické rozpor není (vypíše se zvlášť, viz main)."""
     out = []
-    for i, fs in t["puvod"].items():
+    for i in t["puvod"]:
+        fs = biologicke(t, i)
         if len(fs) < 2:
             continue
         mozne = [f for f in fs if not any(_chybi_vek(t, p, i) for p in rodice(t, i, f))]
@@ -360,6 +371,11 @@ def main(argv):
         bere = _rodina_popis(t, v["prvni"]) if v["prvni"] else "žádnou (dítě je jen v CHIL, chybí FAMC)"
         print(f"upozornění: {_popis(t, v['osoba'])} je dítětem ve {len(v['rodiny'])} rodinách; ged_import.py bere "
               f"{bere}, podle dat možná: {mozne}")
+    for i, fs in sorted(t["adopce"].items()):
+        bere = (t["famc"].get(i) or [None])[0]
+        print(f"adopce: {_popis(t, i)} – rodina {', '.join(_rodina_popis(t, f) for f in sorted(fs) if f in t['rodiny'])} "
+              "je adoptivní/pěstounská, věk a úmrtí těchto rodičů se nekontrolují"
+              + ("; POZOR, ged_import.py bere právě ji (první FAMC)" if bere in fs else ""))
     for druh, h, p, c in chronologie(t):
         print(f"upozornění: {druh} ({h}): " + (_popis(t, p) if p == c else f"{_popis(t, p)} → {_popis(t, c)}"))
     for s, a, b in dvojnici(t):
