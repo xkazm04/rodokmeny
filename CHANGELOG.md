@@ -12,6 +12,11 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Odkaz „otevřít v archivu“ u zápisů z ARONu otevře správný snímek, ne první stránku knihy (`aron_img.py link` dává
   id souboru TILE). Starší odkazy v `data/` najde `aron_img.py odkazy` a opraví `aron_img.py odkazy --opravit`
   (upstream #18, #22).
+- Lhůta pro předání knihy zemřelých do archivu je 75 let, ne 30 (§ 23 zákona 301/2000 Sb.; 30 let platí jen pro
+  vydání jednotlivého zápisu na úřadě). Claude už nečeká online knihy zemřelých, které jsou ještě na úřadě (upstream #200).
+- Brzda zpomalí krajské Krameriusy (JVK České Budějovice, SVK Plzeň) na 10 s mezi dotazy – po rychlé sérii vracely
+  403 na hodinu (upstream #189, #200).
+- Šablona projektu nedává do gitu složku `.playwright-mcp/` (snímky a logy Playwrightu) (upstream #200).
 
 ## 0.10.2 – 16. 11. 2026
 
