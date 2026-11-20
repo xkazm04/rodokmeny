@@ -2,7 +2,8 @@
 import Base from '../../layouts/Base.astro';
 import PersonLink from '../../components/PersonLink.astro';
 import Record from '../../components/Record.astro';
-import { lines, people, hypotheses, href, genName, statusClass, lineByK } from '../../lib/data.js';
+import StoryCards from '../../components/StoryCards.astro';
+import { lines, people, hypotheses, href, genName, statusClass, lineByK, stories, config } from '../../lib/data.js';
 
 export function getStaticPaths() {
   return Object.keys(lines).map((slug) => ({ params: { slug } }));
@@ -22,6 +23,10 @@ const partnerLine = lineByK[l.k ^ 1];
         sousedního rodu <a href={href.line(partnerLine.slug)}>{partnerLine.name}</a>; jejich {people[people[l.root].child].sex === 'M' ? 'syn' : 'dcera'} <PersonLink slug={people[l.root].child} />.</>
     )}
   </p>
+  {config.hlavniPribeh !== false && config.maPribeh && (config.pribeh?.rod ?? 8) === l.k && (
+    <p><a class="btn" href="/pribehy/">{config.pribeh?.tlacitko || 'Přečíst příběh rodu'} →</a></p>
+  )}
+  <StoryCards rod={l.k} />
   <p class="small muted">Rodokmen je rozdělený do osmi rodů podle osmi pradědečků a prababiček – každý manželský pár proto patří do dvou sousedních rodů.</p>
 
   {gens.map((g) => (

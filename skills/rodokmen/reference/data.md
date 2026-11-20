@@ -120,8 +120,12 @@ Viz `web.md`.
   v přepisu piš `/`), posune sloupce.
 - `historie_kol.md` – starší body z „Rozpracováno“ ve `STAV.md` (nejnovější nahoře); při startu se nečte.
 - `zajimavosti.md` – `## Nadpis` + text, odkazy `[Jméno](/osoba/<slug>/)`.
-- `pribeh.md` – „Příběh <hlavního rodu>“: frontmatter `title`, `lead` + kapitoly `##`; když soubor neexistuje,
-  položka menu se skryje. Jak psát: `pribehy.md`.
+- `pribeh.md` – „Příběh <hlavního rodu>“: frontmatter `title`, `lead` + kapitoly `##`, na webu `/pribehy/`; když
+  soubor neexistuje (a není ani další příběh), položka menu se skryje. Jak psát: `pribehy.md`.
+- `pribehy/<slug>.md` – další příběhy (jiné rody, témata): frontmatter `title`, `lead`, `rod` (8–15), nepovinně
+  `menu` (vlastní položka v menu) a `koncept: true` (na webu se štítkem „koncept“). Web: `/pribehy/<slug>/`, karty pod
+  hlavním příběhem a na stránce rodu; bez `pribeh.md` je `/pribehy/` rozcestník. Název souboru = adresa (malá
+  písmena, číslice, pomlčky). Pořadí: `web.json` → `"pribehy": ["slug", …]`, jinak podle rodu.
 - Poznámky pro Clauda v markdownu piš jako `<!-- … -->` – na web nejdou.
 - `archivni_dotazy.md`, `udaje_od_rodiny.md` – volný text.
 

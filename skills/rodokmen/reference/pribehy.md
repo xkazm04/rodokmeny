@@ -71,4 +71,25 @@ jde později doplnit. `kontrola.py` na to upozorní. Uživateli to nabídni, i k
   rodina používá, a drž ji v celém textu.
 - Poctivě: co nevíme, napiš jako otázku nebo domněnku („nejspíš“, „podle rodiny“). Nic nevymýšlej kvůli plynulosti.
 - Na konci kapitola o dnešku: jen jména a vztahy žijících, bez podrobností.
-- Ostatní rody dostanou svůj prostor na stránkách rodů (popis v `LINES`, `HYPOTEZY`) a v zajímavostech.
+- Ostatní rody dostanou svůj prostor na stránkách rodů (popis v `LINES`, `HYPOTEZY`), v zajímavostech a v dalších
+  příbězích (níže).
+
+## Další příběhy
+Když rodina chce příběh dalšího rodu (třeba rodu matky) nebo tématu (vystěhovalci, válka), napiš ho stejně
+(koncept do chatu ke schválení) do `data/pribehy/<slug>.md`; hlavní příběh zůstává `data/pribeh.md`.
+
+```markdown
+---
+title: Mlynáři od Svitavy
+lead: Jedna věta, která chytí.
+rod: 9
+menu: Mlynáři          # nepovinné – vlastní položka v menu webu
+koncept: true          # nepovinné – na webu se štítkem „koncept“, dokud ho rodina neschválí
+---
+
+## Mlýn pod kostelem (1720–1790)
+…
+```
+Web: `/pribehy/<slug>/`, karty „Další příběhy“ pod hlavním příběhem a na stránce rodu (`rod`). Bez `data/pribeh.md`
+je `/pribehy/` rozcestník všech příběhů. Pořadí určuje `web.json` → `"pribehy": ["slug", …]`, jinak rod.
+Odkaz z textu na jiný příběh: `[Mlynáři](/pribehy/mlynari/)` – `npm run data` ohlásí nefunkční odkazy.

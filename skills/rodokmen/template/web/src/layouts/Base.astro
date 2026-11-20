@@ -1,15 +1,20 @@
 ---
 import '../styles/global.css';
-import { config } from '../lib/data.js';
+import { config, stories } from '../lib/data.js';
 const siteName = config.nazev || 'Rodokmen';
 const { title, description = config.popis || siteName, wide = false, wider = false, full = false } = Astro.props;
 const path = Astro.url.pathname;
+// příběhy: hlavní (data/pribeh.md) nebo rozcestník; další příběh s „menu:“ ve frontmatteru má vlastní položku
+const storyMenu = config.pribeh?.menu || (config.hlavniPribeh === false ? 'Příběhy' : 'Příběh rodu');
+const storyItems = stories.filter((s) => s.menu && !s.koncept).map((s) => [`/pribehy/${s.slug}/`, s.menu]);
 const groups = [
-  [['/', 'Úvod'], ...(config.maPribeh ? [['/pribehy/', config.pribeh?.menu || 'Příběh rodu']] : []), ['/zajimavosti/', 'Zajímavosti']],
+  [['/', 'Úvod'], ...(config.maPribeh ? [['/pribehy/', storyMenu]] : []), ...storyItems, ['/zajimavosti/', 'Zajímavosti']],
   [['/rody/', 'Rody'], ['/mapa/', 'Mapa'], ['/vejir/', 'Vějíř'], ['/predci/', 'Předci'], ['/zapisy/', 'Zápisy'], ['/hledame/', 'Co hledáme']],
   [['/hledat/', 'Hledat']],
 ];
-const current = (url) => ((url === '/' ? path === '/' : path.startsWith(url)) ? 'page' : undefined);
+const current = (url) => ((url === '/' ? path === '/'
+  : url === '/pribehy/' ? path === url || (path.startsWith(url) && !storyItems.some(([u]) => path.startsWith(u)))
+  : path.startsWith(url)) ? 'page' : undefined);
 ---
 <!doctype html>
 <html lang="cs">

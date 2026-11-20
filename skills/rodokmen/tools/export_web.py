@@ -67,6 +67,53 @@ def strip_comments(md):
     return re.sub(r"<!--.*?-->\n?", "", md, flags=re.S)
 
 
+def frontmatter(text):
+    """Jednoduchá pole z frontmatteru příběhu (title, lead, rod, menu, koncept) bez knihovny YAML; web ho čte sám."""
+    m = re.match(r"\A---\r?\n(.*?)\r?\n---[ \t]*(?:\r?\n|\Z)", text, re.S)
+    out = {}
+    for line in (m.group(1).splitlines() if m else []):
+        kv = re.match(r"([A-Za-z_]+):\s*(.*?)\s*$", line)
+        if not kv:
+            continue
+        v = kv.group(2)
+        if len(v) >= 2 and v[0] == v[-1] and v[0] in "\"'":
+            try:
+                v = json.loads(v) if v[0] == '"' else v[1:-1].replace("''", "'")
+            except ValueError:
+                v = v[1:-1]
+        out[kv.group(1)] = v
+    return out if m else None
+
+
+def nacti_pribehy(cfg):
+    """Další příběhy z data/pribehy/<slug>.md (hlavní příběh zůstává data/pribeh.md). Pořadí: web.json „pribehy“
+    (seznam slugů), ostatní podle rodu a názvu souboru."""
+    slozka = os.path.join(DATA, "pribehy")
+    out = []
+    for f in sorted(os.listdir(slozka)) if os.path.isdir(slozka) else []:
+        if not f.endswith(".md"):
+            continue
+        slug, text = f[:-3], open(os.path.join(slozka, f), encoding="utf-8-sig").read()
+        fm = frontmatter(text)
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", slug):
+            print(f"POZOR: data/pribehy/{f} – název souboru má být jen malá písmena, číslice a pomlčky "
+                  "(z něj je adresa /pribehy/<název>/); příběh vynechán")
+            continue
+        if not fm or not str(fm.get("title") or "").strip():
+            print(f"POZOR: data/pribehy/{f} nemá frontmatter s „title“ (---\ntitle: …\nlead: …\n---); příběh vynechán")
+            continue
+        rod = int(fm["rod"]) if str(fm.get("rod", "")).strip().isdigit() else None
+        out.append(dict(slug=slug, title=str(fm["title"]), lead=str(fm.get("lead") or ""), rod=rod,
+                        menu=str(fm.get("menu") or ""),
+                        koncept=str(fm.get("koncept", "")).strip().lower() in ("true", "ano", "yes", "1"), text=text))
+    poradi = [s for s in cfg.get("pribehy", []) if isinstance(s, str)] if isinstance(cfg.get("pribehy"), list) else []
+    for s in poradi:
+        if s not in {p["slug"] for p in out}:
+            print(f"POZOR: web.json → pribehy uvádí „{s}“, ale data/pribehy/{s}.md není")
+    out.sort(key=lambda p: (poradi.index(p["slug"]) if p["slug"] in poradi else len(poradi), p["rod"] or 99, p["slug"]))
+    return out
+
+
 def slugify(text):
     t = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
     return re.sub(r"[^a-z0-9]+", "-", t).strip("-")
@@ -405,14 +452,17 @@ def main():
                        records=[r for r in h.get("zaznamy", []) if r in recs])
                   for h in ns["HYPOTEZY"] if isinstance(h, dict)]   # jiný zápis hlásí kontrola.py
 
-    has_story = os.path.exists(os.path.join(DATA, "pribeh.md"))
+    has_story = os.path.exists(os.path.join(DATA, "pribeh.md"))   # hlavní příběh (/pribehy/)
+    stories = nacti_pribehy(cfg)                                    # další příběhy (/pribehy/<slug>/)
     public_cfg = {k: v for k, v in cfg.items() if k != "prihlaseni"}
-    public_cfg["maPribeh"] = has_story
+    public_cfg["maPribeh"] = has_story or bool(stories)
+    public_cfg["hlavniPribeh"] = has_story
     site = dict(config=public_cfg, places=places, root=slugs[1], aliases={a: slugs[a] for a in SAME}, people=people,
                 families=families, records=records, lines=lines,
                 issues=[dict(title=i, text="") if isinstance(i, str) else dict(title=i[0], text=i[1]) for i in ISSUES
                         if isinstance(i, str) or (isinstance(i, (tuple, list)) and len(i) == 2)],   # jiné hlásí kontrola.py
                 stats=stats, hypotheses=hypotheses,
+                stories=[{k: v for k, v in s.items() if k != "text"} for s in stories],
                 docs=[dict(img=d["img"], caption=d.get("popis", ""), people=[slugs[k] for k in d.get("osoby", []) if k in slugs])
                       for d in docs_cfg if os.path.exists(os.path.join(VYREZY, d["img"] + ".jpg"))])
 
@@ -424,6 +474,9 @@ def main():
         write(os.path.join(gen_dir, dst), strip_comments(re.sub(r"^# .*\n", "", text, count=1)))
     story = os.path.join(DATA, "pribeh.md")
     write(os.path.join(gen_dir, "pribeh.md"), strip_comments(open(story, encoding="utf-8-sig").read()) if has_story else "---\ntitle: Příběh\nlead: ''\n---\n")
+    shutil.rmtree(os.path.join(gen_dir, "pribehy"), ignore_errors=True)   # smazaný příběh nesmí zůstat na webu
+    for s in stories:
+        write(os.path.join(gen_dir, "pribehy", s["slug"] + ".md"), strip_comments(s["text"]))
 
     hrefs = os.path.join(gen_dir, "fan_hrefs.json")
     json.dump({k: f"/osoba/{s}/" for k, s in slugs.items()}, open(hrefs, "w", encoding="utf-8", newline="\n"))
@@ -480,12 +533,13 @@ def main():
           f"; přihlášení {'zapnuté' if gated else 'VYPNUTÉ (web je otevřený)'}")
 
     # odkazy v textech, které nikam nevedou (adresa osoby se změní třeba doplněním roku narození: jan-novak → jan-novak-1798)
-    targets = dict(osoba=people, zdroj=recs, rod=lines, rodina=families)
+    targets = dict(osoba=people, zdroj=recs, rod=lines, rodina=families, pribehy={s["slug"] for s in stories})
     texts = {f: open(os.path.join(gen_dir, f), encoding="utf-8").read() for f in ("pribeh.md", "zajimavosti.md")}
+    texts.update({f"pribehy/{s['slug']}.md": s["text"] for s in stories})
     texts["web.json"] = json.dumps(cfg, ensure_ascii=False)
     texts["osoby.py (hypotézy)"] = json.dumps(hypotheses, ensure_ascii=False)
     broken = [(f, m.group(0)) for f, t in texts.items()
-              for m in re.finditer(r"/(osoba|zdroj|rod|rodina)/([^/\s)\"'#?<>\]]+)", t) if m.group(2) not in targets[m.group(1)]]
+              for m in re.finditer(r"/(osoba|zdroj|rod|rodina|pribehy)/([^/\s)\"'#?<>\]]+)", t) if m.group(2) not in targets[m.group(1)]]
     for f, link in dict.fromkeys(broken):
         print(f"POZOR: nefunkční odkaz {link}/ v {f} – oprav ho (adresy stránek jsou ve web/src/data/site.json)")
 

@@ -8,6 +8,8 @@ import { frontmatter as pribeh } from '../generated/pribeh.md';
 const lineList = Object.values(lines).sort((a, b) => a.k - b.k);
 const uvod = config.uvod ?? {};
 const cards = config.zajimavosti_na_uvodu ?? [];
+// bez hlavního příběhu (data/pribeh.md) vede tlačítko na rozcestník dalších příběhů
+const storyButton = config.pribeh?.tlacitko || (config.hlavniPribeh === false ? 'Prohlédnout příběhy' : '');
 ---
 <Base title="" wide>
   <h1>{config.nazev || 'Rodokmen'}</h1>
@@ -17,7 +19,7 @@ const cards = config.zajimavosti_na_uvodu ?? [];
       <div>
         {uvod.nadpis && <h2>{uvod.nadpis}</h2>}
         {(uvod.odstavce ?? []).map((t) => <p>{t}</p>)}
-        {config.maPribeh && <a class="btn" href="/pribehy/">{config.pribeh?.tlacitko || `Přečíst: ${pribeh.title}`} →</a>}
+        {config.maPribeh && <a class="btn" href="/pribehy/">{storyButton || `Přečíst: ${pribeh.title}`} →</a>}
       </div>
       {uvod.foto && (
         <a href={config.maPribeh ? '/pribehy/' : `/img/${uvod.foto}.jpg`}><img src={`/img/${uvod.foto}.jpg`} alt={uvod.foto_popis || ''} /></a>
@@ -28,9 +30,9 @@ const cards = config.zajimavosti_na_uvodu ?? [];
   {config.maPribeh && !(uvod.nadpis || uvod.odstavce?.length) && (
     <section class="teaser">
       <div>
-        <h2>{pribeh.title}</h2>
-        {pribeh.lead && <p>{pribeh.lead}</p>}
-        <a class="btn" href="/pribehy/">{config.pribeh?.tlacitko || 'Přečíst příběh'} →</a>
+        <h2>{config.hlavniPribeh === false ? 'Rodinné příběhy' : pribeh.title}</h2>
+        {config.hlavniPribeh !== false && pribeh.lead && <p>{pribeh.lead}</p>}
+        <a class="btn" href="/pribehy/">{storyButton || 'Přečíst příběh'} →</a>
       </div>
     </section>
   )}

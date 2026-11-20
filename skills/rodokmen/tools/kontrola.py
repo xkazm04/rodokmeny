@@ -339,7 +339,9 @@ def main():
         roky = [int(y) for y in re.findall(r"\b1[5-9]\d\d|20\d\d\b", p.get("y", "") + " " + text)]
         texty.append((f"osoba {k}", text + (f" {hranice}" if roky and min(roky) >= 1870 or k < 8 else "")))
     texty += [(f"boční příbuzný {s.get('n')}", s.get("n", "") + " " + s.get("t", "")) for s in SIDE]
-    for f in ("zajimavosti.md", "pribeh.md"):
+    pribehy = sorted("pribehy/" + f for f in os.listdir(os.path.join(DATA, "pribehy")) if f.endswith(".md")) \
+        if os.path.isdir(os.path.join(DATA, "pribehy")) else []   # další příběhy (data/pribehy/<slug>.md)
+    for f in ("zajimavosti.md", "pribeh.md", *pribehy):
         if os.path.exists(os.path.join(DATA, f)):
             obsah = open(os.path.join(DATA, f), encoding="utf-8-sig").read()
             texty += [(f, odst) for odst in re.split(r"\n\s*\n|\n(?=#)", obsah)]   # odstavce i oddíly „## …“
@@ -362,7 +364,7 @@ def main():
                         f"zeptej se uživatele, jestli to tam smí být (reference/soukromi.md); když ano, "
                         f"přidej úryvek textu s tím slovem do web.json „citlive_schvaleno“")
 
-    if not os.path.exists(os.path.join(DATA, "pribeh.md")):
+    if not os.path.exists(os.path.join(DATA, "pribeh.md")) and not pribehy:
         hlavni = min(LINES) if LINES else 8   # bez LINES rod po meči (otec otce otce)
         jmeno = (LINES[hlavni][0] if LINES else
                  (P.get(8) or P.get(1) or {}).get("n", "").split()[-1:] or ["po meči"])

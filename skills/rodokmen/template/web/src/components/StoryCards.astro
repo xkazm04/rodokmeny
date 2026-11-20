@@ -1,0 +1,18 @@
+---
+// Karty dalších příběhů (data/pribehy/<slug>.md); `rod` = jen příběhy jednoho rodu.
+import { stories, lineByK, href } from '../lib/data.js';
+const { rod = null } = Astro.props;
+const list = stories.filter((s) => rod === null || s.rod === rod);
+---
+{list.length > 0 && (
+  <div class="grid2">
+    {list.map((s) => (
+      <a class="card card-link" href={href.story(s.slug)}>
+        <h3>{s.title}{s.koncept && <> <span class="chip">koncept</span></>}</h3>
+        {s.lead && <p class="small muted">{s.lead}</p>}
+        {rod === null && lineByK[s.rod] && <p class="small muted">rod {lineByK[s.rod].name}</p>}
+        <span class="more-link">Přečíst příběh →</span>
+      </a>
+    ))}
+  </div>
+)}

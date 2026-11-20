@@ -2,6 +2,8 @@
 import site from '../data/site.json';
 
 export const { people, families, lines, stats, issues, hypotheses, docs, config } = site;
+/** Další příběhy z data/pribehy/<slug>.md (hlavní příběh je data/pribeh.md na /pribehy/). */
+export const stories = site.stories ?? [];
 /** Počet rodů slovem pro nadpisy („Osm rodů“). */
 export const linesTitle = (n) => (['Žádný rod', 'Jeden rod', 'Dva rody', 'Tři rody', 'Čtyři rody', 'Pět rodů', 'Šest rodů', 'Sedm rodů', 'Osm rodů'][n] ?? `${n} rodů`);
 export const root = people[site.root];
@@ -18,6 +20,7 @@ export const href = {
   family: (id) => `/rodina/${id}/`,
   line: (slug) => `/rod/${slug}/`,
   record: (key) => `/zdroj/${key}/`,
+  story: (slug) => `/pribehy/${slug}/`,
 };
 
 /** Sortable number from dates like "12. 5. 1811", "3/1867", "12/1790", "1797". */

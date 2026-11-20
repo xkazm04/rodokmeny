@@ -229,7 +229,8 @@ Podrobně `reference/pribehy.md`. Tohle rodina na webu čte nejradši – nenech
 - **Zajímavosti** sbírej **průběžně** do `data/zajimavosti.md` a řekni je uživateli; po každém kole spusť
   `python3 -I tools/napady.py` (svatby krátce před porodem, rod v jednom domě, dlouhověkost, epidemie…), ověř a napiš.
 - **„Příběh <hlavního rodu>“**: jakmile má hlavní rod ~5 doložených generací, nabídni ho. Koncept napiš **do chatu**
-  ke schválení, pak `data/pribeh.md` a ve `web.json` menu, tlačítko a úvod.
+  ke schválení, pak `data/pribeh.md` a ve `web.json` menu, tlačítko a úvod. Příběhy dalších rodů a témat do
+  `data/pribehy/<slug>.md` (`pribehy.md` → Další příběhy).
 
 ## Fáze 4 – Web
 Podrobně `reference/web.md`. Ve zkratce:

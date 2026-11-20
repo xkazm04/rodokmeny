@@ -33,6 +33,11 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - `ged_import.py` vypíše u každého předka zdroje z GEDCOMu (citace SOUR → název a autor) a rozliší Smart Match (cizí
   strom) a Record Match (záznam: sčítání, BillionGraves…). Osoba doložená jen cizími stromy dostane v kostře
   `--osoby` stav `mh` s poznámkou, odkud údaje jsou – dřív to šlo jen u zálohy `.ftb` (upstream #30, #143).
+- Víc příběhů na webu: další příběhy (jiné rody, témata) do `data/pribehy/<slug>.md` s frontmatterem `title`,
+  `lead`, `rod`, nepovinně `menu` (vlastní položka menu) a `koncept: true` (štítek „koncept“). Stránky
+  `/pribehy/<slug>/`, karty pod hlavním příběhem a na stránce rodu, bez `data/pribeh.md` je `/pribehy/` rozcestník.
+  Dosavadní `data/pribeh.md` funguje beze změny; kontrola odkazů a citlivých údajů pokrývá i nové příběhy
+  (upstream #15, #30, #49, #50, #67).
 - Zápis nálezu jedním příkazem `tools/nalez.py nahled|zapis vstup.json`: snímek (ARON) nebo místní obrázek, výřez,
   rámeček, zápis, přepis, odkazy u osob a řádek deníku – nic se nevynechá a vše se ověří dřív, než se cokoli zapíše
   (upstream #187).

@@ -1,0 +1,29 @@
+---
+// Další příběhy z data/pribehy/<slug>.md (generuje je tools/export_web.py do src/generated/pribehy/).
+import Base from '../../layouts/Base.astro';
+import { config, lineByK, href, stories } from '../../lib/data.js';
+
+export function getStaticPaths() {
+  const moduly = import.meta.glob('../../generated/pribehy/*.md', { eager: true });
+  return Object.entries(moduly).map(([cesta, m]) => ({
+    params: { slug: cesta.split('/').pop().replace(/\.md$/, '') },
+    props: { Content: m.Content, frontmatter: m.frontmatter },
+  }));
+}
+const { Content, frontmatter } = Astro.props;
+const info = stories.find((s) => s.slug === Astro.params.slug) ?? {};
+const line = lineByK[info.rod];
+---
+<Base title={frontmatter.title}>
+  <p class="crumbs"><a href="/pribehy/">{config.hlavniPribeh === false ? 'všechny příběhy' : 'příběhy'}</a>
+    {line && <> · <a href={href.line(line.slug)}>rod {line.name}</a></>}</p>
+  <h1>{frontmatter.title}</h1>
+  {info.koncept && <p class="note">Koncept – text ještě není hotový a může se změnit.</p>}
+  {frontmatter.lead && <p class="lead">{frontmatter.lead}</p>}
+  <div class="prose"><Content /></div>
+
+  <div class="next-step">
+    <p><strong>Chcete víc?</strong> Další příběhy a objevy z rodokmenu.</p>
+    <a class="btn" href="/pribehy/">Příběhy →</a> <a class="btn" href="/zajimavosti/">Zajímavosti →</a>
+  </div>
+</Base>
