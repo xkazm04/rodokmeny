@@ -244,6 +244,8 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
 - Hledej obec a vyfiltruj Matriky (ikona, potom znovu lupa). Hledání vrací i civilní matriky (u obce stovky svazků) –
   filtr „Datum od – do“ (podle začátku svazku, např. 1680–1873) nechá jen církevní. Knihy bývají řazené po obcích
   a na konci mají rejstřík. Vedle farních knih bývají i **druhopisy** („T“ v signatuře, viz `matriky.md`).
+  **Sčítání lidu** 1857–1921 najdeš stejně, filtrem „Sčítání“ (série po obcích podle čísel domů, zdarma; MyHeritage
+  má u 1921 stejné snímky ve stejném pořadí). Jak sčítání číst a použít: `metodika.md` → Sčítání lidu.
   Když pole Signatura „zamrzne“ a vrací pořád předchozí knihu, napiš obec do hlavního fulltextového pole (Enter)
   nebo ji vyber v poli „Územní rozsah“ z našeptávače.
 - **Detail svazku nikdy neotvírej přímou adresou `vysledekDetail/<id>`.** Badatelna drží výsledky hledání v relaci

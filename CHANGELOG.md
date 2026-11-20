@@ -109,6 +109,10 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Kroniky obcí a škol jako velký pramen: opisy gruntovních knih s držiteli domů, svatební smlouvy, jména chalup,
   padlí v 1. světové válce; kde je hledat (SOA Třeboň, ARON, Porta fontium, weby obcí), jak číst PDF bez textu
   a jak zapsat zápis z jiného pramene (`druh: "J"`, příklad v `data.md`) (upstream #127, #192, #217).
+- Sčítání lidu 1857–1921: co který rok obsahuje (1890–1921 celé datum narození), jak jím dohledat sňatek (data
+  narození manželů a nejstaršího dítěte), past s dětmi z prvního manželství a jak najít dům ve svazku nebo filmu
+  (číslo domu v hlavičce, líc a rub, dvojí snímky, sestupné pořadí); ZA Opava má filtr „Sčítání“ (upstream #67, #83,
+  #133, #215).
 
 ## 0.10.2 – 16. 11. 2026
 

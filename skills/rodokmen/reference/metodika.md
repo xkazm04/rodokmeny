@@ -1,4 +1,4 @@
-# Metodika – spojování záznamů, ztotožnění, mrtvé body, prameny mimo ČR
+# Metodika – spojování záznamů, ztotožnění, sčítání lidu, mrtvé body, prameny mimo ČR
 
 Čti podle potřeby: když nevíš, jestli jde o tutéž osobu, když se hledání zasekne (mrtvý bod), nebo když stopa vede
 mimo ČR (Slovensko, Rakousko, Polsko, Německo, Maďarsko). Čtení matrik a slovníček: `matriky.md`, portály a jak
@@ -69,6 +69,24 @@ z nich brát snímky: `portaly.md`, formát dat: `data.md`.
 - **Legitimované dítě** bývá v rejstříku křtů pod příjmením matky – když křest pod otcovým nenajdeš, zkus matčino.
 - Před zápisem „tatáž osoba“ vyjmenuj **ostatní kandidáty** stejného jména ve farnosti a u každého, proč nesedí
   (do `note` nebo do deníku). A napiš, jaký nový doklad by závěr vyvrátil.
+
+## Sčítání lidu (1857–1921) – co v něm je a jak ho použít
+Celé domácnosti po domech, zdarma online: ZA Opava (Digitální badatelna, filtr „Sčítání“), MZA (portál sčítacích
+operátů), SOA Třeboň (stránka místa → Sčítání lidu), ARON, FamilySearch (filmy po obcích) – `portaly.md`.
+- **Obsah:** 1857 jména, vztah k hlavě domácnosti, náboženství, stav, povolání, domovská obec a rok narození (podle
+  hlášení někde celé datum); 1869 a 1880 navíc místo narození (zda i den a měsíc, ukáže hlavička sloupce); **1890–1921
+  celé datum narození** – nejlevnější nezávislé potvrzení ztotožnění křtu, i když oddací a úmrtní knihy online nejsou.
+  1921 nahradí křty po 1900, které ještě nejsou online (data bývají méně přesná než v matrice). K archům bývají
+  přišpendlené lístky fary s rodiči a rodným příjmením matky. Operáty 1930 jsou jen v Národním archivu (nepřístupné),
+  slovenské 1930 viz Prameny mimo ČR.
+- **Sňatek chybí?** Ze sčítání zjisti data narození manželů a nejstaršího dítěte – v jednom případě to posunulo
+  hledání o 15 let zpět a sňatek se našel hned. Pozor: sčítání nerozlišuje manželství – děti v domě mohou být z prvního
+  manželství vdovce (sňatek pak leží až za nimi), dcera z prvního manželství manželky má jiné příjmení. Domácnost
+  porovnej s celým stromem, ne jen s hledanou osobou.
+- **Hledání domu:** archy jdou podle čísel domů, takže se dají půlit. Číslo domu je na obálce (1869) nebo v hlavičce
+  (1857 vlevo nahoře, 1880 vpravo nahoře, 1890 v záhlaví); dům = 1–3 snímky (1910 obálka a osoby). Líc a rub se střídají, listy
+  bývají nafocené dvakrát a v některých vsích jdou domy sestupně – pořadí nejdřív zjisti ze 3–4 vzdálených snímků.
+  Velkostatek mívá vlastní osadu („… Zámek“), čeleď je tam.
 
 ## Chyby, na které si dát pozor
 (Doplněk k „Typickým pastem“ v `matriky.md`.)
