@@ -3,14 +3,22 @@
 
 Použití: kontrola.py
 Vypíše CHYBY (rozbijí web nebo jsou věcně špatně) a UPOZORNĚNÍ (něco chybí, doplnit).
+Hlídá i časovou návaznost narození, sňatků a úmrtí (pravidla v tools/chronologie.py),
+stejnou osobu na dvou číslech bez SAME (tools/graf.py).
 Návratový kód 1, pokud jsou chyby.
 """
 import datetime, json, os, re, sys, unicodedata
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # -I nepřidá složku skriptu: chronologie.py, graf.py…
 if sys.argv[1:2] in (["-h"], ["--help"]):   # nápověda místo pádu
     sys.exit(__doc__.strip())
 for _s in (sys.stdout, sys.stderr):   # UTF-8 výstup i na Windows bez -X utf8 (cp1250 neumí třeba „→“)
     if hasattr(_s, "reconfigure"):
         _s.reconfigure(encoding="utf-8", errors="replace")
+try:
+    import jmena   # volné porovnání jmen (sdílí graf.py a rodiny.py)
+except ImportError:   # projekt se starší sadou nástrojů
+    jmena = None
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
@@ -152,6 +160,30 @@ def main():
         warn.append(f"LINES: chybí rod pro {', '.join(chybi)}"
                     " – jakmile znáš pradědečky a prababičky (8–15), vyplň v data/osoby.py LINES (reference/data.md)")
 
+    # Časová návaznost (tools/chronologie.py); ověřený údaj se odškrtne polem overeno.
+    try:
+        import chronologie
+    except ImportError:   # projekt se starší sadou nástrojů
+        chronologie = None
+    for k in sorted(k for k in P if isinstance(k, int)) if chronologie else ():
+        o = P[k].get("overeno")
+        if o is None:
+            continue
+        if not isinstance(o, dict):
+            warn.append(f"osoba {k}: overeno má být slovník {{\"pravidlo\": \"proč údaj platí\"}}")
+            continue
+        for x in o:
+            if x not in chronologie.PRAVIDLA:
+                warn.append(f"osoba {k}: overeno – neznámé pravidlo '{x}' (platná: {', '.join(chronologie.PRAVIDLA)})")
+    for v in chronologie.kontrola(P, SAME) if chronologie else ():
+        warn.append(f"časová návaznost u osoby {v.k}: {v.text} Pokud údaj platí, přidej k osobě {v.k} "
+                    f"do overeno: \"{v.pravidlo}\": \"proč údaj platí\"")
+    try:   # stejná osoba na dvou číslech bez SAME (tools/graf.py); věk rodičů hlídá jen chronologie výš
+        import graf
+        warn += graf.predci(P, SAME)
+    except ImportError:
+        pass
+
     mista = jload("mista.json", {})
     vzory = []
     for n, e in mista.items():
@@ -201,10 +233,10 @@ def main():
             warn.append(f"osoba {k} ({p.get('n')}): žádný sňatek (×) nejmenuje partnera {sp} ({P[sp].get('n')})"
                         " – patří sňatek k této osobě, je číslo správně?")
 
-    for k, p in P.items():   # otec (2n) má mít stejné příjmení jako dítě n – jinak číslo nejspíš patří jiné osobě
+    for k, p in P.items() if jmena else ():   # otec (2n) má mít stejné příjmení jako dítě n (tools/jmena.py)
         if not isinstance(k, int) or k < 4 or k % 2 or k in SAME or k // 2 not in P or neznamy(p):
             continue
-        a, b = kmeny_prijmeni(p.get("n")), kmeny_prijmeni(P[k // 2].get("n"))
+        a, b = jmena.kmeny_prijmeni(p.get("n")), jmena.kmeny_prijmeni(P[k // 2].get("n"))
         if a and b and not a & b:
             warn.append(f"osoba {k} ({p.get('n')}): otec osoby {k // 2} ({P[k // 2].get('n')}), ale příjmení nesedí – "
                         "je číslo správně (otec = 2n, matka = 2n+1)? Nemanželské dítě nebo změnu jména napiš do faktů.")
@@ -347,18 +379,6 @@ def main():
         print("Vše v pořádku.")
     sys.exit(1 if err else 0)
 
-
-def kmeny_prijmeni(n):
-    """První 3 písmena slov jména kromě křestního, bez diakritiky (Kufa i Kufová → kuf); varianty v závorce
-    (Hána (Hahn)) se berou jako další kandidáti, „roz.“, „starší“, „mladší“ ne. Skrytá osoba → prázdná množina."""
-    if not isinstance(n, str) or "skryt" in n.lower():   # „(jméno skryto)“
-        return set()
-    out = set()
-    for w in re.sub(r"[(),]", " ", n).split()[1:]:
-        w = re.sub(r"[^a-z]", "", "".join(c for c in unicodedata.normalize("NFD", w.lower()) if not unicodedata.combining(c)))
-        if len(w) >= 3 and not w.startswith(("roz", "star", "mlad")):
-            out.add(w[:3])
-    return out
 
 def tvary_jmena(jmeno):
     """1. a 2. pád křestního jména (Jan → jan, jana; Anna → anny; Marie → marie) – stačí na hrubé porovnání."""

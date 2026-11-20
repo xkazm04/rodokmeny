@@ -17,6 +17,11 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   které snímky jsme už prošli, `hledej`, `podklady rod 8` a další (upstream #203).
 - `aron_search.py` vypíše samostatné svazky rejstříků („index NAROZENÝCH…“) zvlášť nahoře – pomocníci je mezi
   matrikami přehlíželi a četli knihy bez rejstříku stranu po straně (upstream #214, #213).
+- Kontroly rodiny s jedním čtením dat (`tools/datumy.py`: „asi 1760–64“, „* asi 1620–1630“, „1805/06“, „mezi A a B“,
+  „pokřtěn …“): `kontrola.py` hlídá časovou návaznost (`tools/chronologie.py`: věk rodičů, dítě po smrti otce, sňatek
+  mladší 15 let, věk přes 105 let) a stejnou osobu na dvou číslech bez `SAME` (`tools/graf.py`). Ověřený neobvyklý
+  údaj se odškrtne polem `overeno` v `osoby.py`. `graf.py strom` zkontroluje cizí GEDCOM před importem, `rodiny.py`
+  pomáhá skládat rodinu ze sourozenců a rozhodovat mezi kandidáty stejného jména (upstream #201, #76, #126, #135).
 
 **Opravy**
 - Odkaz „otevřít v archivu“ u zápisů z ARONu otevře správný snímek, ne první stránku knihy (`aron_img.py link` dává
@@ -40,7 +45,8 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - `npm run data` smaže z webu obrázky zápisů a dokumentů, které už v datech nejsou (nebo jejich výřez) – smazaný
   zápis dřív dál šel na web i se snímkem (upstream #25).
 - `kontrola.py` upozorní, když otec (číslo 2n) nemá stejné příjmení jako dítě n – číslo nejspíš patří osobě z jiné
-  větve a vějíř pak nad dítětem končí (upstream #162).
+  větve a vějíř pak nad dítětem končí (upstream #162). Příjmení porovnává volně (`tools/jmena.py`: Kufa = Kufová,
+  Nowak = Novák); stejné porovnání v `rodiny.py` už páruje i čtyřpísmenná příjmení na -a (Kufa/Kufová, Mika/Miková).
 - `kontrola.py` upozorní na `data/STAV.md` větší než 35 kB – na začátku konverzace se uřízne a pravidla na konci se
   ztratí (upstream #204).
 - `kontrola.py` upozorní na sourozence v `SIDE` s textem „Syn/Dcera <jméno předka k>“ – `k` je předek, jehož je

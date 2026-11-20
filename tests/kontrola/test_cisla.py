@@ -35,6 +35,10 @@ def kontrola(P, SAME=None, zaznamy=(), prepisy=None, ukazka=(), mista=None, SIDE
         zapis(os.path.join(tmp, "data", "prepisy.json"), json.dumps(prepisy or {}, ensure_ascii=False))
         os.makedirs(os.path.join(tmp, "tools"))
         shutil.copy(KONTROLA, os.path.join(tmp, "tools", "kontrola.py"))
+        for m in ("jmena", "datumy", "chronologie", "graf", "ged_import"):   # moduly, které kontrola.py importuje
+            src = os.path.join(os.path.dirname(KONTROLA), m + ".py")
+            if os.path.exists(src):
+                shutil.copy(src, os.path.join(tmp, "tools", m + ".py"))
         r = subprocess.run(PY + [os.path.join(tmp, "tools", "kontrola.py")], capture_output=True, text=True,
                            encoding="utf-8")
         return (f"NÁVRATOVÝ KÓD {r.returncode}\n" if r.returncode else "") + r.stdout + r.stderr
