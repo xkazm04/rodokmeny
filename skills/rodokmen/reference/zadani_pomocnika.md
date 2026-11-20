@@ -27,6 +27,8 @@ Zkopíruj, doplň `<…>` a nehodící se řádky smaž. Nikdy nepiš „když s
 
 ```
 Úkol: najdi <koho; co o něm víme: rodiče, dům, roky> v <svazek, archiv, apu nebo odkaz>.
+Už přečteno: <výstup `rejstrik.py svazek …` / `rejstrik.py hledej …` a zásahy z indexu matrik – snímky prošlé
+  s dokladem znovu nečti, kandidátní snímky z indexu čti jako první>.
 Struktura pramene: <co je v kterém sloupci; řazení po vsích; rejstřík jen zemřelých / společný; folio × snímek>.
   (Knihu bez rejstříku zadávej, až když víš, že samostatný svazek rejstříku pro ty roky není – `aron_search.py`
   ho vypíše nahoře, jinde hledej v katalogu slovo „index“ / „rejstřík“.)

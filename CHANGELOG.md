@@ -102,6 +102,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Soupis poddaných 1651: kde jsou PDF edic NA zdarma, nejdřív seznam zachovaných panství, `pdftotext` rozbíjí
   diakritiku, číst stránku jako obrázek, jak soupis zapsat (obvykle `prob`); kniha zemřelých mateřské fary nemusí
   zapisovat filiální vsi – ověř na vzorcích (upstream #84, #89).
+- Smyčka hledání: nejdřív v už přečteném – vlastní rejstřík (`rejstrik.py hledej`, `svazek`) a sdílený index matrik
+  (přečtené zápisy a strojový text celých knih, hledání začátku příjmení s variantami); zásah je kandidátní snímek,
+  který je potřeba přečíst. Totéž v zadání pomocníka (`portaly.md` → Už přečtené matriky, upstream #194).
 - Typické pasti v `reference/matriky.md`: sloupce ledig/Witwer, křížek v knize narozených, rozsah rejstříku, vdova
   jako „dcera“ prvního muže, kandidátní zápis není doklad, roky z cizích stromů nepatří do `y`; Matricula bez
   prohlížeče pomocníkovi obraz nedá; zadání pomocníka: jedna úzká stopa a kontrola dat silnějším modelem po větší

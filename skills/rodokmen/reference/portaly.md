@@ -21,6 +21,20 @@ sousední, než napíšeš „online není“.
 Adresy u nevyzkoušených portálů ověř při prvním použití (portály se mění). Pro pohraničí a mimo ČR viz `metodika.md`
 (Matricula pro Rakousko/Německo, Geneteka pro Polsko, FamilySearch pro Slovensko) a níže.
 
+## Už přečtené matriky – hledej v nich dřív, než začneš listovat
+Stejné knihy čtou desítky rodin. Než vybereš svazek a začneš listovat, zkus najít příjmení v tom, co už někdo přečetl:
+- **Vlastní projekt:** `python3 -I tools/rejstrik.py hledej "Příjmení obec"` (deník, zápisy, přepisy, `kontext/`
+  s výstupy pomocníků) a `rejstrik.py svazek <id>` (které snímky už jsme prošli).
+- **Index matrik** (github.com/pe-pan/matriky-index, navazuje na Mapu matrik): všechny zápisy přečtené lidmi
+  v jednom souboru (`https://pe-pan.github.io/matriky-index/data/precteno.json`) a u stovek knih strojový text celých
+  knih (PERO OCR, Transkribus; `knihy/<archiv>/<kniha>/ocr-*.tsv` v repozitáři). Stáhni jednou přes
+  `slusne.py curl` do `pracovni/` a hledej v něm lokálně. Strojový text kurentu je plný chyb – hledej **začátek
+  příjmení s variantami** (Wawra = Vávra, w/v, y/i, c/cz/č, ss/š), ne celé slovo, a hledej i podle obce a roku.
+- Zásah dá kandidátní knihu a snímek (číslo snímku v Porta fontium = pořadí v prohlížeči, stejně jako `portafontium.py`).
+  Zápis **vždy otevři a přečti sám** ze skenu; cizí čtení ani OCR není doklad (`doc` jen z vlastního čtení snímku).
+- Co jsi při hledání přečetl navíc (rok a ves na snímku, sousední zápisy), zapiš do deníku k rozsahu – ušetří to
+  listování příště.
+
 **Claude in Chrome – výstup JavaScriptu** (platí pro všechny portály):
 - Výstup, který obsahuje adresu s parametry (`?`, `&`, `=`) nebo dlouhý hex, rozšíření zahodí jako
   „[BLOCKED: Cookie/query string data]“. Vracej jen cestu (`location.pathname`, `new URL(a.href).pathname`) a hodnoty

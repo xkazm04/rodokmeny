@@ -86,7 +86,11 @@ Základní smyčka pro každou osobu:
 2. **Ověř přístupnost**: matriky jsou v archivu až po uplynutí lhůty od *posledního* zápisu ve svazku (narození 100 let,
    sňatky i úmrtí 75; `matriky.md` → Lhůty). Mladší údaje jsou na matričním úřadě – zápis starší lhůty tam
    dostane kdokoli, mladší jen rodina (`matriky.md` → Lhůty); zapiš do `data/archivni_dotazy.md`.
-3. **Najdi svazek**: podle obce → farnost → archiv. ARON: `python3 -I tools/aron_search.py "Obec"`, SOA Plzeň:
+3. **Nejdřív hledej v už přečteném**, pak teprve vyber svazek: vlastní data (`rejstrik.py hledej "Příjmení obec"`,
+   `rejstrik.py svazek …` – co už jsme prošli, i výstupy pomocníků v `kontext/`) a sdílený index matrik se zápisy
+   a strojovým textem celých knih (`portaly.md` → Už přečtené matriky). Zásah = kandidátní snímek, ne doklad: otevři
+   ho a přečti sám.
+   **Najdi svazek**: podle obce → farnost → archiv. ARON: `python3 -I tools/aron_search.py "Obec"`, SOA Plzeň:
    `python3 -I tools/portafontium.py obec "Obec"`, Praha: `tools/ahmp_search.sh`; SOA Praha, MZA Brno a SOA Třeboň
    jen v prohlížeči, ostatní v `reference/portaly.md`. Sňatek hledej nejdřív ve farnosti nevěsty. Je-li ke svazku
    rejstřík, začni jím.
