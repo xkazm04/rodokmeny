@@ -135,6 +135,46 @@ else:
 n = strom([dict(k=1, id="jana", n="Jana Nováková (* 1983)", t="Sestra Petra.", r=["smazany_zapis"])])
 case("klíč zápisu bez stránky se do stromu nedostane", "_error" not in n and n["s-jana"]["records"] == [], n)
 
+# --- "Kolem osoby" layout (src/lib/strom_kolem.js) in Node, when Node is installed --------------------------------
+KOLEM = os.path.join(SKILL, "template", "web", "src", "lib", "strom_kolem.js")
+
+
+def kolem(nodes, fid, up=3, down=2):
+    """Families of the focus layout around fid: list of (parents, children)."""
+    import pathlib
+    kod = (f"import {{ focusLayout }} from {json.dumps(pathlib.Path(KOLEM).as_uri())};\n"
+           f"const L = focusLayout({json.dumps(nodes)}, {json.dumps(fid)}, {up}, {down}, 210, 66);\n"
+           "console.log(JSON.stringify(L.fams.map((f) => [f.parents, f.children])));")
+    r = subprocess.run(["node", "--input-type=module", "-e", kod], capture_output=True, text=True, encoding="utf-8")
+    return json.loads(r.stdout) if r.returncode == 0 else r.stderr
+
+
+def uzly(**rodice):
+    nodes = {i: dict(id=i, parents=list(ps), spouses=[], children=[]) for i, ps in rodice.items()}
+    for i, ps in rodice.items():
+        for p in ps:
+            nodes.setdefault(p, dict(id=p, parents=[], spouses=[], children=[]))["children"].append(i)
+    for n in nodes.values():
+        if len(n["parents"]) == 2:
+            a, b = n["parents"]
+            nodes[a]["spouses"] = list(dict.fromkeys(nodes[a]["spouses"] + [b]))
+            nodes[b]["spouses"] = list(dict.fromkeys(nodes[b]["spouses"] + [a]))
+    return nodes
+
+
+if shutil.which("node"):
+    f = kolem(uzly(petr=["josef", "eva"], jana=["josef", "eva"], pavel=["josef"]), "petr")
+    case("Kolem osoby: nevlastní sourozenec visí jen pod společným rodičem",
+         isinstance(f, list) and [["josef"], ["pavel"]] in f and [["josef", "eva"], ["petr", "jana"]] in f, f)
+    # sňatek bratrance a sestřenice: společný prarodič děda je rodičem obou rodičů vybrané osoby
+    f = kolem(uzly(vnuk=["otec", "matka"], otec=["deda", "baba1"], matka=["deda2", "baba2"], deda2=["deda", "x"]),
+              "vnuk", up=4)
+    case("Kolem osoby: předek přes dvě větve má obě spojnice k dětem",
+         isinstance(f, list) and any(c == ["otec"] and "deda" in p for p, c in f)
+         and any(c == ["deda2"] and "deda" in p for p, c in f), f)
+else:
+    print("PŘESKOČENO Kolem osoby (chybí node)")
+
 # --- export_web.py writes strom.json too (deploy without Node, e.g. Docker); koho on the person page -------------
 tmp = tempfile.mkdtemp(prefix="strom_export_")
 try:
