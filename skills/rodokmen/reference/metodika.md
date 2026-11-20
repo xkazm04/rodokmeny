@@ -80,7 +80,9 @@ z nich brát snímky: `portaly.md`, formát dat: `data.md`.
 ## Mrtvé body – co zkusit, v tomto pořadí
 - **Před 1784 (staré matriky chybí nebo nestačí):** 1. starší společné knihy N/O/Z přečíst celé (nejen rejstřík)
   → 2. gruntovní knihy panství → 3. sirotčí knihy, svatební smlouvy → 4. tereziánský katastr (1713–57) → 5. soupis
-  poddaných 1651, berní rula 1654 (Morava: lánové rejstříky 1669–79). Spojuje **grunt/dům a posloupnost držitelů**.
+  poddaných 1651, berní rula 1654 (Morava: lánové rejstříky 1656–79). Spojuje **grunt/dům a posloupnost držitelů**.
+  Morava: pozemkové knihy, lánové rejstříky, urbariální fase i katastry jsou zdarma online v ARON MZA
+  (`portaly.md` → Starší prameny).
   U sedláků se zachovanými gruntovními knihami je reálné dno **kolem roku 1650**.
 - **Kniha se nedochovala:** druhopisy a samostatné rejstříky, gruntovní knihy, soupisy (konskripce), u mužů
   vojenské odvodní listiny (Musterlisten). Spojuje číslo domu.
@@ -179,7 +181,7 @@ nemanželský původ, příčina smrti) u nedávno zemřelých nezveřejňuj –
 | 1770/71 | konskripce a číslování domů (Čechy, Morava) | čp. se stává klíčem k propojení; pozor na pozdější přečíslování |
 | 1781 | toleranční patent | vznikají evangelické sbory, nekatolíky ale dál zapisuje i katolický farář |
 | 1784 | josefínský patent: oddělené knihy N/O/Z s předepsanými sloupci | jednotné sloupce; dál viz `matriky.md` (Druhy knih) |
-| 1785–89 | josefský katastr | majitelé pozemků po obcích (ne po domech) – Národní archiv (Čechy), MZA (Morava), jen badatelna |
+| 1785–89 | josefský katastr | majitelé pozemků po obcích, na Moravě i soupisy domů podle čp. – Čechy: Národní archiv (badatelna); Morava: online v ARON MZA a na FamilySearch (D 6) |
 | 1820 | kmenové listy vojáků (Grundbuchblätter) | osobní list s civilním povoláním, sňatkem a dětmi |
 | 1850 | konec panství, vznik okresních hejtmanství a soudních okresů | pozemkové a sirotčí záznamy přecházejí z fondů velkostatků do soudních fondů |
 | 1871 | nové pozemkové knihy u soudů | do 1950/64 u katastrálních úřadů, jen badatelna |

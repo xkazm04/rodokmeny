@@ -358,6 +358,7 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   `…/digisada/detail/<id>` má stejný prohlížeč `viewer` jako matriky (postup výše). Snímek 1 je soupis s metadaty
   (rozpis čísel, poznámky typu „čp. 134 má 2 archy“), pak archy po domech. 1857 uvádí jen rok narození, 1869 a 1880
   místo i datum; sloupec dat narození bývá psaný svisle – při čtení přiblížený výřez otoč o 90°.
+- **Pozemkové knihy a katastry Moravy** jsou zdarma a bez přihlášení v ARON MZA (www.mza.cz/aron) – Starší prameny níže.
 
 ## Pražské policejní přihlášky 1850–1914 (Národní archiv) – `tools/policie_prihlasky.py`
 - Karty pražských rodin: hlava rodiny, manželka s rokem a místem narození, děti s roky, adresy, někdy místo sňatku.
@@ -490,8 +491,23 @@ Nástroje pro ně hotové nejsou. Postupuj takto a výsledek zapiš do `STAV.md`
 - **Gruntovní (pozemkové) knihy** – převody domů z otce na syna; online jen část: SOA Plzeň téměř vše, SOA Praha část,
   **SOA Třeboň** pozemkové knihy velkostatků (jen v prohlížeči: stránka obce → „Pozemkové knihy“; kniha je vidět jen
   u obce, ke které je přiřazená – hledej i u sídla panství), **ZA Opava** urbáře a pozemkové knihy v Digitální
-  badatelně (snímky na stejném serveru jako matriky). Část knih z Třeboně a Opavy je i na FamilySearch („Czech Republic,
-  Land Records, 1450–1889“). Ostatní archivy spíš badatelna. Fond „Velkostatek <panství>“.
+  badatelně (snímky na stejném serveru jako matriky), **MZA** v ARON MZA (níže). Část knih z Třeboně, Opavy a MZA je
+  i na FamilySearch („Czech Republic, Land Records, 1450–1889“; FamilySearch výše). Ostatní archivy spíš badatelna.
+  Fond „Velkostatek <panství>“.
+- **Morava – ARON MZA (www.mza.cz/aron), zdarma a bez přihlášení:** fond **C 17 Pozemkové knihy** (strom po panstvích
+  → „Celé panství“ / „Jednotlivé obce“; hledání `https://www.mza.cz/aron/arch-desc?q=<obec> pozemková kniha`) – jsou
+  tam i knihy, které na FamilySearch chybí. Dlaždice **„Pozemkové katastry“** na úvodní stránce: lánové rejstříky
+  1656–79 (D 1, celé digitalizované), rektifikační akta (D 2), tereziánský a josefský katastr (soupisy domů podle čp.
+  1787–89), urbariální fase 1775–77 (D 5, držitelé gruntů podle čp. s odkazem na rektifikaci), stabilní katastr
+  (parcelní protokoly, vceňovací operáty). Hledej obec s filtrem „pouze s digitalizáty“; svazek = panství, obce
+  v popisu nebývají přesně. Hledání někdy bere jen **jedno slovo** („urbariální“; víceslovný dotaz vrátil 0 výsledků).
+  - Jen v prohlížeči, pravidla jako u matrik MZA: celý obrázek ze serveru snímků (`iipsrv`) vrací 403 – nic nestahuj,
+    čti zoomem (přetáhnout zápis doprostřed, 3–4× lupa „+“) a snímky obrazovky po dílech; ≥ 5 s mezi snímky, jedna karta.
+  - **Tichý limit:** po ~200–250 snímcích za den ARON MZA přestal odpovídat bez chybového kódu (požadavky „pending“,
+    „Chyba načtení: Failed to fetch“). Nejvýš ~150 snímků za den, přehled po skocích (každý 10.–20. snímek); pending
+    bez kódu = skonči a `slusne.py zastav www.mza.cz "ARON MZA neodpovídá"`.
+  - Lánový rejstřík je německy, jména česky; u vsi usedlí („vor: …“ = držitel při 1. vizitaci 1656/57), zpustlé
+    od 1657 (s rokem úmrtí/odchodu) a staré pustiny.
 - **Mapy stabilního katastru (1824–43)** – kde stál dům s číslem popisným: ags.cuzk.gov.cz/archiv (Archiv ČÚZK; stará adresa archivnimapy.cuzk.cz už nefunguje).
   Na **císařských otiscích** chybí u části listů barvy a čísla domů. Lepší jsou **indikační skici**: mají čísla domů
   a u pozemků jméno majitele („N. 13“ = patří k domu čp. 13). Dům bez pozemků mimo ves = domkář bez polí.

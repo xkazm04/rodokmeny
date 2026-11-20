@@ -69,6 +69,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   neověřený a pomocník zastavený limitem se znovu nepouští (upstream #90, #34, #30, #63, #67, #137).
 - Široké výřezy se čtou po dlaždicích do 1568 px – větší obrázek Read potichu zmenší (v testu kurentu o 7–15 bodů
   horší čtení); vyšší effort čtení nezlepšuje, Haiku na kurent nestačí (upstream #43).
+- Pozemkové knihy Moravy (fond C 17) a katastry (lánové rejstříky 1656–79, rektifikace, tereziánský a josefský
+  katastr, urbariální fase, stabilní katastr) jsou zdarma a bez přihlášení v ARON MZA; `metodika.md` mylně psala, že
+  josefský katastr je jen v badatelně. Návod uvádí i tichý denní limit ARONu MZA (upstream #188, #192).
 
 ## 0.10.2 – 16. 11. 2026
 
