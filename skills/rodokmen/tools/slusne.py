@@ -51,6 +51,9 @@ LIMITY = {                           # konec názvu webu: (dotaz, obrázek)
     "arolsen-archives.org": (10.0, 10.0),   # Arolsen Archives (arolsen.py) – API i obrázky karet; limit neuvádí, 10 s
     "vademecum.nacr.cz": (10.0, 1.0),       # NA VadeMeCum (soal_zoomify.py, HBMa) – robots.txt „Disallow: /“; dlaždice po jedné, 1 za s
     "jbc.bj.uj.edu.pl": (10.0, 1.0),        # Jagellonská digitální knihovna (Zoomify mapy) – dlaždice po jedné, 1 za s
+    "data.matricula-online.eu": (10.0, 0.1),   # Matricula – stránka knihy (matricula_snimek.py) 10 s; img.data… dál jako dřív
+    "hosted-images.matricula-online.eu": (10.0, 10.0),   # Matricula – přímé adresy snímků ze seznamu „files“, 1 za 10 s
+    "familysearch.org": (10.0, 10.0),       # FamilySearch – skriptům dává 403 (jen prohlížeč, tools/fs_prohlizec.js má 10 s sám)
 }
 ZAKAZ = {                            # konec názvu webu: (cesty povolené skriptům, hláška pro ostatní)
     suffix: (re.compile(r"/actapublica/matrika/hledani"),

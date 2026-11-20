@@ -231,7 +231,9 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   ve výsledcích a **na detailu ověř signaturu**. Popis knihy uvádí „Územní rozsah“ (obce knihy) – čti ho první.
   Knihy bývají **rozdělené po obcích** s vlastním stránkováním a rejstříkem na konci.
 - **Adresy snímků** (záložka snímků, `actualDetailTab=attachmentsImg`) zjisti úryvkem – jen pro snímky, které čteš
-  (nejvýš pár najednou), postupně s pauzou 3 s (`browser_evaluate`; na stránce téhož svazku, jinak showZoomify vrací prázdnou odpověď):
+  (nejvýš pár najednou), postupně s pauzou 3 s (`browser_evaluate`; na stránce téhož svazku, jinak showZoomify vrací prázdnou odpověď).
+  Odmítne-li úryvek automatické schvalování Claude Code (smyčka `fetch`), neobcházej to: otevři snímek v prohlížeči
+  a adresu `…/ImageProperties.xml` vezmi ze síťových požadavků stránky, jeden snímek po druhém:
   ```js
   async () => {
     const snimky = [1, 50, 120];   // jen snímky, které opravdu čteš
@@ -455,7 +457,12 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   CC BY-NC-ND 2.0 (podmínky užití). **Rozšíření Snímkovač** (`reference/snimkovac.md`): uživatel listuje sám v prohlížeči, rozšíření uloží celý snímek v plném rozlišení, jakmile ho prohlížeč zobrazí; pak `tools/snimky_import.py`.
 - Bez přihlášení. Seznam knih: `…/de/oesterreich/<diecéze>/<farnost>/?page=N`; snímek knihy `…/<id>/?pg=<snímek>`
   (zároveň trvalý odkaz).
-- URL obrázku obsahuje `csrf` a `ctrl` počítané JavaScriptem → je potřeba prohlížeč (Playwright / Claude in Chrome):
+- **Bez prohlížeče – `tools/matricula_snimek.py`:** stránka knihy má v HTML seznam snímků `files` (`/image/<base64>/`,
+  base64 = přímá adresa na hosted-images.matricula-online.eu) a popisky `labels`. `python3 -I tools/matricula_snimek.py
+  seznam "<adresa knihy>"` vypíše snímky s popisky, `python3 -I tools/matricula_snimek.py "<adresa knihy>" 57 pracovni/x.jpg`
+  stáhne snímek 57 (víc čísel `57,58`, nejvýš 10) a vypíše trvalý odkaz `…?pg=57`. Stránku knihy čte bez `?pg=`
+  (tu robots.txt zakazuje); brzda 1 dotaz za 10 s i u snímků, stahuj jen to, co čteš (ověřeno 20. 11. 2026).
+- Starší cesta: URL obrázku obsahuje `csrf` a `ctrl` počítané JavaScriptem → je potřeba prohlížeč (Playwright / Claude in Chrome):
   otevři knihu, klikni na stránku (`.docview-pagelink`), URL obrázku vezmi z `performance.getEntriesByType('resource')`
   a stáhni `bash tools/matricula_dl.sh "<url>" pracovni/x.jpg`. Víc stránek: soubor řádků „<snímek> <url>“ → `matricula_batch.sh`.
 - **Pomocník bez prohlížeče obraz nezíská** (bez tokenu z prohlížeče vrací server chybu). Do zadání pomocníka piš,
@@ -476,7 +483,16 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
 
 ## FamilySearch (přes uživatelův přihlášený prohlížeč)
 - Přihlášení je potřeba i na hledání v indexech. České matriky tam skoro zindexované nejsou (Slovensko ano, hlavně křty).
-- Jen když ho má uživatel otevřený a sám nabídne. Z kontextu stránky lze volat JSON API
+- Jen když ho má uživatel otevřený a sám nabídne.
+- **Výchozí je postup přes stránky:** hledání, katalog, stránky záznamů a prohlížeč snímků otevírej jako stránky
+  (aspoň 10 s mezi načtením dvou stránek), snímek čti přiblížený v prohlížeči (snímky obrazovky, `tools/sloz_zaber.py`).
+  Smyčky `fetch` na `/service/…` z kontextu stránky automatické schvalování Claude Code (auto mode) odmítá jako
+  obcházení rozhraní – když volání odmítne, nic neobcházej (jiný zápis, jiný nástroj) a pokračuj přes stránky.
+- **Stažení jednotlivých snímků** (`tools/fs_prohlizec.js`, tlačítko Download) jen se souhlasem uživatele. Zeptej se
+  jednou a odpověď zapiš do `CLAUDE.md` projektu, např. „FamilySearch: uživatel souhlasí se stažením jednotlivých
+  snímků, které čteme (20. 11. 2026)“; příště se už neptej. Výřezy ze snímků FS na web jen na výslovné rozhodnutí
+  uživatele (`soukromi.md`).
+- Indexy z kontextu stránky (jednotlivý dotaz, ne smyčka):
   `https://www.familysearch.org/service/search/hr/v2/personas?q.surname=…&q.givenName=…&q.fatherGivenName=…&count=20`
   (`fetch(…, {credentials:'include'})`); výsledky v `entries[].content.gedcomx`.
 - Užitečné na indexy matrik a hroby (BillionGraves, Find a Grave). Výsledek je vodítko – ověř v matrice.
@@ -532,30 +548,22 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   4. **1900–1940:** doklady od rodiny (rodné listy dětí uvádějí i prarodiče), náhrobky a evidence hrobů (Košice:
      gisplan.kosice.sk; cintoriny.sk jen část obcí). Rusíni vedení po 1950 jako pravoslavní mají starší zápisy
      v řeckokatolických knihách.
-- **Snímek do projektu (Playwright):** nástroje dostanou od FamilySearch 403, snímek vydá jen přihlášený prohlížeč.
-  Uživatel se jednou přihlásí v okně Playwrightu (přihlášení zůstane). ARK snímku je v adrese prohlížeče
-  (`/ark:/61903/3:1:…`) i ve výsledcích hledání. Nejdřív `python3 -I tools/cache.py najdi <adresa nebo ark>
-  --nahled pracovni/nahled.jpg` – je-li snímek už uložený, prohlížeč nepotřebuješ. Jinak `browser_evaluate`
-  s `filename: "pracovni/fs.json"`:
-  ```js
-  async () => {
-    const ark = '3:1:XXXX-XXXX-XXX';
-    const adresa = `https://www.familysearch.org/service/records/storage/deepzoomcloud/dz/v1/${ark}/$dist`;
-    const r = await fetch(adresa, {credentials: 'include'});
-    if (!r.ok) return `HTTP ${r.status} – snímek nejde stáhnout (přihlášení? omezený snímek?)`;
-    if (!(r.headers.get('content-type') || '').startsWith('image/'))
-      return 'Není obrázek (Pardon Our Interruption?) – skonči a zapiš slusne.py zastav familysearch.org';
-    const b = await r.blob(), bm = await createImageBitmap(b);
-    const data = await new Promise(ok => { const f = new FileReader(); f.onload = () => ok(f.result); f.readAsDataURL(b); });
-    return JSON.stringify({w: bm.width, h: bm.height, adresa, data});
-  }
-  ```
-  a `python3 -I tools/cache.py uloz pracovni/fs.json pracovni/fs_<ark>.jpg --nahled pracovni/nahled.jpg` (snímek
-  v plném rozlišení do mezipaměti i do `pracovni/`, json smaže). Dál `vyrez.py` jako u jiných archivů.
-- **Bez Playwrightu (Claude in Chrome neumí ukládat do souboru):** ať uživatel snímek stáhne tlačítkem Download
-  (nebo ho se souhlasem stáhneš ty) – soubor přijde do `~/Downloads` jako `<id snímku>.jpg`, chvíli může mít
-  příponu `.tmp`. Přesuň **jen soubor s očekávaným názvem**, nikdy „nejnovější soubor ve Stažených“ (je tam i cizí).
-  Žádné vlastní přijímače na localhostu ani jiné obcházení ochran prohlížeče.
+- **Snímek do projektu – `tools/fs_prohlizec.js`** (jen se souhlasem zapsaným v `CLAUDE.md`, viz výše): nástroje dostanou
+  od FamilySearch 403, snímek vydá jen přihlášený prohlížeč. Uživatel se jednou přihlásí (v Playwrightu přihlášení
+  zůstane). ARK snímku je v adrese prohlížeče (`/ark:/61903/3:1:…`) i ve výsledcích hledání. Nejdřív
+  `python3 -I tools/cache.py najdi <adresa nebo ark> --nahled pracovni/nahled.jpg` – je-li snímek už uložený, prohlížeč
+  nepotřebuješ. Jinak obsah `tools/fs_prohlizec.js` předej jako funkci do `browser_evaluate` (Claude in Chrome:
+  `javascript_tool` s `(<obsah>)()`); vytvoří `window.fs` (po každém načtení stránky znovu). Pak jedno volání na krok:
+  - `fs.zdroje('<id osoby>')` – názvy zdrojů u osoby ve stromu; `fs.film('<DGS>')` – název filmu (převod na knihu),
+  - Playwright: `browser_evaluate` `() => fs.snimek('3:1:…')` s `filename: "pracovni/fs.json"` a
+    `python3 -I tools/cache.py uloz pracovni/fs.json pracovni/fs_<ark>.jpg --nahled pracovni/nahled.jpg`,
+  - Claude in Chrome (neumí ukládat do souboru): `fs.stahni('3:1:…')` uloží do Stažených `fs_3_1_<id>.jpg`, pak
+    `bash tools/fs_prevezmi.sh fs_3_1_<id>.jpg pracovni/fs_3_1_<id>.jpg --ark 3:1:<id>` (přebere jen soubor s tímto
+    názvem, ověří JPEG a uloží ho do mezipaměti). Stejně převezmeš snímek, který uživatel stáhl tlačítkem Download
+    (`<id snímku>.jpg`; bez `--ark`, není-li ARK známý). Nikdy „nejnovější soubor ve Stažených“.
+  Pomocník drží tempo jako brzda (prohlížeč brzda nevidí): 1 požadavek za 10 s, nejvýš 30 snímků za den, po
+  429/503/„Pardon Our Interruption“ stopka pro všechna další volání a rada zapsat ji i do brzdy (`slusne.py zastav
+  familysearch.org …`). Žádné smyčky ani vlastní přijímače na localhostu. Dál `vyrez.py` jako u jiných archivů.
 
 ## Slovakiana – sčítací hárky 1930–1940 (slovakiana.sk, Slovenský národný archív)
 Sčítací hárek ze sčítání lidu 1. 12. 1930 zachycuje jednu domácnost: jména, vztah k hlavě domácnosti, datum a místo

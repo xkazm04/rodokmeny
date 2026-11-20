@@ -29,5 +29,13 @@ Teprve pak zveřejni (`npm run nasadit-cloudflare`, kdo má web na Netlify `npm 
 Jsou zdarma a veřejné, ale servery mají omezené síly: stahuj jen snímky, které opravdu čteš, žádné celé svazky naráz,
 paralelně maximálně pár požadavků. Citace vždy až na úroveň snímku (aby to šlo zkontrolovat).
 
+## Snímky na webu rodiny
+Stažené a uložené snímky (nástroje, prohlížeč, Snímkovač, FamilySearch) jsou **jen pro vlastní bádání**. Na web rodiny
+nikdy celé snímky, nanejvýš **výřez zápisu** s citací a odkazem do archivu. Kde to podmínky portálu omezují (MZA zakazuje
+zveřejnění bez písemného souhlasu, Matricula CC BY-NC-ND – nekomerčně s uvedením zdroje), drž se jich.
+**Výřezy ze snímků FamilySearch** na web jen na **výslovné rozhodnutí uživatele** (podmínky FamilySearch omezují
+další šíření; část snímků patří archivům): zeptej se ho a rozhodnutí zapiš do `CLAUDE.md` projektu. Bez něj u záznamu
+jen citace a odkaz na FamilySearch, výřez ne.
+
 ## Data v gitu a sdílení
 Projekt obsahuje osobní údaje rodiny. Když ho uživatel chce mít na GitHubu, pak **jen jako soukromé (private) repo**.

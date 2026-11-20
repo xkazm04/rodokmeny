@@ -31,7 +31,8 @@ slusne = modul("slusne")
 
 # --- nové weby: dotaz nejvýš 1 za 10 s (limit neznámý nebo Crawl-delay 10) ---
 for host in ("www.holocaust.cz", "collections-server.arolsen-archives.org", "collections.arolsen-archives.org",
-             "wcm.slovakiana.sk", "content.slovakiana.sk", "digi.nacr.cz", "vademecum.nacr.cz", "jbc.bj.uj.edu.pl"):
+             "wcm.slovakiana.sk", "content.slovakiana.sk", "digi.nacr.cz", "vademecum.nacr.cz", "jbc.bj.uj.edu.pl",
+             "data.matricula-online.eu", "hosted-images.matricula-online.eu", "www.familysearch.org"):
     skupina, lim = slusne._skupina(host)
     ok(f"brzda: {host} dotaz aspoň 10 s", skupina and lim[0] >= 10, (skupina, lim))
 for host in ("vademecum.nacr.cz", "jbc.bj.uj.edu.pl"):
