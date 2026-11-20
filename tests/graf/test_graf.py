@@ -323,6 +323,21 @@ def test_rodice_zapisu():
     prep["snatek_petr"]["orig"] = "[Otec ženicha] Jan Novák\n[Matka ženicha] Antonia"
     pripad("rodice_zapisu: shoda (Antonia = Antonie) bez upozornění", not graf.rodice_zapisu(P, zaz, prep),
            "\n".join(graf.rodice_zapisu(P, zaz, prep)))
+    # otec cituje svatbu syna, protože ho jmenuje jako [Otec ženicha] – není to jeho svatba (review #2)
+    P2 = {2: dict(n="Jan Novák", y="1860–1930", f=["* 1860", "× 1885 Holice Kateřina Malá"], r=["snatek_syna"]),
+          4: dict(n="Petr Novák", y="", f=[], r=[])}
+    zaz2 = [dict(klic="snatek_syna", druh="O", datum="1915")]
+    prep2 = {"snatek_syna": {"orig": "[Ženich] Josef Novák\n[Otec ženicha] Jan Novák\n[Matka ženicha] Kateřina"}}
+    pripad("rodice_zapisu: [Otec ženicha] u otce, který svatbu syna cituje, není jeho otec",
+           not graf.rodice_zapisu(P2, zaz2, prep2), "\n".join(graf.rodice_zapisu(P2, zaz2, prep2)))
+    prep2["snatek_syna"]["orig"] = "[Otec ženicha] Jan Novák"
+    pripad("rodice_zapisu: bez [Ženich] rozhodne datum – osoba má sňatek 1885, zápis je z 1915",
+           not graf.rodice_zapisu(P2, zaz2, prep2), "\n".join(graf.rodice_zapisu(P2, zaz2, prep2)))
+    zaz2[0]["datum"] = "1885"
+    prep2["snatek_syna"]["orig"] = "[Ženich] Joannes Novák\n[Otec ženicha] Jan Novák"
+    pripad("rodice_zapisu: vlastní svatba (Joannes = Jan, 1885) se dál kontroluje",
+           any("osoba 2 (Jan Novák): otec" in x for x in graf.rodice_zapisu(P2, zaz2, prep2)),
+           "\n".join(graf.rodice_zapisu(P2, zaz2, prep2)))
     P[1]["y"], P[1]["f"] = "1880–1950", ["* 1880"]
     prep["krest_petr"]["orig"] = "[Matka] Ludmila"
     pripad("rodice_zapisu: křest z jiného roku není křest osoby", not graf.rodice_zapisu(P, zaz, prep),

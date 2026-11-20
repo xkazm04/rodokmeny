@@ -287,6 +287,27 @@ def _krestni(text):
     return {_KR[s] for s in slova if s in _KR}
 
 
+_SNOUBENEC = {True: re.compile(r"^\s*\[\s*(?:ženich|bräutigam|sponsus)\s*\]\s*(.*)$", re.I | re.M),
+              False: re.compile(r"^\s*\[\s*(?:nevěsta|braut|sponsa)\s*\]\s*(.*)$", re.I | re.M)}
+
+
+def _jmena(text):
+    """Klíče křestních jmen na začátku údaje; neznámé jméno aspoň jako první slovo („Bohumil“ → {bohumil})."""
+    return _krestni(text) or {krestni_klic(text)} - {""}
+
+
+def _je_snoubenec(p, muz, orig, d):
+    """Je osoba ženichem (nevěstou) sňatku s přepisem `orig` a datem `d`? Zápis cituje i otec ženicha nebo svědek:
+    ne, když pole [Ženich]/[Nevěsta] jmenuje jiné křestní jméno, nebo když osoba má sňatky (×) a žádný nesedí s datem."""
+    m = _SNOUBENEC[muz].search(orig)
+    ja = _jmena(" ".join(str(p.get("n", "")).split()[:-1]) or p.get("n", ""))
+    on = _jmena(m.group(1)) if m else set()
+    if on and ja and not on & ja:
+        return False
+    vlastni = [x for _f, x in ch.snatky(p)]
+    return not (d and vlastni and not any(prekryv(d, x, dni=366) for x in vlastni))
+
+
 def rodice_zapisu(P, zaz, prep, SAME=None):
     """Upozornění pro kontrola.py: otec nebo matka téže osoby se ve dvou zápisech (nebo v zápisu a v osoby.py)
     jmenuje jinak. Čte jen pole přepisu [Otec]/[Matka] (i [Otec ženicha], [Mutter der Braut]…): u křtu (N) patří
@@ -302,7 +323,10 @@ def rodice_zapisu(P, zaz, prep, SAME=None):
             z, t = zaz_k.get(r) or {}, prep.get(r) or {}
             d = datum_zapisu(str(z.get("datum") or ""))
             druh = str(z.get("druh", "")).upper()[:1]
-            for m in _POLE_RODICE.finditer(str(t.get("orig", "")) if isinstance(t, dict) else ""):
+            orig = str(t.get("orig", "")) if isinstance(t, dict) else ""
+            if druh == "O" and not _je_snoubenec(p, muz, orig, d):
+                continue
+            for m in _POLE_RODICE.finditer(orig):
                 role = "otec" if m.group(1).lower() in ("otec", "vater", "pater") else "matka"
                 kval = m.group(2)
                 if druh == "O":
