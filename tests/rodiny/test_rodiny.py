@@ -120,9 +120,65 @@ def main():
         over("seznam případů", "matej_32" in out, out)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
+    dalsi()
     chyb = sum(1 for _, ok in VYSLEDKY if not ok)
     print(f"\n{len(VYSLEDKY) - chyb}/{len(VYSLEDKY)} v pořádku")
     sys.exit(1 if chyb else 0)
+
+
+def krest(datum, dite, otec, matka, obec="Lhota", dum=""):
+    return {"patri": "?", "druh": "N", "datum": datum, "obec": obec, "dum": dum, "zdroj": f"y {datum}",
+            "osoby": [{"jmeno": dite, "role": "dite"}, {"jmeno": otec, "role": "otec"}, {"jmeno": matka, "role": "matka"}]}
+
+
+def dalsi():
+    """Matky s různým příjmením, domy v různých vsích, soubory s BOM (Windows PowerShell)."""
+    tmp = tempfile.mkdtemp(prefix="rodiny2_")
+    try:
+        os.makedirs(os.path.join(tmp, "tools"))
+        shutil.copy(NASTROJ, os.path.join(tmp, "tools", "rodiny.py"))
+        for f in ("datumy.py", "jmena.py"):
+            shutil.copy(os.path.join(os.path.dirname(NASTROJ), f), os.path.join(tmp, "tools", f))
+        os.makedirs(os.path.join(tmp, "data"))
+        with open(os.path.join(tmp, "data", "osoby.py"), "w", encoding="utf-8-sig") as f:   # s BOM
+            f.write('P = {16: dict(n="Josef Novák", y="1760–1830", f=[])}\nSIDE = []\n')
+        spust(tmp, "novy", "jan", "Který Jan Novák?")
+        spust(tmp, "kandidat", "jan", "A", "Jan z Horní Lhoty")
+        vstup = [krest("1. 1. 1760", "Václav Novák", "Jan Novák", "Anna Malá"),
+                 krest("1. 3. 1760", "Josef Novák", "Jan Novák", "Anna Veselá"),
+                 krest("1. 3. 1762", "Marie Nováková", "Jan Novák", "Anna Malá")]
+        os.makedirs(os.path.join(tmp, "pracovni"))
+        with open(os.path.join(tmp, "pracovni", "x.json"), "w", encoding="utf-8-sig") as f:   # s BOM
+            json.dump(vstup, f, ensure_ascii=False)
+        out = spust(tmp, "zapis", "jan", "pracovni/x.json", ok=False)
+        over("zapis: JSON s BOM se načte", out.count("zapsáno") == 3, out)
+        out = spust(tmp, "rodiny", "jan")
+        over("rodiny: Anna Malá a Anna Veselá jsou dva páry, ne porody 2 měsíce po sobě",
+             "jedna matka nestihne" not in out and "Anna Malá: 2 dětí" in out and "Anna Veselá: 1 dětí" in out, out)
+        d = json.load(open(os.path.join(tmp, "data", "rodiny", "jan.json"), encoding="utf-8"))
+        d["zapisy"].append(dict(krest("1. 6. 1764", "Petr Novák", "Jan Novák", "Anna"), id="z9"))
+        zapis(os.path.join(tmp, "data", "rodiny", "jan.json"), json.dumps(d, ensure_ascii=False))
+        out = spust(tmp, "rodiny", "jan")
+        over("rodiny: matka jen „Anna“ u dvou možných párů zůstane zvlášť", "Jan Novák × Anna: 1 dětí" in out, out)
+        d["zapisy"] = [z for z in d["zapisy"] if "Veselá" not in json.dumps(z, ensure_ascii=False)]
+        zapis(os.path.join(tmp, "data", "rodiny", "jan.json"), json.dumps(d, ensure_ascii=False))
+        out = spust(tmp, "rodiny", "jan")
+        over("rodiny: matka jen „Anna“ u jediného páru Jan × Anna Malá patří k němu", "Anna Malá: 3 dětí" in out, out)
+        d["zapisy"] = [dict(krest("1. 1. 1760", "Josef Novák", "Jan Novák", "Anna", "Horní Lhota", "12a"),
+                            id="z1", patri="kotva"),
+                       dict(krest("1. 1. 1761", "Josef Novák", "Jan Novák", "Anna", "Horní Ves", "12b"), id="z2",
+                            patri="A"),
+                       dict(krest("1. 1. 1762", "Josef Novák", "Jan Novák", "Anna", "", "12a"), id="z3", patri="A")]
+        zapis(os.path.join(tmp, "data", "rodiny", "jan.json"), json.dumps(d, ensure_ascii=False))
+        out = spust(tmp, "prunik", "jan")
+        over("prunik: č. 12a v Horní Lhotě a 12b v Horní Vsi (ani dům bez obce) nejsou týž dům", "DŮM" not in out, out)
+        over("prunik: osoby.py s BOM se načte", "nejde načíst" not in out and "RODOKMEN" in out, out)
+        d["zapisy"][1].update(obec="Horní Lhota", dum="č. p. 12a")
+        zapis(os.path.join(tmp, "data", "rodiny", "jan.json"), json.dumps(d, ensure_ascii=False))
+        out = spust(tmp, "prunik", "jan")
+        over("prunik: „č. p. 12a“ v Horní Lhotě je týž dům jako 12a", "DŮM      č. 12a" in out, out)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
 
 
 if __name__ == "__main__":

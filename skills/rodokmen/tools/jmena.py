@@ -13,7 +13,7 @@ KRESTNI = {
     "frantiska": "francisca franziska", "josef": "josephus joseph josephi", "josefa": "josepha",
     "rozalie": "rosalia rozalia", "anna": "anne", "marie": "maria", "terezie": "theresia teresia theresa terezia therese",
     "vavrinec": "laurentius lorenz laurenz", "mikulas": "nicolaus nikolaus nicolai", "martin": "martinus",
-    "matej": "matthias mathias matthaeus", "petr": "petrus peter", "pavel": "paulus paul", "tomas": "thomas",
+    "matej": "matthias mathias", "matous": "matthaeus matthaus mattheus mathaeus matheus","petr": "petrus peter", "pavel": "paulus paul", "tomas": "thomas",
     "jakub": "jacobus jakob jacob", "vojtech": "adalbertus adalbert", "augustin": "augustinus", "dorota": "dorothea",
     "magdalena": "magdalene", "veronika": "veronica", "barbora": "barbara", "alzbeta": "elisabetha elisabeth",
     "ludmila": "ludmilla", "justina": "justine", "judita": "judith", "tobias": "tobiae", "karel": "carolus karl carl",
@@ -41,10 +41,14 @@ def krestni_klic(s):
 
 
 def prijmeni_klic(s):
-    """Volný klíč příjmení: Novák, Nowak, Nowák, Nováková, Nováčka → novak; Petráček, Petráčková → petrak."""
+    """Volný klíč příjmení: Novák, Nowak, Nowák, Nováková, Nováčka → novak; Petráček, Petráčková → petrak;
+    Novotný, Novotná → novotn."""
     s = re.sub(r"[^a-z]", "", bez_diakritiky(s))
+    pridavne = s.endswith("y") and len(s) >= 4         # Novotný / Novotná: bez koncovky ý jako bez á (kmen ≥ 3)
     s = s.replace("sch", "s").replace("cz", "c").replace("w", "v").replace("y", "i").replace("ia", "a")
     s = s.replace("tz", "c").replace("ch", "#").replace("c", "k").replace("#", "ch")
+    if pridavne:
+        s = s[:-1]
     for kon in ("ovich", "ova", "ovi", "ove", "a"):     # ženský tvar a koncovky → kmen (aspoň 3 písmena: Kufa = Kufová)
         if len(s) - len(kon) >= 3 and s.endswith(kon):
             s = s[: -len(kon)]

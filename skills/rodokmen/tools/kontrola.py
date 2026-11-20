@@ -366,7 +366,8 @@ def main():
     log = os.path.join(DATA, "research_log.md")
     if os.path.exists(log):
         texty += [(f"deník ř. {l.split('|')[1].strip()}", l.split("|", 3)[3]) for l in open(log, encoding="utf-8-sig")
-                  if re.match(r"^\| \d+ \|", l)]   # bez sloupců č. a datum (datum hledání není rok události)
+                  if re.match(r"^\| \d+ \|", l) and l.count("|") > 3]   # bez sloupců č. a datum (datum hledání
+                  # není rok události); rozepsaný řádek „| 12 |“ přeskočí, sloupce hlídá denik.kontrola
     for kde, text in texty:
         denik = kde.startswith("deník")   # řádek deníku míchá roky z různých století – rozhoduje jen okolí nálezu
         if not denik and not recent(text):
@@ -432,6 +433,8 @@ def dite_predka(s, P):
     """Text bočního příbuzného „Syn Jana…“, kde Jan je předek k: vazba je nejspíš špatně (upstream #68).
     Vrátí úryvek, nebo None."""
     k = s.get("k")
+    if s.get("v") not in (None, "sour") or s.get("koho"):   # v="dite" je dítě předka k správně, koho = vztah k jinému
+        return None
     jmeno = (P.get(k, {}).get("n") or "").split() if isinstance(P.get(k), dict) else []
     m = re.search(r"\b(syn|dcera|dítě)\s+(\w+)", s.get("t") or "", re.I)
     if not jmeno or not m or k == 1:

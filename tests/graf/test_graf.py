@@ -191,6 +191,52 @@ def test_okrajove():
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+def test_krest_a_ceske_datum():
+    """CHR je horní mez narození (ne narození), česká data z MyHeritage („Po roce 1900“) jsou meze, ne rok."""
+    text = ("0 HEAD\n"
+            + osoba("@M@", "Anna /Malá/", "F", "1 BIRT", "2 DATE 1870", "1 DEAT", "2 DATE 1 JAN 1900")
+            + osoba("@D@", "Petr /Malý/", "M", "1 CHR", "2 DATE 3 JAN 1900", "1 FAMC @F1@")
+            + osoba("@N@", "Marie /Bílá/", "F", "1 BIRT", "2 DATE 1860", "1 DEAT", "2 DATE Po roce 1900")
+            + osoba("@E@", "Eva /Bílá/", "F", "1 BIRT", "2 DATE 1910", "1 FAMC @F2@")
+            + osoba("@O@", "Rozálie /Dlouhá/", "F", "1 BIRT", "2 DATE 1860", "1 DEAT", "2 DATE srp 1905")
+            + osoba("@G@", "Jana /Dlouhá/", "F", "1 BIRT", "2 DATE DEC 1905", "1 FAMC @F3@")
+            + "0 @F1@ FAM\n1 WIFE @M@\n1 CHIL @D@\n0 @F2@ FAM\n1 WIFE @N@\n1 CHIL @E@\n"
+            + "0 @F3@ FAM\n1 WIFE @O@\n1 CHIL @G@\n0 TRLR\n")
+    tmp, ged = strom(text)
+    try:
+        t = graf.nacti_strom(ged)
+        chrono = {(d, p, c) for d, _h, p, c in graf.chronologie(t)}
+        pripad("křest 3. 1. po smrti matky 1. 1. není narození po smrti matky",
+               not any(c == "@D@" for _d, _p, c in chrono), str(chrono))
+        pripad("„Po roce 1900“ u úmrtí matky není rok 1900", not any(c == "@E@" for _d, _p, c in chrono), str(chrono))
+        pripad("„srp 1905“ je srpen: dítě z prosince je po smrti matky",
+               ("narozen(a) po smrti matky", "@O@", "@G@") in chrono, str(chrono))
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def test_adopce():
+    """Adoptivní rodina (FAMC + PEDI adopted) není biologická: věk adoptivní matky ani „dvě rodiny“ se nehlásí."""
+    text = ("0 HEAD\n"
+            + osoba("@A@", "Josef /Malý/", "M", "1 BIRT", "2 DATE 1870")
+            + osoba("@B@", "Anna /Malá/", "F", "1 BIRT", "2 DATE 1875")
+            + osoba("@C@", "Marie /Bílá/", "F", "1 BIRT", "2 DATE 1844")              # adoptivní matka v 56 letech
+            + osoba("@D@", "Jan /Malý/", "M", "1 BIRT", "2 DATE 1900", "1 FAMC @F1@",
+                    "1 FAMC @F2@", "2 PEDI adopted")
+            + "0 @F1@ FAM\n1 HUSB @A@\n1 WIFE @B@\n1 CHIL @D@\n0 @F2@ FAM\n1 WIFE @C@\n1 CHIL @D@\n0 TRLR\n")
+    tmp, ged = strom(text)
+    try:
+        t = graf.nacti_strom(ged)
+        chrono = graf.chronologie(t)
+        pripad("adoptivní matce se věk při narození nehlásí", not any(p == "@C@" for _d, _h, p, _c in chrono), str(chrono))
+        pripad("biologická a adoptivní rodina nejsou „dítě ve dvou rodinách“", graf.vic_rodin(t) == [],
+               str(graf.vic_rodin(t)))
+        r = subprocess.run(PY + [GRAF, "strom", ged], capture_output=True, text=True, encoding="utf-8")
+        pripad("výpis strom: adopce se ukáže zvlášť", "adoptivní" in r.stdout and "@F2@" in r.stdout, r.stdout + r.stderr)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
 def test_cyklus():
     tmp, ged = strom(GED.replace("0 @F1@ FAM", "0 @F9@ FAM\n1 HUSB @I1@\n1 CHIL @I8@\n0 @F1@ FAM"))
     try:
@@ -277,6 +323,21 @@ def test_rodice_zapisu():
     prep["snatek_petr"]["orig"] = "[Otec ženicha] Jan Novák\n[Matka ženicha] Antonia"
     pripad("rodice_zapisu: shoda (Antonia = Antonie) bez upozornění", not graf.rodice_zapisu(P, zaz, prep),
            "\n".join(graf.rodice_zapisu(P, zaz, prep)))
+    # otec cituje svatbu syna, protože ho jmenuje jako [Otec ženicha] – není to jeho svatba (review #2)
+    P2 = {2: dict(n="Jan Novák", y="1860–1930", f=["* 1860", "× 1885 Holice Kateřina Malá"], r=["snatek_syna"]),
+          4: dict(n="Petr Novák", y="", f=[], r=[])}
+    zaz2 = [dict(klic="snatek_syna", druh="O", datum="1915")]
+    prep2 = {"snatek_syna": {"orig": "[Ženich] Josef Novák\n[Otec ženicha] Jan Novák\n[Matka ženicha] Kateřina"}}
+    pripad("rodice_zapisu: [Otec ženicha] u otce, který svatbu syna cituje, není jeho otec",
+           not graf.rodice_zapisu(P2, zaz2, prep2), "\n".join(graf.rodice_zapisu(P2, zaz2, prep2)))
+    prep2["snatek_syna"]["orig"] = "[Otec ženicha] Jan Novák"
+    pripad("rodice_zapisu: bez [Ženich] rozhodne datum – osoba má sňatek 1885, zápis je z 1915",
+           not graf.rodice_zapisu(P2, zaz2, prep2), "\n".join(graf.rodice_zapisu(P2, zaz2, prep2)))
+    zaz2[0]["datum"] = "1885"
+    prep2["snatek_syna"]["orig"] = "[Ženich] Joannes Novák\n[Otec ženicha] Jan Novák"
+    pripad("rodice_zapisu: vlastní svatba (Joannes = Jan, 1885) se dál kontroluje",
+           any("osoba 2 (Jan Novák): otec" in x for x in graf.rodice_zapisu(P2, zaz2, prep2)),
+           "\n".join(graf.rodice_zapisu(P2, zaz2, prep2)))
     P[1]["y"], P[1]["f"] = "1880–1950", ["* 1880"]
     prep["krest_petr"]["orig"] = "[Matka] Ludmila"
     pripad("rodice_zapisu: křest z jiného roku není křest osoby", not graf.rodice_zapisu(P, zaz, prep),
@@ -284,7 +345,7 @@ def test_rodice_zapisu():
 
 
 if __name__ == "__main__":
-    for t in (test_strom, test_okrajove, test_cyklus, test_predci, test_kontrola, test_rodice_zapisu):
+    for t in (test_strom, test_okrajove, test_krest_a_ceske_datum, test_adopce, test_cyklus, test_predci, test_kontrola, test_rodice_zapisu):
         try:
             t()
         except Exception as e:  # noqa: BLE001 – spadlý případ se vypíše a test neprojde

@@ -244,6 +244,34 @@ def test_snatek_pred_narozenim():
     assert [(x.k, x.pravidlo) for x in v] == [(8, "snatek-mlady")]
     assert v[0].text == "Jan Novák: sňatek (1890) je dřív než narození (1900)" + JISTE
 
+def test_krest_je_horni_mez_narozeni():   # matka zemřela 1. 1., dítě pokřtěno 3. 1. – narodit se mohlo před její smrtí
+    P = {8: dict(n="Jan Novák", y="1900", f=["pokřtěn 3. 1. 1900"]), 17: dict(n="Anna Malá", y="1870–1900",
+                                                                             f=["† 1. 1. 1900"])}
+    assert kontrola(P) == []
+    P[8]["f"] = ["pokřtěn 3. 1. 1900", "* 1. 1. 1900"]          # výslovné narození má přednost před křtem
+    assert kontrola(P) == []
+    P[8]["f"] = ["pokřtěn 3. 1. 1901"]                          # křest rok po smrti matky – rozpor zůstává
+    assert [(x.k, x.pravidlo) for x in kontrola(P)] == [(8, "matka-zemrela")]
+    u = udalosti({8: dict(n="A B", y="1900", f=["pokřtěn 20. 12. 1900"])}, 8)
+    assert u["narozeni"].do == date(1900, 12, 20) and u["narozeni"].od.year == 1900   # y a křest dohromady
+
+
+def test_pohreb_je_horni_mez_umrti():
+    u = udalosti({8: dict(n="A B", f=["pohřben 5. 1. 1900", "† 1. 1. 1900"])}, 8)
+    assert (u["umrti"].od, u["umrti"].do) == (date(1900, 1, 1), date(1900, 1, 1))   # výslovné úmrtí má přednost
+    u = udalosti({8: dict(n="A B", f=["pohřben 5. 1. 1900"])}, 8)
+    assert u["umrti"].do == date(1900, 1, 5) and u["umrti"].od < date(1900, 1, 1)    # zemřel nejpozději v den pohřbu
+    P = {8: dict(n="Jan Novák", f=["* 1. 1. 1900"]), 16: dict(n="Václav Novák", f=["pohřben 3. 1. 1898"])}
+    assert [(x.k, x.pravidlo) for x in kontrola(P)] == [(8, "otec-zemrel")]
+
+
+def test_kazdy_snatek():   # druhý sňatek po úmrtí se nesmí ztratit za prvním
+    P = {8: dict(n="Jan Novák", y="1820–1880", f=["× 1850 Anna Malá", "× 1890 Marie Bílá"])}
+    assert [(x.k, x.pravidlo) for x in kontrola(P)] == [(8, "snatek-po-umrti")]
+    P = {8: dict(n="Jan Novák", y="1820–1880", f=["× 1830 Anna Malá", "× 1850 Marie Bílá"]),
+         17: dict(n="Marie Bílá", f=[])}
+    assert [(x.k, x.pravidlo) for x in kontrola(P)] == [(8, "snatek-mlady")]
+
 
 if __name__ == "__main__":
     testy = [f for n, f in sorted(globals().items()) if n.startswith("test_") and callable(f)]

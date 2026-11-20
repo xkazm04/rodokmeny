@@ -58,8 +58,30 @@ P2 = {8: dict(n="Václav Dvořák", y="asi 1760–64", st="doc", f=["* 1763"], r
       10: dict(n="Jiří Dvořák", y="1720–85", st="doc", f=["* 1720", "† 1785"], r=[])}
 w2 = kd.kontroly(P2, [], [], {})
 ma(w2, "osoba 8 ", ocekavam=False)
-ma(w2, "osoba 9 ", ocekavam=False)
+ma(w2, "osoba 9 (Anna Dvořáková): y má", ocekavam=False)
+ma(w2, "osoba 9 (Anna Dvořáková): fakta mají úmrtí 1630, ale y ho nemá")
 ma(w2, "osoba 10 ", ocekavam=False)
+
+# Rok ze stromu potvrzený zápisem není „jen z cizího stromu“; chybějící narození / úmrtí v y zvlášť
+P4 = {2: dict(n="Jan Kos", y="1850", st="doc", f=["* 1850 (matrika)", "* 1850 podle stromu"], r=[]),
+      4: dict(n="Petr Kos", y="1820", st="doc", f=["* 1820", "† 1890"], r=[]),
+      6: dict(n="Josef Kos", y="† 1910", st="doc", f=["* 1850 Holice", "† 1910"], r=[]),
+      8: dict(n="Václav Kos", y="1790", st="doc", f=["* 1790", "† 1850 (strom MH)"], r=[])}
+w4 = kd.kontroly(P4, [], [], {})
+ma(w4, "osoba 2 (Jan Kos): rok 1850 v y je jen z cizího stromu", ocekavam=False)
+ma(w4, "osoba 4 (Petr Kos): fakta mají úmrtí 1890, ale y ho nemá")
+ma(w4, "osoba 6 (Josef Kos): fakta mají narození 1850, ale y ho nemá")
+ma(w4, "osoba 8 ", ocekavam=False)                                          # úmrtí jen ze stromu do y nepatří
+
+# svobodný × vdovec oběma směry; osoba 1 bez „sex“ je muž (reference/data.md)
+P5 = {1: dict(n="Jan Novák", y="1840", st="doc", f=["× 1865 Marie (jako vdovec)"], r=["o_a"]),
+      2: dict(n="Josef Novák", y="1810", st="doc", f=["× 1835 Anna Bílá (svobodný)"], r=["o_b"])}
+Z5 = [dict(klic="o_a", druh="O", datum="1865"), dict(klic="o_b", druh="O", datum="1835")]
+PR5 = {"o_a": {"orig": "[Bräutigam] Jan Novák, ledig\n[Braut] Marie, ledig"},
+       "o_b": {"orig": "[Ženich] Josef Novák, vdovec\n[Nevěsta] Anna Bílá, svobodná"}}
+w5 = kd.kontroly(P5, [], Z5, PR5)
+ma(w5, "osoba 1 (Jan Novák): u sňatku o_a má fakta „vdovec/vdova“, přepis „ledig“")
+ma(w5, "osoba 2 (Josef Novák): u sňatku o_b má fakta „svobodný/á“, přepis „vdovec“")
 
 # Druhé čtení: doložený zápis s „(?)“ v přepisu bez cteni2 (I30-18)
 P3 = {2: dict(n="Jan Dvořák", y="1800", st="doc", f=["* 1800"], r=["n_a", "n_b", "n_c"])}

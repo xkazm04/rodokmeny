@@ -33,6 +33,23 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 **Opravy**
 - Pražské policejní přihlášky (`policie_prihlasky.py`): brzda 1 dotaz za 10 s (dřív 4 s), méně opakování;
   návod připomíná, že jde jen o dohledání konkrétních osob (upstream #129).
+- Kontroly rodiny: křest a pohřeb jsou jen horní mez narození a úmrtí (dítě pokřtěné den po smrti matky už není
+  „narozené po její smrti“), výslovné `*` a `†` mají přednost; sňatek po úmrtí se hlídá u každého sňatku, ne jen
+  u prvního.
+- Data: „8. 1945“ (tak píše měsíc `ged_import.py`) je srpen 1945, „asi 8. 1945“ se už neztratí; „1850-před 1900“
+  se spojovníkem čte úmrtí stejně jako s pomlčkou.
+- `graf.py strom`: česká data z MyHeritage („Po roce 1900“, „srp 1945“) jsou meze, ne celý rok; adoptivní
+  a pěstounské rodiny (`PEDI adopted`) se nekontrolují jako biologické a vypíšou se zvlášť.
+- Rodič téže osoby ve dvou zápisech: otec, který cituje svatbu syna (je v ní „[Otec ženicha]“), už není brán jako
+  ženich.
+- Jména: Matthaeus je Matouš (ne Matěj), Novotný = Novotná, Malý = Malá.
+- `rodiny.py`: Jan × Anna Malá a Jan × Anna Veselá jsou dva páry; dům se shoduje jen v téže vsi a s celým číslem
+  (12a ≠ 12b); soubory s BOM (Windows PowerShell) se načtou.
+- `kontrola.py`: boční příbuzný s `v="dite"` už nedostane radu změnit `k`; rozepsaný řádek deníku „| 12 |“ kontrolu
+  neshodí.
+- Obsahové kontroly: rok ze stromu potvrzený zápisem se nehlásí jako „jen ze stromu“; chybějící narození nebo úmrtí
+  v `y` se hlásí zvlášť; „svobodný“ ve faktu × „vdovec“ v přepisu se hlásí taky.
+- Vějíř a web: „1849 (?)“ se ukáže jako „1849?“, ne jako jistý rok.
 
 **Návody**
 - MZA: místo pevného limitu 45–60 snímků za den skončit při skutečném příznaku (bílé dlaždice, 403/429/503)

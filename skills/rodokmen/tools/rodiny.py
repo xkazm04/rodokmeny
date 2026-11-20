@@ -36,7 +36,7 @@ from datetime import date
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # python -I nepřidává složku skriptu
 from datumy import najdi  # noqa: E402 – data čte stejně jako ostatní kontroly (tools/datumy.py)
-from jmena import krestni_klic, osoba_klic, prijmeni_klic  # noqa: E402,F401 – volné porovnání jmen (tools/jmena.py)
+from jmena import bez_diakritiky, krestni_klic, osoba_klic, prijmeni_klic  # noqa: E402,F401 – volné porovnání jmen
 for _s in (sys.stdout, sys.stderr):   # UTF-8 výstup i na Windows bez -X utf8
     if hasattr(_s, "reconfigure"):
         _s.reconfigure(encoding="utf-8", errors="replace")
@@ -48,9 +48,11 @@ ROLE = {"dite", "otec", "matka", "zenich", "nevesta", "otec_zenicha", "matka_zen
 STAVY = ("otevreny", "vyloucen", "potvrzen")
 
 def dum_klic(obec, dum):
-    if not dum:
-        return None
-    return (prijmeni_klic(obec or "")[:4], re.sub(r"\D", "", str(dum)))
+    """Klíč domu: („Horní Lhota“, „č. p. 12a“) → („horni lhot“, „12a“) – celá obec (volně jako příjmení), číslo
+    i s písmenem. Bez obce nebo čísla None: dům „12“ bez vsi nic nedokládá."""
+    obec = " ".join(prijmeni_klic(w) for w in re.findall(r"\w+", obec or "") if not w.isdigit())
+    m = re.search(r"(\d+)([a-z])?(?![a-z])", bez_diakritiky(str(dum or "")))
+    return (obec, str(int(m.group(1))) + (m.group(2) or "")) if obec and m else None
 
 
 def cesta(pripad):
@@ -63,7 +65,7 @@ def nacti(pripad):
     c = cesta(pripad)
     if not os.path.exists(c):
         sys.exit(f"CHYBA: případ {pripad} neexistuje ({c}); založ ho: rodiny.py novy {pripad} \"cíl\"")
-    with open(c, encoding="utf-8") as f:
+    with open(c, encoding="utf-8-sig") as f:
         return json.load(f)
 
 
@@ -89,7 +91,7 @@ def predci():
         return out
     ns = {}
     try:
-        exec(open(p, encoding="utf-8").read(), ns)
+        exec(open(p, encoding="utf-8-sig").read(), ns)
     except Exception as e:
         print(f"upozornění: data/osoby.py nejde načíst ({e}), shody s rodokmenem vynechávám")
         return out
@@ -164,7 +166,7 @@ def cmd_zapis(a):
     if len(a) < 2:
         sys.exit("použití: rodiny.py zapis <případ> <soubor.json>")
     d = nacti(a[0])
-    with open(a[1], encoding="utf-8") as f:
+    with open(a[1], encoding="utf-8-sig") as f:   # i s BOM (Windows PowerShell)
         vstup = json.load(f)
     for z in vstup if isinstance(vstup, list) else [vstup]:
         patri = z.get("patri", "?")
@@ -318,7 +320,7 @@ def cmd_prunik(a):
 
 def cmd_rodiny(a):
     d = nacti(a[0])
-    pary = defaultdict(list)
+    pary, krty = defaultdict(list), []
     for z in d["zapisy"]:
         if z.get("druh") != "N":
             continue
@@ -329,8 +331,17 @@ def cmd_rodiny(a):
             continue
         ot = role["otec"][0]["jmeno"] if role.get("otec") else "otec neuveden"
         ma = role["matka"][0]["jmeno"] if role.get("matka") else "?"
-        klic = (osoba_klic(ot) or ("", ""), krestni_klic(ma), z["patri"])
-        pary[klic].append((z, role, ot, ma))
+        ok = osoba_klic(ot) or ("", "")
+        mk = osoba_klic(ma) or ("", "")
+        if mk[1] == ok[1]:   # „Anna Nováková“ u otce Nováka: příjmení po muži, rodné neznáme – jako jen „Anna“
+            mk = (mk[0], "")
+        krty.append(((ok, mk, z["patri"]), (z, role, ot, ma)))
+    znama = {kl for kl, _ in krty if kl[1][1]}   # páry, u kterých známe rodné příjmení matky
+    for kl, x in krty:
+        if not kl[1][1]:   # matka jen křestním jménem: k páru, jen když je jediný možný, jinak zvlášť
+            mozne = [k for k in znama if (k[0], k[1][0], k[2]) == (kl[0], kl[1][0], kl[2])]
+            kl = mozne[0] if len(mozne) == 1 else kl
+        pary[kl].append(x)
     if not pary:
         print("Žádné křty (druh N s rolí dite) – zapiš křty sourozenců příkazem zapis.")
         return
@@ -413,7 +424,7 @@ def cmd_seznam(a):
     for f in sorted(os.listdir(SLOZKA)):
         if f.endswith(".json"):
             try:
-                d = json.load(open(os.path.join(SLOZKA, f), encoding="utf-8"))
+                d = json.load(open(os.path.join(SLOZKA, f), encoding="utf-8-sig"))
                 ot = otevreni(d)
                 ck = sum(1 for u in d.get("ukoly", []) if u["stav"] == "ceka")
                 print(f"{d['pripad']}: {d['cil']} – kandidátů {len(d['kandidati'])} (otevřených {len(ot)}), "
