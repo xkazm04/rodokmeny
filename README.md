@@ -9,7 +9,7 @@ znalost rodiny a rozhodujete.
 
 Vznikl při skutečném hledání předků jedné rodiny.
 
-**Autor a správce:** Jindřich Šaršon ([sarsonj@gmail.com](mailto:sarsonj@gmail.com), [GitHub](https://github.com/sarsonj))
+**Původní autor:** Jindřich Šaršon ([GitHub](https://github.com/sarsonj), [původní repozitář](https://github.com/sarsonj/rodokmen-skill)). **Tuto odnož spravuje:** [xkazm04](https://github.com/xkazm04/rodokmeny).
 
 **Aktuální verze: 0.10.2 (vydána 16. 11. 2026).** Skill se průběžně vyvíjí – opravuji chyby a doplňuji postupy pro další archivy
 podle toho, na co narazíte vy. Jak aktualizovat, najdete v části [Instalace](#instalace), přehled změn
@@ -34,11 +34,11 @@ po verzích v [CHANGELOG.md](CHANGELOG.md).
 > podklad.
 >
 > **Jste genealog nebo zkušený badatel?** Budu rád za kritiku. Když uvidíte chybu v postupu, ve čtení nebo v tom,
-> co skill radí, [založte issue](https://github.com/sarsonj/rodokmen-skill/issues) nebo mi napište. Vaše zkušenost
+> co skill radí, [založte issue](https://github.com/xkazm04/rodokmeny/issues) nebo mi napište. Vaše zkušenost
 > je přesně to, co AI chybí.
 
 **Přečetla AI něco špatně, něco nefunguje nebo jste narazili na jiný problém?**
-[Založte prosím issue na GitHubu →](https://github.com/sarsonj/rodokmen-skill/issues/new)
+[Založte prosím issue na GitHubu →](https://github.com/xkazm04/rodokmeny/issues/new)
 (víc v části [Zpětná vazba](#zpětná-vazba-a-vaše-zkušenosti)).
 
 ## Jak vypadá web
@@ -78,7 +78,7 @@ S jiným nebo slabším modelem počítejte s víc chybami ve čtení starého p
 ### Varianta A – jako plugin (doporučeno)
 V Claude Code napište:
 ```
-/plugin marketplace add sarsonj/rodokmen-skill
+/plugin marketplace add xkazm04/rodokmeny
 /plugin install rodokmen@rodokmen-skill
 ```
 Pak Claude Code restartujte (do běžící relace se nový plugin nenačte).
@@ -171,11 +171,11 @@ Windows a staršího ImageMagicku, postupy pro MZA Brno a ZA Opava, bezpečná �
 a průběžně zapracovávám – ne každou hned a ne každou doslova, aby skill zůstal jednoduchý pro všechny.
 
 **Chyby a problémy** – AI špatně přečetla zápis, spojila nesprávné lidi, nějaký krok nefunguje nebo spadl nástroj –
-prosím [založte jako issue na GitHubu](https://github.com/sarsonj/rodokmen-skill/issues/new) (stačí bezplatný účet).
+prosím [založte jako issue na GitHubu](https://github.com/xkazm04/rodokmeny/issues/new) (stačí bezplatný účet).
 Popište, co se stalo, a pokud jde o čtení zápisu, přidejte odkaz na snímek v archivu. Issues jsou veřejné, proto
 do nich nepište údaje o žijících lidech.
 
-Budu rád i za další zkušenosti. Napište mi na **sarsonj@gmail.com**, co fungovalo, co ne, jaký archiv jste použili, co vám na webu chybělo.
+Budu rád i za další zkušenosti. Založte issue na [GitHubu](https://github.com/xkazm04/rodokmeny/issues/new) a napište, co fungovalo, co ne, jaký archiv jste použili, co vám na webu chybělo.
 Užitečné změny rád zapracuji do skillu, aby je měli k dispozici i ostatní. Další verze tak bude lepší pro každého,
 kdo hledá své předky.
 

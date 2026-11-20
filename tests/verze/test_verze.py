@@ -72,7 +72,7 @@ try:
     check("GitHub novější, plugin: řekne verzi a poradí claude plugin update", "0.9.0" in out and "plugin update" in out and "NOVA_VERZE_SKILLU" in out, out)
     kod, out = verze(falesny_skill("0.8.2"), projekt("0.8.2"))
     check("GitHub novější, ručně nakopírovaný skill: neradí claude plugin, ale novou složku z GitHubu",
-          "NOVA_VERZE_SKILLU" in out and "claude plugin" not in out and "github.com/sarsonj/rodokmen-skill" in out, out)
+          "NOVA_VERZE_SKILLU" in out and "claude plugin" not in out and "github.com/xkazm04/rodokmeny" in out, out)
     check("GitHub novější: projekt z GitHubu neaktualizuje (žádný git clone)", "clone" not in out, out)
     check("mezipaměť zapsaná", os.path.exists(os.path.join(cache, "rodokmen_verze.json")), os.listdir(tmp))
 

@@ -211,8 +211,8 @@ technický postup, ne údaje o rodině.
 připomeň uživateli, že je může poslat správci skillu:
 1. Projdi poznámky a odstraň nebo zobecni osobní údaje.
 2. Vypiš je do chatu celé, jako jeden blok k zkopírování.
-3. Požádej uživatele, ať je pošle e-mailem na **sarsonj@gmail.com** (předmět třeba „Rodokmen skill – poznámky“) –
-   autor užitečné změny rád zapracuje, aby je měli i ostatní; může připsat i vlastní postřehy.
+3. Požádej uživatele, ať je vloží jako issue na https://github.com/xkazm04/rodokmeny/issues/new (název třeba
+   „Rodokmen skill – poznámky“) – správce užitečné změny rád zapracuje, aby je měli i ostatní; může připsat i vlastní postřehy.
 **Nic sám neposílej** (žádný e-mail, formulář ani issue). Až uživatel řekne, že poslal, zapiš do
 `poznamky_pro_skill.md` „odesláno <datum>“ a další poznámky piš pod tuto čáru.
 
