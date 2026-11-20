@@ -7,9 +7,10 @@ potom `tools/rejstrik.py svazek …` (ze zápisů a deníku).
 
 Použití (z kořene projektu):
   nalez.py nahled <vstup.json>   stáhne snímek, udělá výřez a rámeček a vypíše kontrolní obrázek – data nemění
-                                 (zdroje/, vyrezy/ a zvyrazneni.json přepíše; tak se ladí souřadnice)
+                                 (zdroje/, vyrezy/ a zvyrazneni.json přepíše; tak se ladí souřadnice – u klíče
+                                 zápisu, který už v datech je, jen s --prepsat)
   nalez.py zapis  <vstup.json>   totéž a k tomu zapíše zápis, přepis, odkazy u osob a řádek deníku
-      --prepsat   zápis se stejným klíčem už existuje a má se nahradit (jinak nástroj skončí)
+      --prepsat   zápis se stejným klíčem už existuje a má se nahradit (jinak nástroj skončí – u nahled i zapis)
 
 Vstup (napiš ho nástrojem Write do pracovni/):
 {
@@ -21,7 +22,7 @@ Vstup (napiš ho nástrojem Write do pracovni/):
   "kontrast": false,                                      vybledlý zápis
   "ramecek": [[0, 0.30, 1, 0.62]],                        zlomky VÝŘEZU – kde přesně je čtený zápis
   "ramecek_pozn": "Zápis 1. 2. 1791, č. 108",
-  "zaznam":  {"druh": "N|O|Z|S", "datum": "1. 2. 1791", "nazev": "Úmrtí Tomáše Příhody (1791)", "shrnuti": "…"},
+  "zaznam":  {"druh": "N|O|Z|I|S|J", "datum": "1. 2. 1791", "nazev": "Úmrtí Tomáše Příhody (1791)", "shrnuti": "…"},
   "prepis":  {"orig": "[Datum] …", "cs": "…"},       překlad pod klíčem „cs“ (web čte orig a cs; „cz“ se přijme a uloží jako cs)
   "osoby":   [928, "Isidor Jenisch"],                     Kekulého čísla nebo jednoznačná část jména bočního příbuzného
   "denik":   {"zdroj": "…", "rozsah": "…", "hledano": "…", "vysledek": "…", "citace": "…"}   nepovinné
@@ -38,7 +39,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TOOLS = os.path.join(ROOT, "tools")
 PRAC = os.path.join(ROOT, "pracovni", "nalez")
 UUID = re.compile(r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
-DRUHY = {"N", "O", "Z", "S"}
+DRUHY = {"N", "O", "Z", "I", "S", "J"}   # jako reference/data.md a KINDS v export_web.py
 
 
 def nastroj(*args, vystup=False):
@@ -96,6 +97,15 @@ def over(v, prepsat, zapis):
             sys.exit(f"Obraz {v['obraz']} neexistuje.")
         if v["svazek"] not in jload("svazky.json", {}):
             sys.exit(f"Svazek „{v['svazek']}“ není v data/svazky.json – zapiš ho nejdřív (zapis.py svazky …).")
+    if "apu" in v:   # svazek ARONu má klíč z prvních 8 znaků apu – stejná předpona může patřit jiné knize
+        sv = jload("svazky.json", {}).get(v["apu"][:8])
+        url = str(sv.get("url") or "") if isinstance(sv, dict) else ""
+        if url and v["apu"].lower() not in url.lower():
+            sys.exit(f"V data/svazky.json je pod klíčem „{v['apu'][:8]}“ jiný svazek ({url}) – apu {v['apu']} k němu "
+                     "nepatří. Zapiš svazek pod jiným klíčem (zapis.py svazky) a nález zapiš s „obraz“, „svazek“ a „odkaz“.")
+    if any(x.get("klic") == klic for x in jload("zaznamy.json", [])) and not prepsat:
+        sys.exit(f"Zápis „{klic}“ už v data/zaznamy.json je" + ("" if zapis else " – náhled by přepsal jeho výřez a rámeček")
+                 + ". Chceš-li ho nahradit, přidej --prepsat.")
     if "vyrez" in v:
         ctverice(v["vyrez"], "vyrez")
     ramecky = v.get("ramecek") or []
@@ -110,15 +120,14 @@ def over(v, prepsat, zapis):
         if not str(z.get(f) or "").strip():
             sys.exit(f"V „zaznam“ chybí „{f}“.")
     if z["druh"] not in DRUHY:
-        sys.exit(f"druh „{z['druh']}“ musí být jeden z {', '.join(sorted(DRUHY))} (narození, oddaní, zemřelí, sčítání).")
+        sys.exit(f"druh „{z['druh']}“ musí být jeden z N, O, Z, I, S, J (narození, oddaní, zemřelí, rejstřík, sčítání, "
+                 "jiný pramen).")
     p = v.get("prepis") or {}
     if "cs" not in p and "cz" in p:   # dřívější vstupy psaly „cz“; web čte jen „cs“
         p["cs"] = p.pop("cz")
         v["prepis"] = p
-    if not (str(p.get("orig") or "").strip() and str(p.get("cs") or "").strip()):
-        sys.exit("V „prepis“ chybí „orig“ (doslovný přepis) nebo „cs“ (překlad) – každý zápis má mít obojí.")
-    if any(x.get("klic") == klic for x in jload("zaznamy.json", [])) and not prepsat:
-        sys.exit(f"Zápis „{klic}“ už v data/zaznamy.json je. Chceš-li ho nahradit, přidej --prepsat.")
+    if not all(isinstance(p.get(f), str) and p[f].strip() for f in ("orig", "cs")):   # stejně jako zapis.py prepisy
+        sys.exit("V „prepis“ chybí „orig“ (doslovný přepis) nebo „cs“ (překlad) jako text – každý zápis má mít obojí.")
     osoby = v.get("osoby") or []
     if not osoby:
         sys.exit("Chybí „osoby“ – komu zápis patří (Kekulého číslo nebo část jména bočního příbuzného). "
@@ -134,9 +143,14 @@ def over(v, prepsat, zapis):
         najdi_osobu(o, ns)
     d = v.get("denik")
     if d is not None:
+        if not isinstance(d, dict):
+            sys.exit("„denik“ má být objekt {\"zdroj\": …, \"rozsah\": …, \"hledano\": …, \"vysledek\": …}.")
         chybi = [k for k in ("zdroj", "rozsah", "hledano", "vysledek") if not str(d.get(k) or "").strip()]
         if chybi:
             sys.exit("V „denik“ chybí: " + ", ".join(chybi) + ".")
+        sys.path.insert(0, TOOLS)
+        import denik
+        denik.priprav(d)   # datum a konec tabulky deníku – ať řádek deníku neselže až po zápisu
 
 
 def obrazky(v):

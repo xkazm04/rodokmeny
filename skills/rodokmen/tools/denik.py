@@ -102,8 +102,9 @@ def bunka(v):
     return re.sub(r"(?<!\\)\|", r"\\|", v)
 
 
-def pridej(udaje):
-    """Přidá řádek, vrátí jeho číslo. udaje: zdroj, rozsah, hledano, vysledek, citace, datum."""
+def priprav(udaje):
+    """Zkontroluje údaje i deník a vrátí (číslo, nový text deníku) – nic nezapisuje (nalez.py tím ověří řádek
+    deníku dřív, než cokoli zapíše)."""
     chybi = [k for k in ("zdroj", "rozsah", "hledano", "vysledek") if not str(udaje.get(k) or "").strip()]
     if chybi:
         sys.exit("Chybí: " + ", ".join(chybi) + " (každý řádek deníku má mít zdroj, rozsah, co se hledalo a výsledek).")
@@ -125,7 +126,12 @@ def pridej(udaje):
     posledni = zbytek.splitlines()[-1] if zbytek else ""
     if not (RADEK.match(posledni) or ODDELOVAC.match(posledni)):
         sys.exit("Deník nekončí řádkem tabulky – nový řádek by nebyl v tabulce. Oprav konec data/research_log.md ručně.")
-    novy = zbytek + eol + radek + eol
+    return cislo, zbytek + eol + radek + eol
+
+
+def pridej(udaje):
+    """Přidá řádek, vrátí jeho číslo. udaje: zdroj, rozsah, hledano, vysledek, citace, datum."""
+    cislo, novy = priprav(udaje)
     tmp = LOG + ".tmp"
     with open(tmp, "w", encoding="utf-8", newline="") as f:
         f.write(novy)

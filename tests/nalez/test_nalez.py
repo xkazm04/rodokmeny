@@ -90,6 +90,45 @@ try:
     over("neexistující osoba: skončí dřív, než cokoli zapíše",
          r.returncode != 0 and len(json.load(open(os.path.join(tmp, "data", "zaznamy.json"), encoding="utf-8"))) == 1,
          r.stdout + r.stderr)
+
+    def spust(*args, **zmena):
+        zapis(os.path.join(tmp, "pracovni", "t.json"), json.dumps(dict(vstup, **zmena), ensure_ascii=False))
+        r = subprocess.run(nalez + [*args, "pracovni/t.json"], cwd=tmp, capture_output=True, text=True, encoding="utf-8")
+        return r.returncode, r.stdout + r.stderr
+
+    def pocet_zaznamu():
+        return len(json.load(open(os.path.join(tmp, "data", "zaznamy.json"), encoding="utf-8")))
+
+    # náhled pod klíčem existujícího zápisu nepřepíše jeho výřez (review #24)
+    zapis(os.path.join(tmp, "vyrezy", vstup["klic"] + ".jpg"), "puvodni vyrez")
+    rc, out = spust("nahled")
+    over("nahled existujícího klíče bez --prepsat: odmítne, výřez zůstane",
+         rc != 0 and open(os.path.join(tmp, "vyrezy", vstup["klic"] + ".jpg"), encoding="utf-8").read() == "puvodni vyrez", out)
+
+    # přepis s číslem místo textu a špatné datum deníku: skončí dřív, než cokoli zapíše (review #31)
+    rc, out = spust("zapis", klic="holice_krest_3", prepis={"orig": 5, "cs": "pět"})
+    over("číselný orig: odmítne předem", rc != 0 and pocet_zaznamu() == 1
+         and not os.path.exists(os.path.join(tmp, "vyrezy", "holice_krest_3.jpg")), out)
+    rc, out = spust("zapis", klic="holice_krest_4", denik=dict(vstup["denik"], datum="včera"))
+    over("špatné datum deníku: odmítne předem", rc != 0 and pocet_zaznamu() == 1
+         and not os.path.exists(os.path.join(tmp, "vyrezy", "holice_krest_4.jpg")), out)
+
+    # druh I (rejstřík) a J (jiný pramen) – jako v reference/data.md (review #33)
+    rc, out = spust("zapis", klic="holice_index_jan_1890", zaznam=dict(vstup["zaznam"], druh="I"), denik=None)
+    over("druh I projde", rc == 0 and pocet_zaznamu() == 2, out)
+
+    # ARON: jiný svazek se stejnými prvními 8 znaky apu nesmí převzít cizí svazek (review #32)
+    zapis(os.path.join(tmp, "tools", "aron_img.py"), 'import os, sys\n'
+          'if sys.argv[2] == "link":\n    print("https://aron.vychodoceskearchivy.cz/apu/" + sys.argv[1] + "/dao/d/file/f")\n'
+          'elif sys.argv[2] != "svazek":\n    open(sys.argv[4], "wb").write(b"jpg")\nprint("hotovo")\n')
+    zapis(os.path.join(tmp, "data", "svazky.json"), json.dumps({"holice_n_05": {"svazek": "Holice N 05"}, "b156902e": {
+        "svazek": "Jiná kniha", "url": "https://aron.vychodoceskearchivy.cz/apu/b156902e-0000-4000-8000-000000000000"}}))
+    aron = {k: v for k, v in vstup.items() if k not in ("obraz", "svazek", "odkaz")}
+    zapis(os.path.join(tmp, "pracovni", "a.json"), json.dumps(dict(aron, klic="chocen_umrti_x_1791", denik=None,
+                                                                   apu="b156902e-891e-4932-8f96-4696953e68f5", snimek=10)))
+    r = subprocess.run(nalez + ["zapis", "pracovni/a.json"], cwd=tmp, capture_output=True, text=True, encoding="utf-8")
+    over("ARON se shodnou předponou apu jiného svazku: odmítne", r.returncode != 0 and pocet_zaznamu() == 2,
+         r.stdout + r.stderr)
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
