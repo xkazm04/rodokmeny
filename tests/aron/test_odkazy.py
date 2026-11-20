@@ -42,7 +42,9 @@ try:
           json.dumps(dict(id=APU, name="Fond: N Holice", digitalObjects=[dict(id=DAO, files=files)])))
     zaz = [dict(klic="a", odkaz=odkaz(PUB[2])), dict(klic="b", odkaz=odkaz(TILE[3])), dict(klic="c", odkaz=odkaz(PUB[2]))]
     zapis(os.path.join(tmp, "data", "zaznamy.json"), json.dumps(zaz, ensure_ascii=False, indent=1))
-    zapis(os.path.join(tmp, "data", "STAV.md"), f"Křest Jana: {odkaz(PUB[3])}\r\n")
+    # id souboru mimo odkaz prohlížeče (stažený soubor, poznámka) zůstane – review #30
+    JINDE = f"Originál ke stažení: https://example.org/download/{PUB[3]} (id {PUB[2]})\r\n"
+    zapis(os.path.join(tmp, "data", "STAV.md"), f"Křest Jana: {odkaz(PUB[3])}\r\n" + JINDE)
     aron = os.path.join(tmp, "tools", "aron_img.py")
 
     def spust(*a):
@@ -63,7 +65,8 @@ try:
           rc == 0 and [z["odkaz"] for z in zaz2] == [odkaz(TILE[2]), odkaz(TILE[3]), odkaz(TILE[2])], (out, zaz2))
     with open(os.path.join(tmp, "data", "STAV.md"), encoding="utf-8", newline="") as f:
         stav = f.read()
-    check("opraví i .md a zachová konce řádků", stav == f"Křest Jana: {odkaz(TILE[3])}\r\n", repr(stav))
+    check("opraví i .md, zachová konce řádků a id mimo odkaz prohlížeče",
+          stav == f"Křest Jana: {odkaz(TILE[3])}\r\n" + JINDE, repr(stav))
 
     rc, out = spust("odkazy")
     check("podruhé už není co opravit", rc == 0 and "na první snímek 0" in out and "správně 2" in out, out)

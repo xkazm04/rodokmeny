@@ -210,16 +210,22 @@ def oprav_odkazy(opravit):
         if f and f["type"] == "TILE":
             dobre += 1
         elif tile:
-            nahrady[file_id] = tile["id"]
+            nahrady[(apu, dao_id, file_id)] = tile["id"]
         else:
             nezname.append(f"…/apu/{apu}/dao/{dao_id}/file/{file_id}")
     zmenene = {}
     for p, t in texty.items():
-        nove = t
-        for stare, tile_id in nahrady.items():
-            nove = nove.replace(stare, tile_id)
+        kolik = [0]
+
+        def oprav(m):   # jen id souboru v ověřeném odkazu prohlížeče, ne stejné id jinde v textu
+            tile_id = nahrady.get(m.groups())
+            if not tile_id:
+                return m.group(0)
+            kolik[0] += 1
+            return m.group(0)[:m.start(3) - m.start(0)] + tile_id
+        nove = ODKAZ.sub(oprav, t)
         if nove != t:
-            zmenene[p] = (nove, sum(t.count(stare) for stare in nahrady))
+            zmenene[p] = (nove, kolik[0])
     print(f"odkazy na snímky ARON: {dobre + len(nahrady) + len(nezname)} různých, správně {dobre}, "
           f"na první snímek {len(nahrady)}" + (f", nenalezeno ve svazku {len(nezname)}" if nezname else ""))
     for p, (_, kolik) in zmenene.items():
