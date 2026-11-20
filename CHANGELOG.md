@@ -47,6 +47,7 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   změnil (evidence `web/.ramecky_zdroju.json`), dřív po každém `ramecek.py` všechny (upstream #216).
 - `aron_img.py` stahuje snímek bez udané úrovně v plném rozlišení (dřív poloviční – kurent z něj byl rozmazaný
   a četl se špatně). Archiv to nezatíží víc, sken se stahuje celý jedním požadavkem tak jako tak (upstream #119, #120).
+- `overit.py` dělá poloviny zápisu do 1568 px (dřív 1900 px, které nástroj Read stejně potichu zmenšil) (upstream #43).
 
 **Návody**
 - Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré
@@ -59,6 +60,12 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   poslední 2–3 dny (nejvýš ~6 bodů), starší body se přesouvají do nového `data/historie_kol.md`, které se při startu
   nečte; velké soubory se prohledávají (`grep`), nečtou celé. Vytěžené výstupy pomocníků patří do `kontext/` (v gitu)
   (upstream #202, #204).
+- Vzor zadání pomocníka (`reference/zadani_pomocnika.md`): uzavřený seznam nejvýš 15 snímků, každý čtený jednou,
+  povinný kontrolní známý zápis, po každém snímku řádek do souboru; nezobrazený snímek („media removed“) jen označit
+  jako nepřečtený, nikdy „zkus znovu“ a nikdy nic o snímku, který pomocník neviděl. Výsledek přerušeného běhu je
+  neověřený a pomocník zastavený limitem se znovu nepouští (upstream #90, #34, #30, #63, #67, #137).
+- Široké výřezy se čtou po dlaždicích do 1568 px – větší obrázek Read potichu zmenší (v testu kurentu o 7–15 bodů
+  horší čtení); vyšší effort čtení nezlepšuje, Haiku na kurent nestačí (upstream #43).
 
 ## 0.10.2 – 16. 11. 2026
 

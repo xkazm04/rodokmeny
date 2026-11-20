@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Ověření čtení (např. po pomocníkovi): výřez zápisu rozdělený na dvě poloviny 1900 px.
+"""Ověření čtení (např. po pomocníkovi): výřez zápisu rozdělený na dvě poloviny do 1568 px
+(větší obrázek nástroj Read potichu zmenší).
 Použití: overit.py <snímek.jpg> x0,y0,x1,y1 <prefix> [v] [--kontrast]  (v = dělit vodorovně; --kontrast = vybledlý zápis)
 """
 import glob,os,shutil,sys,subprocess
@@ -22,4 +23,4 @@ if mode=='v': ym=(y0+y1)/2; parts=[(x0,y0,x1,ym+0.02),(x0,ym-0.02,x1,y1)]
 else: xm=(x0+x1)/2; parts=[(x0,y0,xm+0.02,y1),(xm-0.02,y0,x1,y1)]
 os.makedirs(os.path.dirname(os.path.abspath(pre)),exist_ok=True)  # výstupní složka (pracovni/overeni/…) nemusí existovat
 for i,(a,b,c,d) in enumerate(parts):
-    o=f'{pre}_{i}.jpg'; subprocess.run([MAGICK,f,'-crop','%dx%d+%d+%d'%((c-a)*W,(d-b)*H,a*W,b*H),'+repage',*(['-colorspace','Gray','-contrast-stretch','2%x35%'] if K else []),'-resize','1900x',o]); print(o)
+    o=f'{pre}_{i}.jpg'; subprocess.run([MAGICK,f,'-crop','%dx%d+%d+%d'%((c-a)*W,(d-b)*H,a*W,b*H),'+repage',*(['-colorspace','Gray','-contrast-stretch','2%x35%'] if K else []),'-resize','1568x1568',o]); print(o)

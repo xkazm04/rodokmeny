@@ -16,8 +16,8 @@ uživatel dodává znalost rodiny, rozhoduje sporná místa a schvaluje, co jde 
 **Složka tohoto skillu** (dále `SKILL_DIR`) je ta, kterou ti systém ukázal při načtení skillu („Base directory“).
 Najdeš v ní `tools/` (nástroje), `template/` (šablona projektu a webu) a `reference/` (podrobné návody – čti je, až je potřebuješ):
 `instalace.md` (příprava počítače, Windows), `matriky.md` (čtení matrik, pasti), `portaly.md` (archivy), `metodika.md`
-(spojování záznamů, ztotožnění, mrtvé body, prameny mimo ČR), `data.md` (formát dat, import stromu), `pribehy.md`,
-`web.md`, `soukromi.md`.
+(spojování záznamů, ztotožnění, mrtvé body, prameny mimo ČR), `data.md` (formát dat, import stromu), `zadani_pomocnika.md`
+(vzor zadání pomocníka), `pribehy.md`, `web.md`, `soukromi.md`.
 
 ## Jak mluvit s uživatelem
 - **Česky, stručně, lidsky.** Žádný žargon bez vysvětlení (Kekulé, N/O/Z, apu…). Místo „commitnu“ řekni „uložím“.
@@ -159,14 +159,17 @@ pro každý web pro všechny procesy na počítači.
 ### Pomocníci (subagenti) – šetrně
 Na velké kolo (např. „projdi 5 svazků a najdi všechny Nováky“) můžeš pustit 2–4 pomocníky paralelně, každého na
 jinou větev nebo archiv (jedno kolo ≈ 15–25 nových předků). Stojí hodně kreditů – před velkým kolem řekni uživateli,
-co plánuješ a proč, a nech si to schválit. **Spouštěj je na levnějším modelu** (Agent s `model: "sonnet"`):
-hledání a první čtení zvládnou, ověření na snímku a zápis do dat děláš ty. Řekni to uživateli, ať ví, proč kredity
-tolik neubývají.
-- Přesné zadání: svazek, snímky, koho hledat, formát výsledku (klíč, snímek, souřadnice zápisu, přepis), technické
-  pasti z `reference/matriky.md` a pravidla brzdy (síť jen přes `tools/slusne.py`, při hlášce „zastavený“ skončit
-  a ohlásit). Ať u každého prošlého snímku napíše, co na něm skutečně přečetl (rok, první jméno), a zmíní i zjevně
-  související výskyty. Rejstřík ať čte po sloupcích (`mapa_knihy.py … --sloupce`, `reference/matriky.md` → Čtení
-  písma) – jeho „v rejstříku není“ bez toho neber jako výsledek.
+co plánuješ a proč, a nech si to schválit. **Spouštěj je na levnějším modelu** (Agent s `model: "sonnet"`, nikdy
+Haiku – na kurent nestačí): hledání a první čtení zvládnou, ověření na snímku a zápis do dat děláš ty. Řekni to
+uživateli, ať ví, proč kredity tolik neubývají.
+- **Zadání piš podle vzoru v `reference/zadani_pomocnika.md`**: uzavřený seznam **nejvýš 15 snímků**, každý čtený
+  jednou z plného rozlišení (široké výřezy na dlaždice do 1568 px), povinný **kontrolní známý zápis**, po každém snímku
+  řádek do souboru (co na něm skutečně přečetl), nezobrazený snímek („media removed“) jen označit jako nepřečtený –
+  nikdy „zkus znovu“ a nikdy nic o snímku, který neviděl. K tomu technické pasti z `reference/matriky.md` a brzda
+  (síť jen přes `tools/slusne.py`, při hlášce „zastavený“ skončit a ohlásit). Rejstřík ať čte po sloupcích
+  (`mapa_knihy.py … --sloupce`, `reference/matriky.md` → Čtení písma) – jeho „v rejstříku není“ bez toho neber jako výsledek.
+- Výsledek **přerušeného** pomocníka (limit, chyba, hlídač čtení) je neověřený – platí jen řádky v jeho souboru.
+  Pomocníka zastaveného limitem znovu nepouštěj; zbytek rozděl na menší zadání až po obnovení limitu.
 - Pomocník píše jen do `pracovni/pom_<větev>/`, **do `data/` nikdy**. Zapisuješ ty; výstupy nemaž, dokud nejsou vytěžené.
   `pracovni/` není v gitu: výstupy pomocníků a souhrny, na které se z dat odkazuješ (mapa knihy, výpis z pozemkové
   knihy), po vytěžení přesuň do `kontext/` (v gitu, na web nejde) s poznámkou „neověřené čtení pomocníka“.

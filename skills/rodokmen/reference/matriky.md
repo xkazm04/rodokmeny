@@ -114,6 +114,9 @@ vsi a sňatek byl v oddílu městyse; ves měla oddíl až na snímcích 380–4
   `overit.py … --kontrast`; jinak `magick x.jpg -colorspace Gray -contrast-stretch 2%x35% x_k.jpg`). Stránku
   **neprohlašuj za prázdnou a zápis za nenalezený**, dokud ji nezkusíš s kontrastem. Do webu pak dej kontrastní výřez
   a poznamenej to v přepisu. Zelený tón snímku: `magick x.jpg -channel G -separate -normalize x_k.jpg`.
+- **Obrázek nad 1568 px na delší straně nástroj Read potichu zmenší** – široký výřez (dvoustrana, řádek přes celou
+  šířku) čti po dlaždicích do 1568 px (`overit.py`, `--sloupce`, `reference/zadani_pomocnika.md`); v testu na kurentu
+  to zvýšilo přesnost o 7–15 bodů. Vyšší úsilí (effort) čtení nezlepšuje, Haiku na kurent nestačí.
 - Do ~1780 latina nebo čeština, pak hodně němčina (kurent), od ~1860 často čeština, ve 20. století čeština.
 - Česká jména v němčině/latině: Johann/Joannes = Jan, Wenzel/Wenceslaus = Václav, Joseph = Josef, Franz/Franciscus = František,
   Maria = Marie, Anna, Katharina = Kateřina, Barbara = Barbora, Magdalena = Majdalena/Magdaléna, Theresia = Terezie,
@@ -230,7 +233,7 @@ vsi a sňatek byl v oddílu městyse; ves měla oddíl až na snímcích 380–4
   `-annotate` potřebuje písmo: `-font /System/Library/Fonts/Supplemental/Arial.ttf` (bez něj spadne na „unable to read
   font“; totéž `montage` s popisky) – pořadí výřezů raději vypiš zvlášť.
 - Ověření čtení: `python3 -I tools/overit.py <snímek> x0,y0,x1,y1 pracovni/over [v]` (zlomky 0–1, ne pixely) – zápis rozdělený na dvě poloviny
-  zmenšené na 1900 px (dvoustrana je jinak nečitelná).
+  do 1568 px (dvoustrana je jinak nečitelná).
 - Výřez pro web (`vyrez.py`) dělej jen na **čtený zápis** (případně s hlavičkou sloupců), ne na celou dvoustranu –
   na webu by byl nečitelně malý. Celá stránka je v `zdroje/` a na portálu přes odkaz.
 
