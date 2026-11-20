@@ -20,12 +20,14 @@ def zapis(cesta, text):
 
 
 def kontrola(P, SAME=None, zaznamy=(), prepisy=None, ukazka=(), mista=None, SIDE=None, stav=None, svazky=None,
-             bez_odkazu=None):
+             bez_odkazu=None, denik=None):
     """Postaví projekt a vrátí výstup kontrola.py; zápisy s klíčem v `ukazka` jsou vymyšlené (jako v ukázce).
     Když kontrola neskončí kódem 0 (chyba v datech, pád), výstup začíná „NÁVRATOVÝ KÓD“ a případ neprojde."""
     tmp = tempfile.mkdtemp(prefix="kontrola_cisla_")
     try:
         zapis(os.path.join(tmp, "data", "osoby.py"), f"P = {P!r}\nSAME = {SAME or {}!r}\nSIDE = {SIDE or []!r}\n")
+        if denik is not None:
+            zapis(os.path.join(tmp, "data", "research_log.md"), denik)
         if stav is not None:
             zapis(os.path.join(tmp, "data", "STAV.md"), stav)
         if mista:
@@ -275,6 +277,16 @@ ma("SIDE „Syn Jana“ u k=2 (Jan) – upozornění", out, "'Karel Novák': tex
 ma("SIDE upozornění radí k=1", out, "patří ke k=1 (výchozí osoba)", True)
 ma("SIDE „Sestra Josefa“ – bez upozornění", out, "'Anna Nováková'", False)
 ma("SIDE „Dcera Josefa“ u k=2 (Jan) – bez upozornění", out, "'Marie Nováková'", False)
+out = kontrola(P, SIDE=[dict(k=2, id="karel", v="dite", n="Karel Novák", t="Syn Jana, zemřel v dětství."),
+                        dict(k=2, id="marie", n="Marie Nováková", t="Sestra Jana."),
+                        dict(k=2, id="ludmila", v="dite", koho="marie", n="Ludmila", t="Dcera Marie.")])
+ma("SIDE v=\"dite\" „Syn Jana“ u k=2 (Jan) je správně – bez upozornění", out, "zní jako dítě předka", False)
+
+# Rozepsaný řádek deníku „| 12 |“ nesmí shodit kontrolu
+P = {1: osoba("Petr Novák")}
+out = kontrola(P, denik="# Deník\n\n| # | datum | zdroj | hledáno | výsledek | citace |\n|---|---|---|---|---|---|\n"
+                        "| 1 | 1. 1. 2026 | a | b | c | d |\n| 12 |\n")
+ma("deník s rozepsaným řádkem „| 12 |“ – kontrola nespadne", out, "Traceback", False)
 
 # STAV.md nad 35 kB se na začátku konverzace uřízne (upstream #204)
 P = {1: osoba("Petr Novák")}
