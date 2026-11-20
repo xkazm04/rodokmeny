@@ -189,6 +189,10 @@ Ostatní archivy jsou většinou jen na písemnou žádost – zapiš do `archiv
   na stáří zápisu (zákon 154/1994 Z. z., § 18). Doslovný výpis jen pro úřady; soukromá osoba může v přítomnosti
   matrikáře nahlédnout do knihy a udělat si výpis.
 - Do 1918 Uhry – obce hledej i pod maďarským názvem (Helységnévtár).
+- **Urbář 1767 (Tereziánská urbární regulace)** na Hungaricaně (archives.hungaricana.hu → Urbaria et Conscriptiones):
+  pro každou uherskou obec vrchnost, počty a jména poddaných s velikostí usedlosti. Na konci svazku bývá **Conscriptio**
+  (výslech na 9 otázek s podpisy rychtáře a přísežných) – data na ní můžou být pozdější (1772, 1774). Obce hledej
+  v tehdejším pravopisu (maďarské „cz“, ne „c“). Postup v `portaly.md` → Hungaricana.
 
 **Rakousko (i Vídeň, Burgenland)**
 - **Katolické matriky do 1938** v diecézních archivech, snímky na Matricule (Vídeň, Linec, St. Pölten, Štýrský

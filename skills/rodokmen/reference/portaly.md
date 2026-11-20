@@ -610,6 +610,24 @@ matrikami (online do ~1895) a vzpomínkami rodiny. Zachované je celé Slovensko
 - Do `data/zaznamy.json` dej jako odkaz `https://slovakiana.sk/scitacie-harky/<cair-id>` a jako zdroj „Sčítanie ľudu 1930,
   Slovenský národný archív, škatuľa X, hárok Y“.
 
+## Hungaricana (archives.hungaricana.hu) – urbář 1767, Conscriptio (Uhry, i Slovensko)
+- Hledání a čtení v prohlížeči; obce v tehdejším pravopisu. Stránka svazku: `…/en/urberi/view/<župa-obec>/?document=1&pg=N`
+  (zároveň trvalý odkaz). Prohlížeč kreslí podepsané dlaždice do `<canvas>` – adresy dlaždic neskládej.
+- **Stránka v plném rozlišení (Playwright):** zvětši okno (`browser_resize` asi 5600 × 4400), otevři stránku `pg=N`
+  (vejde se celá), počkej na dlaždice (prohlížeč je dokresluje – 2 snímky obrazovky s pauzou), pak `browser_evaluate`
+  s `filename: "pracovni/hun.json"`:
+  `() => JSON.stringify({adresa: location.href, w: document.querySelector('canvas').width, h: document.querySelector('canvas').height, data: document.querySelector('canvas').toDataURL('image/jpeg', 0.92)})`
+  a `python3 -I tools/cache.py uloz pracovni/hun.json pracovni/hun_<obec>_<N>.jpg --nahled pracovni/nahled.jpg`.
+  Okno pak vrať na běžnou velikost. Prohlížeč brzda nevidí: jen stránky, které čteš, jedna po druhé, aspoň 10 s mezi
+  nimi; chybová stránka nebo 403/429/503 = skonči (`slusne.py zastav hungaricana.hu …`). Snímky jen pro vlastní bádání.
+
+## Vojáci 1. světové války – legionáři a padlí
+- **Legionáři:** databáze ČsOL `https://www.csol.cz/legionar` (hledání podle příjmení i místa narození, karty často
+  s portrétem) a legie100.com (příběhy). **Padlí:** kartotéka VÚA jen v Digitální badatelně MO po registraci (přihlásí
+  se uživatel), seznamy ztrát v ANNO (`anno.py --ztraty`, Noviny níže). Pomníky padlých v obci: evidencevpm.cz.
+- Jen v prohlížeči, tempem člověka. Nástroje `legionari.py` / `padli.py` nejsou: stará databáze VÚA už neexistuje
+  (vuapraha.cz ji nemá, 20. 11. 2026) a kartotéka je za registrací. Shoda jména a obce je jen stopa – ověř křtem.
+
 ## Hroby a hřbitovy
 - Kde jsou předci pohřbeni, víš z rozhovoru s rodinou (Fáze 1). Fotky náhrobků (jména, data, rodná příjmení) jsou
   cenný pramen hlavně pro 20. století, kde matriky ještě nejsou přístupné.

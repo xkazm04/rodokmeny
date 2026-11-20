@@ -124,5 +124,12 @@ for zla in ("http://data.matricula-online.eu/de/a/b/c/d/", "https://evil.example
     except SystemExit:
         ok(f"matricula: odmítne {zla}", True)
 
+# --- cache.py: stránka Hungaricany z prohlížeče má vlastní klíč (sbírka, obec, dokument, stránka) ---------------------
+import cache  # noqa: E402
+ok("hungaricana: klíč v mezipaměti podle adresy stránky",
+   cache.z_prohlizece("https://archives.hungaricana.hu/en/urberi/view/UrberiPozsony_0123/?document=2&pg=5")
+   == ("hungaricana/urberi/UrberiPozsony_0123_d2_p0005.jpg", "archives.hungaricana.hu"))
+ok("hungaricana: bez čísla stránky nic", cache.z_prohlizece("https://archives.hungaricana.hu/en/urberi/view/x/?pg=a") is None)
+
 print(f"\n{sum(VYSLEDKY)} z {len(VYSLEDKY)} v pořádku")
 sys.exit(0 if all(VYSLEDKY) else 1)

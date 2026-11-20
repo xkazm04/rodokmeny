@@ -16,8 +16,8 @@ nejdéle nepoužité soubory se mažou samy. Celou složku lze kdykoli smazat, n
 Použití (z kořene projektu):
   cache.py stav                       -> kolik místa zabírá a kolik stažení z archivu ušetřila (podrobně slusne.py stav)
   cache.py uloz <soubor.json> [vystup.jpg] [--nahled nahled.jpg]
-                                      -> uloží snímek z prohlížeče eBadatelny, FamilySearch nebo ZA Opava (výsledek
-                                         úryvku v reference/portaly.md); soubor .json pak smaže
+                                      -> uloží snímek z prohlížeče eBadatelny, FamilySearch, ZA Opava nebo Hungaricany
+                                         (výsledek úryvku v reference/portaly.md); soubor .json pak smaže
   cache.py najdi <adresa snímku> [--nahled nahled.jpg]
                                       -> cesta k uloženému snímku eBadatelny (/d/… nebo /a/…), FamilySearch
                                          (adresa $dist nebo /ark:/61903/3:1:…) nebo ZA Opava (adresa
@@ -240,6 +240,10 @@ FS_WEB = "www.familysearch.org"
 ZAO = re.compile(r"archives\.cz/da/showZoomifySeparate\?.*?\bmyImageUuid=([0-9A-Fa-f-]{32,36})")
 ZAO_WEB = "images.archives.cz"
 
+# Hungaricana (urbář 1767, Conscriptio): stránku určuje sbírka, dokument a pg v adrese prohlížeče (…/view/<obec>/?…pg=N)
+HUN = re.compile(r"hungaricana\.hu/(?:[a-z]{2}/)?([a-z0-9_-]+)/view/([A-Za-z0-9_.-]+)/?\?([^#\s]*)")
+HUN_WEB = "archives.hungaricana.hu"
+
 
 def z_prohlizece(adresa):
     """(klíč v mezipaměti, web) pro adresu snímku z prohlížeče (eBadatelna, FamilySearch), jinak None."""
@@ -252,6 +256,13 @@ def z_prohlizece(adresa):
     m = ZAO.search(adresa or "")
     if m:
         return f"zaopava/{m.group(1).replace('-', '').lower()}.jpg", ZAO_WEB
+    m = HUN.search(adresa or "")
+    if m:
+        q = dict(x.split("=", 1) for x in m.group(3).split("&") if "=" in x)
+        if q.get("pg", "").isdigit():
+            dok = q.get("document", "1")
+            dok = dok if dok.isdigit() else "1"
+            return f"hungaricana/{m.group(1)}/{m.group(2)}_d{dok}_p{int(q['pg']):04d}.jpg", HUN_WEB
     return None
 
 
@@ -319,8 +330,8 @@ def main(a):
             sys.exit(f"chybějící dlaždice: {d['chybi']} – prohlížeč je nenačetl; spusť úryvek pro dlaždice znovu "
                      "(doplní jen chybějící) a pak skládání")
         if not zdroj or not str(d.get("data", "")).startswith("data:image/"):
-            sys.exit("soubor není výsledek úryvku pro eBadatelnu, FamilySearch ani ZA Opava (chybí adresa snímku "
-                     "nebo obrázek)")
+            sys.exit("soubor není výsledek úryvku pro eBadatelnu, FamilySearch, ZA Opava ani Hungaricanu (chybí adresa "
+                     "snímku nebo obrázek)")
         klic, web = zdroj
         znovu = os.path.exists(cesta(klic))   # snímek už byl uložený – prohlížeč ho načetl z archivu zbytečně
         data = base64.b64decode(d["data"].split(",", 1)[1])
