@@ -117,5 +117,108 @@ try:
 finally:
     shutil.rmtree(tmp, ignore_errors=True)
 
+
+def projekt(**soubory):
+    """Nový dočasný projekt: data/zaznamy.json, prepisy.json, osoby.py a výřezy obou zápisů + soubory navíc."""
+    d = tempfile.mkdtemp(prefix="zapis_smazat_")
+    os.makedirs(os.path.join(d, "tools"))
+    shutil.copy(os.path.join(TOOLS, "zapis.py"), os.path.join(d, "tools", "zapis.py"))
+    vychozi = {"data/zaznamy.json": ZAZNAMY, "data/prepisy.json": PREPISY, "data/osoby.py": OSOBY}
+    for f, t in {**vychozi, **soubory}.items():
+        if t is not None:
+            zapis(os.path.join(d, f), t)
+    for slozka in ("vyrezy", "zdroje"):
+        for k in ("holice_krest_cizi_1891", "holice_krest_jan_1890"):
+            zapis(os.path.join(d, slozka, k + ".jpg"), "jpg " + k)
+    return d
+
+
+def spust(d, *args):
+    r = subprocess.run(PY + [os.path.join(d, "tools", "zapis.py"), *args], cwd=d, capture_output=True, text=True,
+                       encoding="utf-8")
+    return r.returncode, r.stdout + r.stderr
+
+
+projekty = []
+try:
+    # klíč s cestou nesmí přesunout soubor mimo vyrezy/ (review #19)
+    d = projekt(**{"foto.jpg": "rodinna fotka"})
+    projekty.append(d)
+    rc, out = spust(d, "--smazat", "../foto")
+    over("smazat ../foto: odmítne, fotka zůstane", rc != 0 and os.path.exists(os.path.join(d, "foto.jpg")), out)
+    rc, out = spust(d, "prejmenuj", "../foto", "foto_x")
+    over("prejmenuj ../foto: odmítne", rc != 0 and os.path.exists(os.path.join(d, "foto.jpg")), out)
+
+    # přejmenování na klíč, který už má přepis (review #20)
+    d = projekt(**{"data/prepisy.json": PREPISY.replace('"holice_oddani_1915"', '"holice_novy_1890"')})
+    projekty.append(d)
+    pred = cti(d, "data/prepisy.json")
+    rc, out = spust(d, "prejmenuj", "holice_krest_jan_1890", "holice_novy_1890")
+    over("prejmenuj na klíč s přepisem: odmítne, prepisy beze změny", rc != 0 and cti(d, "data/prepisy.json") == pred, out)
+
+    # obrázek sdílený s rodinným dokumentem (review #21)
+    dok = '[\n {"img": "holice_krest_cizi_1891", "popis": "Dokument"}\n]\n'
+    d = projekt(**{"data/dokumenty.json": dok})
+    projekty.append(d)
+    rc, out = spust(d, "--smazat", "holice_krest_cizi_1891")
+    over("smazat se sdíleným obrázkem: projde, obrázek dokumentu zůstane",
+         rc == 0 and os.path.exists(os.path.join(d, "vyrezy", "holice_krest_cizi_1891.jpg"))
+         and "holice_krest_cizi_1891" not in cti(d, "data/zaznamy.json"), out)
+    d = projekt(**{"data/dokumenty.json": dok.replace("cizi_1891", "jan_1890")})
+    projekty.append(d)
+    rc, out = spust(d, "prejmenuj", "holice_krest_jan_1890", "holice_krest_jan_novak_1890")
+    over("prejmenuj se sdíleným obrázkem: dokument má obrázek dál, zápis kopii",
+         rc == 0 and os.path.exists(os.path.join(d, "vyrezy", "holice_krest_jan_1890.jpg"))
+         and os.path.exists(os.path.join(d, "vyrezy", "holice_krest_jan_novak_1890.jpg")), out)
+
+    # vadný prepisy.json: smazání nic nezmění (review #22)
+    d = projekt(**{"data/prepisy.json": '{\n "holice_krest_cizi_1891": {"orig": "x", "cs": "y"},\n'})
+    projekty.append(d)
+    rc, out = spust(d, "--smazat", "holice_krest_cizi_1891")
+    over("smazat s vadným prepisy.json: odmítne, zaznamy i výřezy beze změny",
+         rc != 0 and cti(d, "data/zaznamy.json") == ZAZNAMY
+         and os.path.exists(os.path.join(d, "vyrezy", "holice_krest_cizi_1891.jpg")), out)
+
+    # selhání uprostřed přejmenování vrátí vše zpět, stejný příkaz pak projde (review #23)
+    d = projekt()
+    projekty.append(d)
+    src = open(os.path.join(d, "tools", "zapis.py"), encoding="utf-8").read()
+    # simulované selhání: druhé nahrazení souboru (prepisy.json po zaznamy.json) skončí chybou
+    zapis(os.path.join(d, "tools", "zapis_selze.py"), src.replace("def main():", "_replace, _n = os.replace, [0]\n\n\n"
+          "def _selze(*a):\n    _n[0] += 1\n    if _n[0] == 2:\n        raise OSError('disk plný')\n    return _replace(*a)\n\n\n"
+          "os.replace = _selze\n\n\ndef main():"))
+    r = subprocess.run(PY + [os.path.join(d, "tools", "zapis_selze.py"), "prejmenuj", "holice_krest_jan_1890",
+                             "holice_krest_jan_novak_1890"], cwd=d, capture_output=True, text=True, encoding="utf-8")
+    over("prejmenuj se selháním přesunu: data vrácená", r.returncode != 0 and cti(d, "data/zaznamy.json") == ZAZNAMY
+         and cti(d, "data/prepisy.json") == PREPISY and cti(d, "data/osoby.py") == OSOBY, r.stdout + r.stderr)
+    rc, out = spust(d, "prejmenuj", "holice_krest_jan_1890", "holice_krest_jan_novak_1890")
+    over("prejmenuj po selhání: stejný příkaz projde", rc == 0, out)
+
+    # dvojí smazání téhož klíče nepřepíše první zálohu (review #28)
+    d = projekt()
+    projekty.append(d)
+    rc, out = spust(d, "--smazat", "holice_krest_cizi_1891")
+    zapis(os.path.join(d, "vyrezy", "holice_krest_cizi_1891.jpg"), "druhy sken")
+    zapis(os.path.join(d, "data", "zaznamy.json"), ZAZNAMY)
+    rc, out = spust(d, "--smazat", "holice_krest_cizi_1891")
+    zalohy = sorted(open(os.path.join(r_, f), encoding="utf-8").read()
+                    for r_, _, fs in os.walk(os.path.join(d, "pracovni")) for f in fs if r_.endswith("vyrezy"))
+    over("smazat podruhé: obě zálohy výřezu zůstanou", rc == 0 and zalohy == ["druhy sken", "jpg holice_krest_cizi_1891"],
+         (out, zalohy))
+
+    # BOM a CRLF zůstanou (review #46)
+    log = "﻿| 1 | x | zapsáno `holice_krest_jan_1890` |\r\n| 2 | y | jiné |\r\n"
+    d = projekt()
+    projekty.append(d)
+    with open(os.path.join(d, "data", "research_log.md"), "w", encoding="utf-8", newline="") as f:
+        f.write(log)
+    rc, out = spust(d, "prejmenuj", "holice_krest_jan_1890", "holice_krest_jan_novak_1890")
+    po = open(os.path.join(d, "data", "research_log.md"), "rb").read()
+    over("prejmenuj: deník si nechá BOM a CRLF", rc == 0 and po == log.replace("jan_1890", "jan_novak_1890").encode("utf-8"),
+         (out, po))
+finally:
+    for d in projekty:
+        shutil.rmtree(d, ignore_errors=True)
+
 print(f"\n{sum(VYSLEDKY)}/{len(VYSLEDKY)} v pořádku")
 sys.exit(0 if all(VYSLEDKY) else 1)

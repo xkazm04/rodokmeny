@@ -18,7 +18,9 @@ nástroj nic nezmění a vypíše je (pak --sloucit, nebo --prepsat). Python skr
 
   zapis.py --smazat <klíč zápisu>
     Smaže zápis, který se ukázal jako omyl (cizí rodina): položku v zaznamy, prepisy a zvyrazneni (zbytek souborů
-    beze změny) a výřezy vyrezy/<klíč>.jpg a zdroje/<klíč>.jpg přesune do pracovni/smazano_<datum>/ (jdou vrátit).
+    beze změny) a výřezy vyrezy/<klíč>.jpg a zdroje/<klíč>.jpg přesune do pracovni/smazano_<datum>[_N]/ (jdou vrátit;
+    obrázek, který používá i rodinný dokument z dokumenty.json, zůstane). Nejdřív zkontroluje všechny soubory;
+    když něco selže uprostřed, vrátí vše do původního stavu.
     Když zápis ještě cituje osoba, boční příbuzný nebo text na webu (osoby.py, pribeh.md, pribehy/, zajimavosti.md,
     web.json), nic nesmaže a vypíše kde; zmínky v deníku a dalších poznámkách jen ohlásí.
 
@@ -26,7 +28,7 @@ nástroj nic nezmění a vypíše je (pak --sloucit, nebo --prepsat). Python skr
     Přejmenuje zápis všude: zaznamy, prepisy, zvyrazneni, odkazy `r` a `zaznamy` i zmínky v textech osoby.py,
     data/*.md a web.json (i v deníku) a výřezy vyrezy/ a zdroje/. Ostatní text souborů zůstane doslova.
 """
-import ast, json, os, re, shutil, sys, time
+import ast, codecs, json, os, re, shutil, sys, tempfile, time
 for _s in (sys.stdout, sys.stderr):   # UTF-8 výstup i na Windows bez -X utf8 (cp1250 neumí třeba „→“)
     if hasattr(_s, "reconfigure"):
         _s.reconfigure(encoding="utf-8", errors="replace")
@@ -173,10 +175,7 @@ def odkaz(osoba, klice):
         if po.get(jmeno) != ocekavane.get(jmeno):
             sys.exit(f"Úprava by změnila i {jmeno} – nic jsem nezapsal, uprav ručně.")
 
-    tmp = path + ".tmp"
-    with open(tmp, "wb") as f:
-        f.write(novy)
-    os.replace(tmp, path)
+    zapis_bajty(path, novy)
     print(f"data/osoby.py: {popis} – přidán zápis {', '.join(nove)}")
 
 
@@ -224,28 +223,105 @@ def kdo_cituje(klic):
 BLOKUJE = ("osoby.py", "pribeh.md", "zajimavosti.md", "web.json")   # z nich vzniká obsah webu – citace musí pryč
 
 
-def zapis_text(path, text):
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        f.write(text)
-    os.replace(tmp, path)
+def cti_text(path):
+    """Text souboru a zda začínal BOM; konce řádků zůstanou, jak jsou (CRLF se při zápisu zachová)."""
+    b = open(path, "rb").read()
+    bom = b.startswith(codecs.BOM_UTF8)
+    return b[len(codecs.BOM_UTF8) if bom else 0:].decode("utf-8"), bom
+
+
+def zapis_bajty(path, data):
+    """Celý soubor naráz přes dočasný soubor s jedinečným názvem (dva běhy najednou si ho nepřepíšou)."""
+    fd, tmp = tempfile.mkstemp(dir=os.path.dirname(path), prefix=os.path.basename(path) + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(data)
+        if os.path.exists(path):
+            shutil.copymode(path, tmp)
+        os.replace(tmp, path)
+    except BaseException:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+        raise
+
+
+def zapis_text(path, text, bom=False):
+    zapis_bajty(path, (codecs.BOM_UTF8 if bom else b"") + text.encode("utf-8"))
+
+
+def bez_duplicit(dvojice):
+    """object_pairs_hook pro json.loads: stejný klíč dvakrát by json.loads tiše sloučil (jeden přepis by se ztratil)."""
+    klice = [k for k, _ in dvojice]
+    dvakrat = sorted({k for k in klice if klice.count(k) > 1})
+    if dvakrat:
+        raise ValueError(f"klíč {', '.join(dvakrat)} je tam dvakrát")
+    return dict(dvojice)
+
+
+def nacti_json(nazev, text):
+    try:
+        return json.loads(text, object_pairs_hook=bez_duplicit) if text.strip() else None
+    except ValueError as e:
+        sys.exit(f"data/{nazev} nejde přečíst ({e}) – nic jsem nezměnil, oprav ho nejdřív.")
+
+
+def jen_nazev(klic):
+    """Klíč zápisu je zároveň název souboru vyrezy/<klíč>.jpg – nesmí v něm být cesta (../foto by sahalo mimo)."""
+    if not klic or klic in (".", "..") or os.path.basename(klic) != klic or re.search(r"[\\/:]", klic):
+        sys.exit(f"„{klic}“ není klíč zápisu (jen název bez lomítek a „..“) – nic jsem nezměnil.")
+
+
+def obrazky_dokumentu():
+    """Klíče obrázků, které používá rodinný dokument (data/dokumenty.json „img“ → vyrezy/<img>.jpg)."""
+    path = os.path.join(ROOT, "data", "dokumenty.json")
+    if not os.path.exists(path):
+        return set()
+    data = nacti_json("dokumenty.json", cti_text(path)[0]) or []
+    return {d.get("img") for d in data if isinstance(d, dict)} if isinstance(data, list) else set()
+
+
+def proved(zmeny, presuny):
+    """Zapíše texty {cesta: (text, bom)} a přesune / zkopíruje obrázky [(odkud, kam, kopie)]. Když cokoli selže,
+    vrátí, co už stihl – data nezůstanou napůl změněná a stejný příkaz jde spustit znovu."""
+    puvodni = {path: open(path, "rb").read() for path in zmeny}
+    hotovo = []
+    try:
+        for path, (text, bom) in zmeny.items():
+            zapis_text(path, text, bom)
+        for odkud, kam, kopie in presuny:
+            os.makedirs(os.path.dirname(kam), exist_ok=True)
+            (shutil.copy2 if kopie else shutil.move)(odkud, kam)
+            hotovo.append((odkud, kam, kopie))
+    except Exception as e:
+        for odkud, kam, kopie in reversed(hotovo):
+            if kopie:
+                os.remove(kam)
+            else:
+                shutil.move(kam, odkud)
+        for path, b in puvodni.items():
+            zapis_bajty(path, b)
+        sys.exit(f"Změna selhala ({e}) – vrátil jsem soubory do původního stavu, nic se nezměnilo.")
 
 
 def smazat(klic):
+    jen_nazev(klic)
     zminky = kdo_cituje(klic)
     cituje = [f for f in zminky if f in BLOKUJE or f.startswith("pribehy/")]
     if cituje:
         sys.exit(f"Zápis „{klic}“ nesmazán: ještě ho cituje {', '.join('data/' + f for f in cituje)}. "
                  "Nejdřív ho odeber z „r“ osob a z textů, pak smaž znovu.")
-    smazano = []
+    # nejdřív se načtou a zkontrolují všechny soubory, zapisuje se až potom (vadný prepisy.json nic nerozbije)
+    zmeny, smazano = {}, []
     for nazev in ("zaznamy", "prepisy", "zvyrazneni"):
         path = os.path.join(ROOT, "data", nazev + ".json")
         if not os.path.exists(path):
             continue
-        text = open(path, encoding="utf-8-sig").read()
-        data = json.loads(text) if text.strip() else None
+        text, bom = cti_text(path)
+        data = nacti_json(nazev + ".json", text)
         if not data:
             continue
+        if not isinstance(data, list if nazev in SEZNAMY else dict):
+            sys.exit(f"data/{nazev}.json nemá čekaný tvar – nic jsem nezměnil, oprav ho nejdřív.")
         poz = polozky(text)
         if nazev in SEZNAMY:
             idx = next((n for n, x in enumerate(data) if isinstance(x, dict) and x.get(SEZNAMY[nazev]) == klic), None)
@@ -258,18 +334,28 @@ def smazat(klic):
             {k: v for k, v in data.items() if k != klic}
         if json.loads(novy) != ocekavano:   # pojistka: smazala se právě ta jedna položka
             sys.exit(f"data/{nazev}.json: smazání by změnilo víc než jednu položku – nic jsem nezměnil.")
-        zapis_text(path, novy)
+        zmeny[path] = (novy, bom)
         smazano.append(f"data/{nazev}.json")
-    kam = os.path.join(ROOT, "pracovni", "smazano_" + time.strftime("%Y%m%d"))
-    for slozka in ("vyrezy", "zdroje"):
-        obr = os.path.join(ROOT, slozka, klic + ".jpg")
-        if os.path.exists(obr):
-            os.makedirs(os.path.join(kam, slozka), exist_ok=True)
-            shutil.move(obr, os.path.join(kam, slozka, klic + ".jpg"))
-            smazano.append(f"{slozka}/{klic}.jpg → {os.path.relpath(kam, ROOT)}/{slozka}/")
+    obrazky = [s for s in ("vyrezy", "zdroje") if os.path.exists(os.path.join(ROOT, s, klic + ".jpg"))]
+    dokument = bool(obrazky) and klic in obrazky_dokumentu()
+    presuny = []
+    if obrazky and not dokument:
+        # každé smazání do vlastní složky – druhé smazání téhož klíče nesmí přepsat zálohu prvního
+        zaklad = os.path.join(ROOT, "pracovni", "smazano_" + time.strftime("%Y%m%d"))
+        kam, n = zaklad, 1
+        while any(os.path.exists(os.path.join(kam, s, klic + ".jpg")) for s in obrazky):
+            n += 1
+            kam = f"{zaklad}_{n}"
+        for s in obrazky:
+            presuny.append((os.path.join(ROOT, s, klic + ".jpg"), os.path.join(kam, s, klic + ".jpg"), False))
+            smazano.append(f"{s}/{klic}.jpg → {os.path.relpath(kam, ROOT).replace(os.sep, '/')}/{s}/")
     if not smazano:
         sys.exit(f"Zápis „{klic}“ v datech není.")
+    proved(zmeny, presuny)
     print(f"smazán zápis „{klic}“: " + "; ".join(smazano))
+    if dokument:
+        print(f"Obrázky {', '.join(s + '/' + klic + '.jpg' for s in obrazky)} nechávám – používá je rodinný dokument "
+              "v data/dokumenty.json.")
     jinde = [f for f in zminky if f not in cituje]
     if jinde:
         print(f"Zmiňuje ho i {', '.join('data/' + f for f in jinde)} – text nech, odkaz na web („/zdroj/{klic}/“) "
@@ -291,6 +377,7 @@ def prejmenovano(x, stary, novy):
 
 
 def prejmenuj(stary, novy):
+    jen_nazev(stary)
     if not re.fullmatch(r"[a-z0-9_]+", novy):
         sys.exit(f"Nový klíč „{novy}“: jen malá písmena bez diakritiky, číslice a podtržítka (obec_druh_jmeno_rok).")
     try:
@@ -300,23 +387,33 @@ def prejmenuj(stary, novy):
     klice = {z.get("klic") for z in zaz if isinstance(z, dict)}
     if stary not in klice:
         sys.exit(f"Zápis „{stary}“ v data/zaznamy.json není.")
-    if novy in klice or kdo_cituje(novy):
+    obsazeno = klice | obrazky_dokumentu()
+    for nazev in ("prepisy.json", "zvyrazneni.json"):   # přepis pod novým klíčem by se sloučil se starým
+        path = os.path.join(ROOT, "data", nazev)
+        data = nacti_json(nazev, cti_text(path)[0]) if os.path.exists(path) else None
+        obsazeno |= set(data) if isinstance(data, dict) else set()
+    if novy in obsazeno or kdo_cituje(novy):
         sys.exit(f"Klíč „{novy}“ už v datech je – vyber jiný.")
     for slozka in ("vyrezy", "zdroje"):
         if os.path.exists(os.path.join(ROOT, slozka, novy + ".jpg")):
             sys.exit(f"{slozka}/{novy}.jpg už existuje – vyber jiný klíč.")
     vzor = vzor_klice(stary)
     zmeny = {}   # soubor → nový text; zapisuje se až po kontrole všech souborů
-    for nazev in ("zaznamy.json", "prepisy.json", "zvyrazneni.json", *soubory_dat()):
+    for nazev in dict.fromkeys(("zaznamy.json", "prepisy.json", "zvyrazneni.json", *soubory_dat())):
         path = os.path.join(ROOT, "data", nazev)
-        if nazev in zmeny or not os.path.exists(path):
+        if not os.path.exists(path):
             continue
-        text = open(path, encoding="utf-8-sig").read()
+        text, bom = cti_text(path)
         nove = vzor.sub(novy, text)
         if nove == text:
             continue
-        if nazev.endswith(".json"):   # pojistka: změnil se jen ten klíč
-            if json.loads(nove) != prejmenovano(json.loads(text), stary, novy):
+        if nazev.endswith(".json"):   # pojistka: změnil se jen ten klíč (a žádný klíč není dvakrát)
+            pred = nacti_json(nazev, text)
+            try:
+                po = json.loads(nove, object_pairs_hook=bez_duplicit)
+            except ValueError as e:
+                sys.exit(f"data/{nazev}: přejmenování by rozbilo soubor ({e}) – nic jsem nezměnil.")
+            if po != prejmenovano(pred, stary, novy):
                 sys.exit(f"data/{nazev}: přejmenování by změnilo i něco jiného – nic jsem nezměnil.")
         elif nazev == "osoby.py":
             try:
@@ -326,16 +423,16 @@ def prejmenuj(stary, novy):
             for jmeno in set(pred) | set(po):
                 if jmeno != "__builtins__" and po.get(jmeno) != prejmenovano(pred.get(jmeno), stary, novy):
                     sys.exit(f"data/osoby.py: přejmenování by změnilo i {jmeno} – nic jsem nezměnil, uprav ručně.")
-        zmeny[nazev] = nove
-    for nazev, nove in zmeny.items():
-        zapis_text(os.path.join(ROOT, "data", nazev), nove)
-    obrazky = []
-    for slozka in ("vyrezy", "zdroje"):
-        obr = os.path.join(ROOT, slozka, stary + ".jpg")
-        if os.path.exists(obr):
-            os.replace(obr, os.path.join(ROOT, slozka, novy + ".jpg"))
-            obrazky.append(f"{slozka}/{novy}.jpg")
-    print(f"přejmenováno „{stary}“ → „{novy}“: " + ", ".join(["data/" + f for f in zmeny] + obrazky))
+        zmeny[path] = (nove, bom)
+    # obrázek, který používá i rodinný dokument (dokumenty.json „img“), zůstane dokumentu – zápis dostane kopii
+    dokument = stary in obrazky_dokumentu()
+    presuny = [(os.path.join(ROOT, s, stary + ".jpg"), os.path.join(ROOT, s, novy + ".jpg"), dokument)
+               for s in ("vyrezy", "zdroje") if os.path.exists(os.path.join(ROOT, s, stary + ".jpg"))]
+    proved(zmeny, presuny)
+    print(f"přejmenováno „{stary}“ → „{novy}“: "
+          + ", ".join(os.path.relpath(p, ROOT).replace(os.sep, "/") for p in [*zmeny, *(k for _, k, _ in presuny)]))
+    if dokument and presuny:
+        print(f"Obrázky „{stary}“ používá i rodinný dokument (data/dokumenty.json) – zůstaly mu, zápis má kopii.")
 
 
 def main():
@@ -414,10 +511,7 @@ def zapis(nazev, klic, obj, sloucit=False, prepsat=False):
         prepis_v_poradku(klic, nove)
     json.loads(text)   # pojistka: výsledek musí být platný JSON
 
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        f.write(text)
-    os.replace(tmp, path)   # celý soubor naráz – při chybě nezůstane rozepsaný
+    zapis_text(path, text)   # celý soubor naráz – při chybě nezůstane rozepsaný
     print(f"data/{nazev}.json: {'přidáno' if idx is None else 'změněno'} „{klic}“")
 
 
