@@ -67,6 +67,9 @@ PRIPADY = [
     ("Bash", 'bash -c "curl -s https://example.com"', Z),
     ("Bash", f"python -I -X utf8 {VLASTNI}", Z),
     ("Bash", f"python -I -X utf8 {SMISENY}", Z),
+    ("Bash", f"python3.11 -I {VLASTNI}", Z),   # python3.X (Linux, kde výchozí python3 je starý, upstream #174)
+    ("Bash", "python3.12 - <<'EOF'\nimport urllib.request\nEOF", Z),
+    ("Bash", "/usr/bin/python3.9 -c \"import requests\"", Z),
     ("Bash", f"python3 -I {GITHUB} .", P),
     ("Bash", f"python3 -I {os.path.join(SKILL, 'tools', 'verze.py')} .", P),
     ("Bash", 'curl -s "https://www.portafontium.eu/register/soap-pn?q=Plaňany"', Z),
@@ -98,6 +101,7 @@ PRIPADY = [
     ("Bash", "curl --version", P),
     ("Bash", "python -I -X utf8 tools/zapis.py data/zaznamy.json klic pracovni/x.json", P),
     ("Bash", "python -I -X utf8 tools/kontrola.py", P),
+    ("Bash", "python3.11 -I tools/slusne.py pracovni/x.py", P),
     ("Bash", "python -I -X utf8 tools/export_web.py", P),
     ("Bash", "grep -n urllib tools/aron_img.py && cat tools/ahmp_search.sh", P),
     ("Bash", "git commit -m \"$(cat <<'EOF'\nUse curl https://x.cz and python tools/aron_img.py, it's fine\nEOF\n)\"", P),

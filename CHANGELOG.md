@@ -17,6 +17,8 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Brzda zpomalí krajské Krameriusy (JVK České Budějovice, SVK Plzeň) na 10 s mezi dotazy – po rychlé sérii vracely
   403 na hodinu (upstream #189, #200).
 - Šablona projektu nedává do gitu složku `.playwright-mcp/` (snímky a logy Playwrightu) (upstream #200).
+- Hlídač sítě pozná i `python3.11`, `python3.12` a podobně – síťové skripty spuštěné takhle (Linux se starým
+  výchozím `python3`) dřív pustil mimo brzdu (upstream #174).
 
 **Návody**
 - Matriky far na Prostějovsku jsou v MZA Brno, ne v ZA Opava; obecně: hranice archivů u matrik kopírují staré
