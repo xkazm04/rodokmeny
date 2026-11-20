@@ -15,6 +15,10 @@ berní rula 1654 (jen hospodáři), gruntovní/pozemkové knihy (kdo vlastnil kt
 vojenské záznamy, domovské listy, parte, kroniky obcí a škol (opisy gruntovních knih s držiteli domů, `portaly.md` →
 Kroniky). Viz `portaly.md` a `metodika.md` (prameny mimo ČR).
 
+**Sčítací operáty (ČR i Slovensko): začni přehledem obvodu.** Na začátku sady bývá soupis nebo přehled sčítacího
+obvodu (MZA: snímek 1 s rozpisem čísel popisných; Slovakiana 1930: „Prehľad sčítacieho obvodu“ s čísly domů a majiteli).
+Podle něj a čísla domu z matriky nebo od rodiny jdi rovnou na arch domu – neprocházej všechny archy obce.
+
 ## Lhůty (zákon 301/2000 Sb.)
 Do archivu (a tedy online) jde svazek, až od jeho **posledního** zápisu uplyne: narození **100 let**, sňatky **75**, úmrtí **75**
 (§ 23; lhůta 30 let u úmrtí platí jen pro vydání jednotlivého zápisu na úřadě, viz níže).

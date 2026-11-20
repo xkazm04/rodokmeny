@@ -182,7 +182,8 @@ Ostatní archivy jsou většinou jen na písemnou žádost – zapiš do `archiv
   (maďarský název jiné obce) – obec ověř na obálce archu. Arch = 2 snímky: obálka s číslem domu, uvnitř osoby.
 - **Sčítací hárky 1930** jsou na Slovakianě (slovakiana.sk/scitacie-harky) – celé domácnosti s daty narození a sňatku,
   rodištěm a rokem příchodu; 1939 a 1940 jen začerněné. První objekt obce je „Prehľad sčítacieho obvodu“ se seznamem
-  domů a majitelů – podle něj najdeš dům bez procházení hárků. Jen v prohlížeči, tempo jako u archivů.
+  domů a majitelů – podle něj najdeš dům bez procházení hárků. Postup (i metadata a snímky přes brzdu) v `portaly.md`
+  → Slovakiana.
 - **Matriční úřad:** dokud je kniha na úřadě (100 let od posledního zápisu), výpis dostane jen osoba, které se zápis
   týká, nebo člen rodiny (manžel, rodiče, děti, vnuci, pravnuci, prapravnuci, sourozenci a jejich děti) – bez ohledu
   na stáří zápisu (zákon 154/1994 Z. z., § 18). Doslovný výpis jen pro úřady; soukromá osoba může v přítomnosti
