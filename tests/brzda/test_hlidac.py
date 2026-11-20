@@ -85,6 +85,7 @@ PRIPADY = [
     ("Monitor", "tail -f pracovni/log.txt | grep --line-buffered CHYBA", P),
     ("Bash", 'bash -c "python -I -X utf8 tools/kontrola.py"', P),
     ("Bash", "python3 - <<'EOF'\nimport json, os  # requests tu nejsou\nEOF", P),
+    ("Bash", "git commit -m 'Document (python3.11 -c \"import socket\")'", P),   # python jen v textu zprávy
     # Bash – pustit (nástroje se brzdí samy, obal, localhost, vlastní web)
     ("Bash", 'python -I -X utf8 tools/aron_search.py "Holice"', P),
     ("Bash", 'bash tools/ahmp_search.sh "Švamberk"', P),
