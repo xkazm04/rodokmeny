@@ -92,7 +92,9 @@ Základní smyčka pro každou osobu:
    ho a přečti sám.
    **Najdi svazek**: podle obce → farnost → archiv. ARON: `python3 -I tools/aron_search.py "Obec"`, SOA Plzeň:
    `python3 -I tools/portafontium.py obec "Obec"`, Praha: `tools/ahmp_search.sh`; SOA Praha, MZA Brno a SOA Třeboň
-   jen v prohlížeči, ostatní v `reference/portaly.md`. Sňatek hledej nejdřív ve farnosti nevěsty. Je-li ke svazku
+   jen v prohlížeči (uživateli se hodí rozšíření Snímkovač, `reference/snimkovac.md`: snímky, které si sám prohlédne,
+   uloží i s údaji a `tools/snimky_import.py` je převezme), ostatní v `reference/portaly.md`. Sňatek hledej nejdřív
+   ve farnosti nevěsty. Je-li ke svazku
    rejstřík, začni jím.
 4. **Stáhni snímek** do `pracovni/<svazek>/` a nech ho tam – před dalším stažením se podívej, jestli ho už nemáš.
    Najdi zápis, **přečti ho sám ze snímku** (přiblíž si výřez v plném rozlišení).
@@ -302,6 +304,7 @@ a `zdroje/` (výřezy pro web / plné rozlišení), `dokumenty/` (originály od 
 | `anno.py`, `anno_snap.py`, `kramerius.py` | noviny: ANNO (rakouské, `--ztraty` = seznamy ztrát 1914–1919), Kramerius (české) |
 | `mapa_knihy.py` | mapa knihy po vsích a montáž sloupce jmen (`matriky.md`) |
 | `cache.py` | sdílená mezipaměť snímků; uložení snímku z prohlížeče |
+| `snimky_import.py` | převezme snímky uložené rozšířením Snímkovač do mezipaměti (`reference/snimkovac.md`) |
 | `ged_import.py`, `ftb_export.py` | rodinný strom (GEDCOM, záloha MyHeritage) – `data.md` |
 | `vyrez.py`, `ramecek.py`, `overit.py` | výřez zápisu (zlomky stránky), rámeček (zlomky výřezu, `--pozn` poznámka), ověření čtení na dvou polovinách |
 | `zapis.py` | zápis do `data/*.json` a odkazů `r` v `osoby.py` beze změny formátu; `--smazat <klíč>` zápis omylem, `prejmenuj <starý> <nový>` klíč všude |
