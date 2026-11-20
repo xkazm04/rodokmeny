@@ -77,3 +77,19 @@ plné rozlišení `zdroje/<klíč>.jpg`) a hledej chybná čtení, ztotožnění
 zápisy. Při skutečném výzkumu tak našli dvě chybně přečtené kolonky „svobodný/vdovec“, přehozené rodiče a roky
 z MyHeritage vydávané za doložené. Opravy děláš ty, po ověření na výřezu. Zprávu pomocníka ulož do `kontext/`
 (v gitu), ne do `pracovni/` – jinak ji jiný počítač nevidí.
+
+## Druhé čtení přepisu
+Vlastní přepisy mají překvapivě hodně chyb (audit: ~31 chyb v 26 přepisech – čtení ze zmenšeniny, formulace převzaté
+ze zápisu sourozence, „opravy“ podle očekávání, domyšlené detaily, záměna sloupců). Zápisy s „(?)“ a všechny, na
+kterých stojí ztotožnění předka, dej nezávislému pomocníkovi (silnější model, bez sítě). Dostane **jen výřez
+v plném rozlišení** (`zdroje/<klíč>.jpg`, široký rozřež na dlaždice do 1568 px) **a přepis `orig`** – ne `shrnuti`,
+osoby ani tvoje závěry, ať čte nezávisle.
+
+```
+Úkol: porovnej přepis s obrázkem zápisu. Obrázek: <cesta>. Přepis: <orig>.
+U každého údaje přepisu napiš jedno: SEDÍ / CHYBA (co na obrázku skutečně je) / NEVIDITELNÉ (na obrázku to není) /
+NEJISTÉ (nejde rozhodnout). U „(?)“ napiš své čtení. Nic nedoplňuj z jiných zápisů ani z toho, co čekáš.
+Píšeš jen do pracovni/cteni2/<klíč>.md, síť nepoužívej.
+```
+Rozdíly ověř sám na výřezu, oprav přepis (a údaje osob) a do `cteni2` v `zaznamy.json` zapiš datum, kdo četl a výsledek
+(`zapis.py zaznamy <klíč> pracovni/x.json --sloucit` s `{"cteni2": "…"}`).

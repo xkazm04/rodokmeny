@@ -61,6 +61,14 @@ ma(w2, "osoba 8 ", ocekavam=False)
 ma(w2, "osoba 9 ", ocekavam=False)
 ma(w2, "osoba 10 ", ocekavam=False)
 
+# Druhé čtení: doložený zápis s „(?)“ v přepisu bez cteni2 (I30-18)
+P3 = {2: dict(n="Jan Dvořák", y="1800", st="doc", f=["* 1800"], r=["n_a", "n_b", "n_c"])}
+Z3 = [dict(klic="n_a", druh="N", datum="1800"), dict(klic="n_b", druh="N", datum="1800", cteni2="2026-11-20 Opus: bez chyb"),
+      dict(klic="n_c", druh="N", datum="1800")]
+w3 = kd.kontroly(P3, [], Z3, {"n_a": {"orig": "Rosina (?)", "cs": "x"}, "n_b": {"orig": "Eva (?)", "cs": "x"},
+                               "n_c": {"orig": "Anna", "cs": "x"}})
+ma(w3, "1 doložených zápisů má v přepisu nejisté čtení „(?)“ a ještě nemá druhé čtení (n_a)")
+
 # denik.py na dočasné kopii deníku
 denik = modul("denik")
 tmp = tempfile.mkdtemp()

@@ -135,6 +135,10 @@ Pravidla, která chrání kvalitu:
   Nikdy `sed -i` ani skript, který soubor přepíše celý – rozbije formát a v historii je pak změněný celý soubor.
 - **`doc` jen to, co jsi četl přímo na snímku.** Shoda jména a doby bez přímého dokladu = `prob` + poznámka proč.
 - **Nic nedomýšlej.** Nejisté čtení „(?)“, rozpory zapiš do `ISSUES`. Písaři se pletli (jména sourozenců, věk, Anna/Františka).
+- **Přepis jen z výřezu v plném rozlišení, jen text zápisu** – souvislosti (kdo to je, proč) patří do `shrnuti`, ne do
+  `orig`. Nic „neopravuj“ podle očekávání (matka „Ros…“ není Eva jen proto, že se otec oženil s Evou). Zápis
+  s nejistým čtením „(?)“ dej po kole **nezávislému druhému čtení** (`reference/zadani_pomocnika.md` → Druhé čtení
+  přepisu) a výsledek zapiš do `cteni2` v `zaznamy.json` – audit našel ~31 chyb v 26 přepisech.
   Než ztotožníš křest s předkem, ověř, že nejde o stejnojmenného sourozence, který zemřel (nekronymum, `matriky.md` → Pasti).
 - **Čti celý zápis včetně okrajů** – pozdější poznámky o úmrtí, sňatku, legitimaci bývají nejcennější.
 - **Rodina přes čísla domů**: stejné číslo popisné a řemeslo přes generace je silná stopa; v knize hledej celé domácnosti.

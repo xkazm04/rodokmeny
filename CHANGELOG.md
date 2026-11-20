@@ -105,6 +105,10 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Smyčka hledání: nejdřív v už přečteném – vlastní rejstřík (`rejstrik.py hledej`, `svazek`) a sdílený index matrik
   (přečtené zápisy a strojový text celých knih, hledání začátku příjmení s variantami); zásah je kandidátní snímek,
   který je potřeba přečíst. Totéž v zadání pomocníka (`portaly.md` → Už přečtené matriky, upstream #194).
+- Kvalita přepisů: přepis jen z výřezu v plném rozlišení a jen text zápisu, nic „neopravovat“ podle očekávání;
+  zápisy s nejistým čtením „(?)“ dát nezávislému druhému čtení (pomocník dostane jen výřez a přepis a vrátí
+  SEDÍ/CHYBA/NEVIDITELNÉ/NEJISTÉ), výsledek do nového pole `cteni2` v `zaznamy.json`. `kontrola.py` připomene
+  doložené zápisy s „(?)“ bez druhého čtení (upstream #30).
 - Typické pasti v `reference/matriky.md`: sloupce ledig/Witwer, křížek v knize narozených, rozsah rejstříku, vdova
   jako „dcera“ prvního muže, kandidátní zápis není doklad, roky z cizích stromů nepatří do `y`; Matricula bez
   prohlížeče pomocníkovi obraz nedá; zadání pomocníka: jedna úzká stopa a kontrola dat silnějším modelem po větší

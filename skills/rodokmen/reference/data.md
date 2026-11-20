@@ -89,6 +89,9 @@ P = {
   (u PDF `…pdf#page=N`). Obrázek pro `vyrez.py` může být stránka z PDF nebo snímek obrazovky; víc záběrů slep
   `magick a.png b.png +append x.jpg`.
 - `datum` jako v češtině („14. 2. 1890“, „3/1867“, „1797“) – web podle něj řadí.
+- `cteni2` (nepovinné) – nezávislé druhé čtení přepisu: `"2026-11-20 pomocník Opus: 2 opravy (Rosina, čp. 14)"` nebo
+  `"… bez chyb"`. `kontrola.py` připomene doložené zápisy s nejistým čtením „(?)“ v přepisu, které ho ještě nemají
+  (postup `zadani_pomocnika.md` → Druhé čtení přepisu).
 
 ## `svazky.json`
 `{"1a0b2337": {"archiv": "SOA Zámrsk – Sbírka matrik…", "portal": "ARON", "svazek": "N Holice 1880–1900, sign. …",

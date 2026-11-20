@@ -10,6 +10,7 @@ Hlídá:
   4. osoba cituje v `r` zápis, který sám o sobě říká, že je jen kandidát – web ho ukáže jako doklad
   5. zastaralé věty („V matrice neověřeno“, „křest se nečetl“) u osoby, která už zápis má
   6. ženich nebo nevěsta je v přepisu sňatku „ledig/svobodný“, ale osoba má u téhož sňatku „vdovec/vdova“ (nebo naopak)
+  7. doložený zápis s nejistým čtením „(?)“ v přepisu nemá nezávislé druhé čtení (pole cteni2 v zaznamy.json)
 """
 import json, os, re, sys
 
@@ -123,6 +124,14 @@ def kontroly(P, SIDE, zaz, prep):
                 if osoba_vdov and SVOBODNY.search(text) and not VDOVEC.search(text):
                     warn.append(f"osoba {k} ({n}): u sňatku {r} má fakta „vdovec/vdova“, přepis „{SVOBODNY.search(text).group(0)}“ – "
                                 "přečti na výřezu sloupec ledig/Witwer (porovnej s řádkem nad a pod)")
+    # 7: doložený zápis s nejistým čtením „(?)“ v přepisu bez nezávislého druhého čtení (pole cteni2)
+    doc_r = {r for p in P.values() if isinstance(p, dict) and p.get("st") == "doc" for r in p.get("r") or []}
+    bez = [k for k, z in zaz_k.items() if k in doc_r and not z.get("cteni2") and not z.get("ukazka")
+           and "(?)" in str((prep.get(k) or {}).get("orig", ""))]
+    if bez:
+        warn.append(f"{len(bez)} doložených zápisů má v přepisu nejisté čtení „(?)“ a ještě nemá druhé čtení "
+                    f"({', '.join(sorted(bez)[:5])}{' …' if len(bez) > 5 else ''}) – dej je nezávislému pomocníkovi "
+                    "(reference/zadani_pomocnika.md → Druhé čtení přepisu) a výsledek zapiš do „cteni2“")
     return warn
 
 
