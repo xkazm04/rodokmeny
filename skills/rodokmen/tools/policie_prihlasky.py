@@ -9,7 +9,8 @@ Web vrátí bez prohlížeče jen prvních 20 výsledků – když je jich víc,
       -> stáhne kartu (hlava rodiny, manželka s místem narození, děti, adresy) z výsledku stejného hledání (i pořadí nad 20)
          a vypíše citaci a trvalý odkaz (portál dává kartu jen v 1000 × 1333 px). Nástroj ověří, že je na kartě
          vyznačená hledaná osoba – při přiškrcení portál umí vrátit cizí kartu; pak skončí chybou a nic neukládá.
-Portál přiškrcuje podle IP: karty stahuj po jedné (brzda: 1 dotaz za 4 s).
+Portál přiškrcuje podle IP: karty stahuj po jedné (brzda: 1 dotaz za 10 s). robots.txt digi.nacr.cz je „Disallow: /“ –
+nástroj smí jen dohledat konkrétní osoby a jejich karty, nikdy procházet rejstřík hromadně (reference/portaly.md).
 Trvalý odkaz na kartu:
   https://digi.nacr.cz/prihlasky2/index.php?action=link&ref=czarch:CZ-100000010:874&karton=<K>&folium=<F>
 Pokrývá Prahu I–VIII. Smíchov, Vinohrady, Žižkov, Karlín ap. byly do 1922 samostatná města – tam přihlášky nejsou.
@@ -30,13 +31,13 @@ _op.addheaders = [("User-Agent", "Mozilla/5.0 (rodokmen)")]
 def get(url, data=None):
     if data:
         data = urllib.parse.urlencode(data).encode()
-    for i in range(5):   # server občas neodpovídá
+    for i in range(2):   # server občas neodpovídá; jedno opakování (3 nepovedená spojení zastaví web v brzdě)
         try:
             return _op.open(url, data, timeout=40).read().decode("utf-8", "replace")
-        except Exception as e:
+        except Exception as e:   # 403/429/503 zastaví brzda (Zastaveno), sem se nedostane
             print("znovu", i + 1, e, file=sys.stderr)
-            time.sleep(5 * (i + 1))
-    sys.exit("server neodpovídá")
+            time.sleep(10)
+    sys.exit("server neodpovídá – zkus to později, nic neopakuj ve smyčce")
 
 
 def holy(s):
@@ -78,13 +79,13 @@ def karta(session, poradi, out, overeni):
     if not m:
         sys.exit(f"karta č. {poradi} nenalezena (je pořadí z tohoto hledání?)")
     lide = over_kartu(h, poradi, *overeni)
-    for i in range(5):
+    for i in range(2):
         try:
             data = _op.open(BASE + "images/" + m.group(1), timeout=60).read()
             break
         except Exception as e:
             print("znovu", i + 1, e, file=sys.stderr)
-            time.sleep(5 * (i + 1))
+            time.sleep(10)
     else:
         sys.exit("server neodpovídá")
     if not data.startswith(b"\xff\xd8"):   # při přiškrcení místo obrázku stránka s chybou

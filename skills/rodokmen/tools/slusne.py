@@ -14,7 +14,7 @@ Archivy blokují IP adresu po sérii rychlých dotazů (MZA, ZA Opava…). Nást
                                                                       403/429/503) – zastaví i skripty a nástroje
 
 Pravidla (pro každý web zvlášť, společně pro všechny procesy i projekty na počítači – mají jednu IP adresu):
-  - dotazy (stránky, hledání, API) nejvýš 1 za 2 s (ZA Opava 1 za 4 s; Porta fontium, Slovakiana, holocaust.cz,
+  - dotazy (stránky, hledání, API) nejvýš 1 za 2 s (ZA Opava 1 za 4 s; Porta fontium, Slovakiana, digi.nacr.cz, holocaust.cz,
     Arolsen a další weby bez zveřejněného limitu, kam chodí nové nástroje, 1 za 10 s i snímky),
     obrázky a dlaždice nejvýš 10 za s;
     omezuje se frekvence, ne souběh (vlákna stahování dlaždic nevadí),
@@ -42,7 +42,8 @@ LIMITY = {                           # konec názvu webu: (dotaz, obrázek)
     "archives.cz": (4.0, 0.3),       # ZA Opava (digi.archives.cz, images.archives.cz) – blokuje na 30 min, obrázky po ~6 snímcích 403
     "nominatim.openstreetmap.org": (1.1, 1.1),   # pravidla Nominatimu: nejvýš 1 dotaz za s
     "mza.cz": (4.0, 4.0),            # MZA Brno – skriptem jen hledání knih (ZAKAZ níže), blokuje i za rychlé dotazy na katalog
-    "digi.nacr.cz": (4.0, 4.0),      # Národní archiv (policejní přihlášky) – po pár rychlých kartách přiškrcuje podle IP
+    "digi.nacr.cz": (10.0, 10.0),    # Národní archiv (policejní přihlášky) – robots.txt „Disallow: /“, po pár rychlých kartách
+                                     # přiškrcuje podle IP; limit neuvádí -> opatrně 10 s (rozhodnutí 20. 11. 2026)
     "aron.vychodoceskearchivy.cz": (2.0, 2.0),   # ARON: celý sken (2–4 MB) jedním požadavkem; dlaždice imgx.… dál 0,1 s
     "portafontium.eu": (10.0, 10.0), # SOA Plzeň – robots.txt „Crawl-delay: 10“ (snímek IIIF je jeden požadavek)
     "slovakiana.sk": (10.0, 10.0),   # Slovakiana (SNA) – robots.txt „Crawl-delay: 10“, platí i pro API wcm.… a snímky content.…

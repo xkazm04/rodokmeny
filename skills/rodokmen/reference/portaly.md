@@ -429,6 +429,10 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   Kartu stáhni `policie_prihlasky.py karta <pořadí> pracovni/karta.jpg Kolar [Jan] [1850] [1870]` (stejné hledání; jde i pořadí
   nad 20) – vypíše citaci a trvalý odkaz (`index.php?action=link&ref=czarch:CZ-100000010:874&karton=K&folium=F`).
 - **Nepokrývá Smíchov, Vinohrady, Žižkov, Karlín a další předměstí před 1922** (byla to samostatná města). Náboženství karty neuvádějí.
+- **Šetrně:** robots.txt digi.nacr.cz je `Disallow: /` a Národní archiv limit nezveřejňuje. Nástroj je proto jen na dohledání
+  konkrétních osob: brzda pouští 1 dotaz za 10 s (hledání = 2 dotazy, karta 3), karty po jedné, žádné procházení rejstříku
+  ani smyčky přes příjmení. Odmítne-li portál (403/429/503) nebo vrátí cizí kartu, skonči a zkus to jindy. Karty na web
+  rodiny jen jako výřez (`soukromi.md`).
 
 ## Matricula (Rakousko, Bavorsko, Polsko…; data.matricula-online.eu) – `tools/matricula_*.sh`
 - robots.txt (14. 11. 2026) zakazuje robotům stránky snímků `/*?pg=` a AI crawlerům celý web; snímky jsou pod licencí
