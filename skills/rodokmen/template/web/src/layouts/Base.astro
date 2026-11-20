@@ -9,7 +9,7 @@ const storyMenu = config.pribeh?.menu || (config.hlavniPribeh === false ? 'Pří
 const storyItems = stories.filter((s) => s.menu && !s.koncept).map((s) => [`/pribehy/${s.slug}/`, s.menu]);
 const groups = [
   [['/', 'Úvod'], ...(config.maPribeh ? [['/pribehy/', storyMenu]] : []), ...storyItems, ['/zajimavosti/', 'Zajímavosti']],
-  [['/rody/', 'Rody'], ['/mapa/', 'Mapa'], ['/vejir/', 'Vějíř'], ['/predci/', 'Předci'], ['/zapisy/', 'Zápisy'], ['/hledame/', 'Co hledáme']],
+  [['/rody/', 'Rody'], ['/mapa/', 'Mapa'], ['/strom/', 'Strom'], ['/vejir/', 'Vějíř'], ['/predci/', 'Předci'], ['/zapisy/', 'Zápisy'], ['/hledame/', 'Co hledáme']],
   [['/hledat/', 'Hledat']],
 ];
 const current = (url) => ((url === '/' ? path === '/'

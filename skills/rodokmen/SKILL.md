@@ -103,6 +103,7 @@ Základní smyčka pro každou osobu:
    5. přepis originálu a český překlad do `data/prepisy.json` (nejistá místa „(?)“, nečitelná „[…]“),
    6. osobu/osoby do `data/osoby.py` (`f` fakta, `r` klíč zápisu, `st="doc"`), sourozence a kmotry-příbuzné do `SIDE`;
       klíč zápisu k existující osobě přidej `python3 -I tools/zapis.py odkaz <číslo osoby | část jména z SIDE> <klíč>`.
+      U bočního příbuzného, který má být ve Stromu (`/strom/`), přidej `id` a vztah (`v`, `koho`) – `reference/data.md`.
    Nová obec předků → `tools/mista.py pridej "Obec"` (mapa), nový pradědeček nebo prababička (8–15) → rod do `LINES`.
    Všech 6 kroků a řádek deníku jde udělat jedním příkazem: `python3 -I tools/nalez.py nahled pracovni/x.json` (ověří vstup,
    udělá výřez a rámeček – prohlédni si ho), pak `nalez.py zapis pracovni/x.json` (vzor vstupu v `nalez.py --help`).
