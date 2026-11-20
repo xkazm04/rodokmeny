@@ -81,6 +81,15 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
   `DA?menu=3&id=<kniha>&page=<n>` podle čísla v liště. Než Claude začne listovat, zkusí práci dobrovolníků: rejstříky
   knihy po obcích, jmenný rejstřík místa, globální hledání v uvozovkách (i poznámky uživatelů), poznámky ke knize
   a panel poznámek u snímku (upstream #167, #198, #208, #213, #217).
+- FamilySearch: ochrana proti robotům vrací místo snímku stránku „Pardon Our Interruption“ s kódem 200 – nejvýš ~30
+  snímků za sezení, kontrolovat, že přišel obrázek, a zastavit brzdu; 403 u nepřihlášeného uživatele blokace není
+  (upstream #97).
+- FamilySearch jako náhrada za archivy, které nástroje odmítají: převod názvu filmu `CZEC0001D_<fara>-<N>` na knihu
+  archivu, nejdřív zdroje připojené u osob ve stromu, sčítání 1921 po domech, rakouské rejstříkové záznamy → Matricula
+  (upstream #83).
+- FamilySearch má i moravské pozemkové knihy (C 17), urbariální fase (D 5), josefský (D 6) a stabilní katastr (D 10)
+  a sčítání 1857–1921; návod popisuje pasti katalogu (kniha jen pod jednou obcí nebo sídlem panství, hledání podle kódu
+  svazku, snímek 1 s metadaty, zamčené svazky, knihy listin panství) (upstream #133).
 
 ## 0.10.2 – 16. 11. 2026
 

@@ -418,8 +418,39 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
   otevře sám a pošle snímek obrazovky.
 - Snímky filmu (DGS): seznam přes `POST /search/filmdatainfo/image-data` s `{"type":"film-data","args":{"dgsNum":"00…","state":{"i":"0"},"locale":"cs"}}`
   (`images[]` = ARK). Snímek: `https://www.familysearch.org/service/records/storage/deepzoomcloud/dz/v1/<ARK 3:1:…>/$dist`
-  (plné rozlišení), malé náhledy `…/image_files/8/0_0.jpg`. **Po ~1000 rychlých požadavcích přijde HTTP 429** a blokace
-  na desítky minut – stahuj jen konkrétní snímky, nanejvýš pár za sekundu, hromadné procházení knih nedělej.
+  (plné rozlišení), malé náhledy `…/image_files/8/0_0.jpg`. Stahuj jen konkrétní snímky, které čteš, hromadné
+  procházení knih nedělej.
+- **Ochrana proti robotům na `$dist`:** po ~40–60 snímcích (i s pauzou 11 s) vrací FamilySearch místo obrázku HTML
+  stránku **„Pardon Our Interruption“ s kódem 200** (~6 kB; v prohlížeči se projeví jen jako `Image.onerror`). Nejvýš
+  ~30 snímků za sezení, jeden po ≥ 5 s, pak hodiny pauza. Při chybě načtení zkontroluj obsah odpovědi (HTML místo
+  obrázku) a zapiš `slusne.py zastav familysearch.org "Pardon Our Interruption"`; druhá stopka za den = ten den už
+  FamilySearch ne. Po ~1000 rychlých požadavcích přijde i HTTP 429.
+  **403 na `$dist` u nepřihlášeného uživatele blokace není** (seznam snímků z `image-data` přitom funguje dál; přihlášení
+  vyprší nenápadně) – nejdřív ověř přihlášení (stránka ARK přesměruje na ident.familysearch.org), až pak ber 403 vážně.
+- **Náhrada za archivy, které nástroje odmítají** (SOA Třeboň, SOA Praha, MZA): české církevní knihy jsou na FS jako
+  filmy (DGS, sbírka „Czech Republic, Church Books“, mj. matriky SOA Třeboň a ZA Opava). Název filmu (v přihlášeném
+  prohlížeči `das/v2/dgs:00<film>`) má tvar `CZEC0001D_<fara>-<N>-<roky>-<druh>` – z něj sestavíš převod filmu na knihu
+  archivu (např. Putim-N = Třeboň 6814+N). Pořadí snímku bývá proti archivu o 1 posunuté – stránku vždy ověř v hlavičce.
+  - **Než začneš hledat, přečti zdroje připojené u osob ve stromu FS** (názvy, ne jen počet): rodina tam připojuje snímky
+    ze sbírek bez rejstříku (sčítání 1921, vídeňské přihlášky), které vyhledávání nenajde. Strom je jen nápověda, ne `doc`.
+  - Sčítání 1921 (ČSR) je na FS jen jako snímky, filmy po obcích a osadách, archy podle čísla domu – dá se půlit.
+  - Rakouské knihy jsou na FS jen pro badatelny, ale rejstříkový záznam (`/platform/records/records/<id>`) uvádí datum
+    a faru – zápis pak rychle najdeš na Matricule.
+- **Pozemkové knihy, katastry a sčítání (po přihlášení):** katalog má digitalizované fondy MZA po obcích – C 17
+  pozemkové knihy (ARON MZA má i knihy, které tu chybějí), D 5 urbariální fase, D 6 josefský katastr, D 10 stabilní
+  katastr – a sčítání 1857–1921 (záznamy „Czech Republic, <okres>, <obec>, land records / census“); z Čech pozemkové
+  knihy velkostatků (Třeboň; josefský a stabilní katastr tam bývá zamčený). Fulltext je nepokrývá – hledej v katalogu.
+  - Stará kniha panství bývá v katalogu **jen pod jednou obcí** (první vsí nebo sídlem panství), u ostatních vsí je jen
+    katastr; projdi katalog celého okresu a vypiš „land records“ se začátkem před 1700. Kniha bývá i pod stejnojmennou
+    obcí v jiném okrese.
+  - `q.keywords=<kód svazku>` (např. `B04998`) hledá i v poznámkách záznamu; u chybějící knihy zkus sousední kódy.
+  - **Snímek 1** je průvodní soupis (fond, signatura, územní rozsah, jazyk, rejstřík, předchozí díl) – podle něj ověř,
+    že kniha opravdu pokrývá tvou ves.
+  - Část svazků je zamčená („Image Restricted“), i když je katalog vede jako digitální.
+  - Chybí-li gruntovní kniha vsi, hledej **knihy listin panství** (Urkundenbuch, pod sídlem panství): po letech,
+    rejstřík jmen vzadu (jméno + obec + list); předávací protokoly jmenují všechny děti a výměnek.
+  - Tabulku filmů přepni na 100 řádků; `…/search/catalog/film?dgs=<DGS>&cat=<olib>&i=<n>` otevře mřížku náhledů –
+    podle velkých nadpisů gruntů najdeš usedlost bez listování.
 - **Slovensko** (sbírka „Slovakia Church and Synagogue Books 1592–1935“; bez účtu FamilySearch to nejde):
   1. **Fara:** katalog `https://www.familysearch.org/search/catalog/results?q.keywords=Farský úrad <obec>` (také
      „Grécko-katolícka …“, „Evanjelická …“). Najde i fary celého okolí – v závorce za farou je obec, pod kterou je
@@ -446,6 +477,8 @@ svazek, výstup JavaScriptu bez parametrů v Claude in Chrome).
     const adresa = `https://www.familysearch.org/service/records/storage/deepzoomcloud/dz/v1/${ark}/$dist`;
     const r = await fetch(adresa, {credentials: 'include'});
     if (!r.ok) return `HTTP ${r.status} – snímek nejde stáhnout (přihlášení? omezený snímek?)`;
+    if (!(r.headers.get('content-type') || '').startsWith('image/'))
+      return 'Není obrázek (Pardon Our Interruption?) – skonči a zapiš slusne.py zastav familysearch.org';
     const b = await r.blob(), bm = await createImageBitmap(b);
     const data = await new Promise(ok => { const f = new FileReader(); f.onload = () => ok(f.result); f.readAsDataURL(b); });
     return JSON.stringify({w: bm.width, h: bm.height, adresa, data});
