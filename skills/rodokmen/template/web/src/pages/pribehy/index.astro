@@ -26,17 +26,6 @@ const main = config.hlavniPribeh !== false;
         <p><strong>Chcete víc?</strong> Další objevy z rodokmenu najdete v zajímavostech.</p>
         <a class="btn" href="/zajimavosti/">Zajímavosti z rodokmenu →</a>
       </div>
-
-      {docs.length > 0 && (
-        <>
-          <h2>Rodinné dokumenty a fotografie</h2>
-          <div class="docs">
-            {docs.map((d) => (
-              <figure><a href={`/img/${d.img}.jpg`} target="_blank" rel="noopener"><img src={`/img/${d.img}.jpg`} alt={d.caption} loading="lazy" /></a><figcaption>{d.caption}</figcaption></figure>
-            ))}
-          </div>
-        </>
-      )}
     </>
   ) : (
     <>
@@ -44,6 +33,17 @@ const main = config.hlavniPribeh !== false;
       <h1>Rodinné příběhy</h1>
       <p class="lead">Vyberte si příběh z rodinné historie.</p>
       <StoryCards />
+    </>
+  )}
+  {/* galerie i bez hlavního příběhu – rodinná fotka bez osoby jinde na webu není */}
+  {docs.length > 0 && (
+    <>
+      <h2>Rodinné dokumenty a fotografie</h2>
+      <div class="docs">
+        {docs.map((d) => (
+          <figure><a href={`/img/${d.img}.jpg`} target="_blank" rel="noopener"><img src={`/img/${d.img}.jpg`} alt={d.caption} loading="lazy" /></a><figcaption>{d.caption}</figcaption></figure>
+        ))}
+      </div>
     </>
   )}
 </Base>
