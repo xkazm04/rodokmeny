@@ -204,8 +204,11 @@ tady v repozitáři.
   npm při instalaci webu a přihlášení nástroje pro nasazení (Cloudflare, Netlify, CapRover), pokud web zveřejňujete. Mimo
   projekt nic nemažou ani nepřepisují – kromě nejdéle nepoužitých snímků ve vlastní mezipaměti nad limitem.
 - **Na které servery chodí:** archivní portály (ARON SOA Zámrsk, SOA Třeboň, SOA Plzeň – Porta fontium, SOA Praha –
-  eBadatelna, AHMP, Národní archiv, SOA Litoměřice, Matricula), noviny (ANNO, Kramerius), OpenStreetMap (mapa
-  a souřadnice obcí) a při instalaci webu registr npm.
+  eBadatelna, AHMP, Národní archiv – přihlášky i VadeMeCum, SOA Litoměřice, Matricula, Slovakiana), databáze obětí
+  (holocaust.cz, Arolsen Archives – až po souhlasu uživatele s jejich podmínkami), Jagellonská digitální knihovna
+  (mapy), noviny (ANNO, Kramerius), OpenStreetMap (mapa a souřadnice obcí) a při instalaci webu registr npm.
+  Nové cesty k archivům jdou přes brzdu s opatrným rozestupem (10 s, kde archiv limit neuvádí) a bez souběžného
+  stahování. Volitelné rozšíření prohlížeče Snímkovač jen ukládá na disk snímky, které si sami prohlédnete.
   Na Cloudflare (nebo Netlify) jen tehdy, když web sami zveřejníte. Nikam jinam nic neposílají, ani vaše data, ani poznámky.
 - **Doporučení:** nechte v Claude Code zapnuté schvalování příkazů, aspoň dokud si nezvyknete, co Claude dělá.
   Obecně instalujte skilly a pluginy jen od lidí, kterým věříte. Skill nikdo předem nekontroluje a Claude se

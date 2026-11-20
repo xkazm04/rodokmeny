@@ -6,6 +6,43 @@ dá v repozitáři **Watch → Custom → Releases**.
 
 Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to podle souboru `VERZE`).
 
+## Nevydáno
+
+**Nové**
+- Přístup k dalším archivům (rozhodnutí 20. 11. 2026): každá nová cesta jde přes brzdu s opatrným rozestupem (10 s,
+  kde archiv limit neuvádí), bez souběžného stahování, a hlídá ji hlídač sítě. Snímky jen pro vlastní bádání,
+  na web rodiny nanejvýš výřez zápisu (`soukromi.md`).
+- Rozšíření prohlížeče **Snímkovač** (`rozsireni/snimkovac/`, návod `reference/snimkovac.md`): samo uloží snímky,
+  které si uživatel v prohlížeči archivu prohlédne (eBadatelna, MZA, SOA Třeboň, AHMP, Matricula), nic nestahuje
+  navíc; `tools/snimky_import.py` je převezme do mezipaměti (upstream #195, #91, #185, #187).
+- `tools/obeti.py` – databáze obětí holocaust.cz, `tools/arolsen.py` – Arolsen Archives (hledání, karty). Oba až po
+  souhlasu s podmínkami portálu, který potvrdí sám uživatel v terminálu (`tools/souhlas.py`, platí 30 dní);
+  brzda 1 dotaz za 10 s (upstream #123, #124).
+- Slovakiana: sčítací hárky 1930–1940 – postup od přehledu sčítacího obvodu, metadata přes API, jednotlivé snímky
+  přes brzdu (10 s); obecné pravidlo „sčítání začni přehledem obvodu“ (upstream #199, #161).
+- `soal_zoomify.py` stahuje i snímky židovských matrik HBMa z VadeMeCum Národního archivu a mapy z Jagellonské
+  digitální knihovny – jen servery z pevného seznamu, nové po jedné dlaždici (upstream #104, #54, #167).
+- `tools/matricula_snimek.py`: snímek z Matriculy bez prohlížeče podle seznamu snímků na stránce knihy (upstream #83).
+- FamilySearch: `tools/fs_prohlizec.js` (zdroje u osob, název filmu, jednotlivé snímky z přihlášeného prohlížeče;
+  tempo 10 s, nejvýš 30 snímků za den, stopka po 429/503) a `tools/fs_prevezmi.sh` (převzetí staženého snímku
+  do projektu a mezipaměti) (upstream #83).
+- `tools/sloz_zaber.py` slepí přiblížené snímky obrazovky jednoho zápisu do ostrého výřezu (upstream #167, #147).
+- Hungaricana: urbář 1767 a Conscriptio pro uherské (slovenské) obce, stránka v plném rozlišení z prohlížeče
+  do mezipaměti (`cache.py uloz`) (upstream #40).
+
+**Opravy**
+- Pražské policejní přihlášky (`policie_prihlasky.py`): brzda 1 dotaz za 10 s (dřív 4 s), méně opakování;
+  návod připomíná, že jde jen o dohledání konkrétních osob (upstream #129).
+
+**Návody**
+- MZA: místo pevného limitu 45–60 snímků za den skončit při skutečném příznaku (bílé dlaždice, 403/429/503)
+  a stopku zapsat do brzdy; větší prohlížeč (dvoustrana ze 2 záběrů) (upstream #147, #134).
+- ZA Opava: ne bezhlavý prohlížeč, ale skutečný Chrome s trvalým profilem – CAPTCHU pak vyřeší uživatel (upstream #205).
+- FamilySearch: výchozí je postup přes stránky; souhlas se stažením snímků se zapíše jednou do `CLAUDE.md` projektu;
+  výřezy ze snímků FamilySearch na web jen na výslovné rozhodnutí uživatele (upstream #167, #174, #198, #133).
+- Národní archiv – postup pro židovské matriky HBMa ve VadeMeCum (upstream #54, #104); legionáři a padlí v 1. světové
+  válce (ČsOL, Digitální badatelna MO) – jen v prohlížeči, nástroje nejsou, stará databáze VÚA už neexistuje (upstream #40).
+
 ## 0.11.0 – 20. 11. 2026
 
 **Nové**
