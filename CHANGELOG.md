@@ -68,6 +68,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - `aron_img.py` stahuje snímek bez udané úrovně v plném rozlišení (dřív poloviční – kurent z něj byl rozmazaný
   a četl se špatně). Archiv to nezatíží víc, sken se stahuje celý jedním požadavkem tak jako tak (upstream #119, #120).
 - `overit.py` dělá poloviny zápisu do 1568 px (dřív 1900 px, které nástroj Read stejně potichu zmenšil) (upstream #43).
+- Mapa na webu ukáže osobu jen v obcích, kde sama žila: ne u fary, okresu, přívlastku („Chlum u Hořic“), rodné obce
+  matky („roz. Nováková z Bašnic“) ani u muže v obci nevěsty. `kontrola.py` vypíše všechny doložené předky bez své
+  obce, ne jen tři (upstream #139).
 - `zapis.py` rozbalí vstup `{"klíč": {…}}` a vstup s víc položkami najednou odmítne – dřív ho uložil celý pod jeden
   nesmyslný klíč (upstream #187).
 
