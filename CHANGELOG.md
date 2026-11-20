@@ -12,6 +12,9 @@ Projekt založený starší verzí Claude sám nabídne aktualizovat (pozná to 
 - Hlídač čtení snímků (`tools/hlidac_cteni.py`): pomocníkovi zamítne třetí čtení téhož snímku a víc než 30 snímků,
   aby zacyklený pomocník nespálil 5hodinový limit i hlavní konverzaci. Zapíná se spolu s hlídačem sítě (`--hlidac`),
   projekt se zapnutým hlídačem sítě ho dostane při aktualizaci; hlavní konverzaci nehlídá (upstream #90, #34).
+- Rejstřík dat `tools/rejstrik.py`: hledání v deníku, zápisech, přepisech a poznámkách bez čtení celých souborů
+  (SQLite s fulltextem bez diakritiky v `pracovni/`, sestaví se sám). `osoba 84` ukáže vše o osobě, `svazek …`
+  které snímky jsme už prošli, `hledej`, `podklady rod 8` a další (upstream #203).
 
 **Opravy**
 - Odkaz „otevřít v archivu“ u zápisů z ARONu otevře správný snímek, ne první stránku knihy (`aron_img.py link` dává

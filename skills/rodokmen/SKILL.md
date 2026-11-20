@@ -131,6 +131,14 @@ Pravidla, která chrání kvalitu:
   uživatel u každého klikne na odpověď (artefakt s ukládáním odpovědí, jinak HTML s tlačítkem „stáhnout odpovědi“).
   Odpovědi pak zapracuj do dat a zapiš do deníku.
 
+### Hledání v datech – rejstřík `tools/rejstrik.py`
+Deník, zápisy a přepisy mají za pár týdnů přes megabajt – nečti je celé, zeptej se rejstříku (SQLite s fulltextem bez
+diakritiky v `pracovni/rejstrik.sqlite`, sestaví se sám z `data/` a `kontext/`; zdrojem pravdy zůstávají textové soubory):
+- **Než začneš větev nebo osobu** `rejstrik.py osoba 84`, **než otevřeš svazek** `rejstrik.py svazek <id|"N Holice 05">`
+  (které snímky už jsme prošli a s jakým výsledkem). Pomocníkům dej do zadání tento výstup, ne celý deník.
+- Dál `hledej "kovář Novák"`, `zapis <klíč>`, `denik --posledni 3`, `misto`, `rod 8`, `chybi`; před psaním příběhu
+  `podklady rod 8` (`--help`). Vazba přes `citace` a štítek `<!-- osoby: 6, 13 -->` je jistá, shoda jména jen vodítko.
+
 ### Šetrně k archivům – brzda `tools/slusne.py`
 Archivy blokují IP adresu po sérii rychlých dotazů (MZA i celou síť na hodiny, ZA Opava na 30 minut). Blokaci
 nezpůsobují nástroje, ale rychlé dočasné skripty a smyčky `curl`. Nástroje v `tools/` mají brzdu samy: společný limit
@@ -268,6 +276,7 @@ a `zdroje/` (výřezy pro web / plné rozlišení), `dokumenty/` (originály od 
 | `zapis.py` | zápis do `data/*.json` a odkazů `r` v `osoby.py` beze změny formátu |
 | `mista.py` | místa pro mapu (OpenStreetMap) |
 | `napady.py` | náměty na zajímavosti z dat |
+| `rejstrik.py` | rejstřík dat v SQLite: `osoba`, `svazek`, `hledej`, `zapis`, `denik`, `podklady`… (Hledání v datech) |
 | `kontrola.py` | kontrola dat; hlásí i citlivé údaje na webu a kdy psát příběh |
 | `slusne.py` | brzda proti zablokování archivem (`stav`, `zastav`, `odblokuj`) |
 | `export_web.py`, `fan_chart.py` | data → web (volá ho `npm run data`); vějíř jako plakát k tisku |
